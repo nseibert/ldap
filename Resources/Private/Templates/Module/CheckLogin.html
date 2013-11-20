@@ -1,0 +1,107 @@
+{namespace ldap = NormanSeibert\Ldap\ViewHelpers}
+
+<f:layout name="Backend"/>
+
+<f:section name="content">
+	
+	<h2><f:translate key="headline.checkLogin" /></h2>
+	
+	<f:flashMessages renderMode="div" />
+	
+	<f:form action="doCheckLogin" controller="Module" objectName="formSettings" object="{formSettings}">
+		
+		<fieldset>
+			<table>
+				<tr>
+					<td>
+						<label><f:translate key="form.useServers" /></label>
+					</td>
+					<td colspan="2">
+						<f:form.select
+							id="useServers"
+							property="useServers"
+							options="{ldapServers}"
+							optionValueField="uid"
+							optionLabelField="longName"
+							size="5"
+							multiple="multiple"
+						/>
+					</td>
+				</tr>
+				<tr>
+					<td>&nbsp;</td>
+				</tr>
+				<tr>
+					<td>
+						<label><f:translate key="form.loginType" /></label>
+					</td>
+					<td>
+						<f:form.select
+							id="loginType"
+							property="loginType"
+							options="{fe: 'Frontend', be: 'Backend'}"
+							size="1"
+						/>
+					</td>
+				</tr>
+				<tr>
+					<td>&nbsp;</td>
+				</tr>
+				<tr>
+					<td>
+						<label><f:translate key="form.user" /></label>
+					</td>
+					<td>
+						<f:form.textfield
+							id="loginname"
+							property="loginname"
+						/>
+					</td>
+					<td>
+						<f:if condition="{user.submitted}">
+							<f:if condition="{user.found}">
+								<f:then>
+									<ldap:SpriteManagerIcon iconName="status-dialog-ok" />
+									{user.serverUid}: {user.dn}
+								</f:then>
+								<f:else>
+									<ldap:SpriteManagerIcon iconName="status-dialog-error" />
+									<f:translate key="form.noUserFound" />
+								</f:else>
+							</f:if>
+						</f:if>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<label><f:translate key="form.password" /></label>
+					</td>
+					<td>
+						<f:form.textfield
+							id="password"
+							property="password"
+						/>
+					</td>
+					<td>
+						<f:if condition="{user.submitted}">
+							<f:if condition="{user.authenticated}">
+								<f:then>
+									<ldap:SpriteManagerIcon iconName="status-dialog-ok" />
+									<f:translate key="form.authenticationSuccess" />
+								</f:then>
+								<f:else>
+									<ldap:SpriteManagerIcon iconName="status-dialog-error" />
+									<f:translate key="form.authenticationFail" />
+								</f:else>
+							</f:if>
+						</f:if>
+					</td>
+				</tr>
+			</table>
+		</fieldset>
+		
+		<f:form.submit value="{f:translate(key: 'form.check')}" class="submit" />
+
+	</f:form>
+	
+</f:section>

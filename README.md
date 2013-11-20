@@ -1,0 +1,1 @@
+LDAP integration for TYPO3 version 6.x

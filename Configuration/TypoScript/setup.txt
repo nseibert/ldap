@@ -1,0 +1,80 @@
+config.tx_extbase {
+	persistence {
+		classes {
+			NormanSeibert\Ldap\Domain\Model\FrontendUser {
+				mapping {
+					tableName = fe_users
+					recordType = TYPO3\CMS\Extbase\Domain\Model\FrontendUser
+					columns {
+						tx_ldap_dn.mapOnProperty = dn
+						tx_ldap_serveruid.mapOnProperty = serverUid
+						tx_ldap_lastrun.mapOnProperty = lastRun
+						disable.mapOnProperty = isDisabled
+					}
+				}
+			}
+			NormanSeibert\Ldap\Domain\Model\BackendUser {
+				mapping {
+					tableName = be_users
+					columns {
+						tx_ldap_dn.mapOnProperty = dn
+						tx_ldap_serveruid.mapOnProperty = serverUid
+						tx_ldap_lastrun.mapOnProperty = lastRun
+					}
+				}
+			}
+			NormanSeibert\Ldap\Domain\Model\FrontendUserGroup {
+				mapping {
+					tableName = fe_groups
+					recordType = TYPO3\CMS\Extbase\Domain\Model\FrontendUserGroup
+					columns {
+						tx_ldap_dn.mapOnProperty = dn
+						tx_ldap_serveruid.mapOnProperty = serverUid
+						tx_ldap_lastrun.mapOnProperty = lastRun
+					}
+				}
+			}
+			NormanSeibert\Ldap\Domain\Model\BackendUserGroup {
+				mapping {
+					tableName = be_groups
+					columns {
+						tx_ldap_dn.mapOnProperty = dn
+						tx_ldap_serveruid.mapOnProperty = serverUid
+						tx_ldap_lastrun.mapOnProperty = lastRun
+						description.mapOnProperty = description
+					}
+				}
+			}
+			TYPO3\CMS\Extbase\Domain\Model\FrontendUser {
+				subclasses {
+					FrontendUser = NormanSeibert\Ldap\Domain\Model\FrontendUser
+				}
+			}
+            TYPO3\CMS\Extbase\Domain\Model\FrontendUserGroup {
+				subclasses {
+					FrontendUserGroup = NormanSeibert\Ldap\Domain\Model\FrontendUserGroup
+				}
+			}
+			TYPO3\CMS\Extbase\Domain\Model\BackendUser {
+				subclasses {
+					BackendUser = NormanSeibert\Ldap\Domain\Model\BackendUser
+				}
+			}
+            TYPO3\CMS\Extbase\Domain\Model\BackendUserGroup {
+				subclasses {
+					BackendUserGroup = NormanSeibert\Ldap\Domain\Model\BackendUserGroup
+				}
+			}
+		}
+	}
+}
+
+module.tx_ldap {
+	settings {
+			// This is a dummy entry. It is used in  NormanSeibert\Ldap\Controller\ModuleController
+			// to test that some TypoScript configuration is set.
+			// This entry can be removed if extbase setup is made frontend TS independant
+			// or if there are other settings set.
+		dummy = foo
+	}
+}

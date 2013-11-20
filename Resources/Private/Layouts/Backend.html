@@ -1,0 +1,37 @@
+<f:be.container addCssFile="{f:uri.resource(path:'Css/backend.css')}">
+
+	<div class="overlay"></div>
+
+	<div class="typo3-fullDoc">
+		<div id="typo3-docheader">
+			<div id="typo3-docheader-row1">
+				<div class="buttonsleft">
+					&nbsp;
+				</div>
+				<div class="buttonsright">
+					<f:be.buttons.shortcut />
+				</div>
+			</div>
+			<div id="typo3-docheader-row2">
+				<div class="docheader-row2-left">
+					<f:be.menus.actionMenu>
+						<f:be.menus.actionMenuItem label="{f:translate(key: 'action.summary')}" controller="Module" action="summary" />
+						<f:be.menus.actionMenuItem label="{f:translate(key: 'action.importUsers')}" controller="Module" action="importUsers" />
+						<f:be.menus.actionMenuItem label="{f:translate(key: 'action.updateUsers')}" controller="Module" action="updateUsers" />
+						<f:be.menus.actionMenuItem label="{f:translate(key: 'action.importAndUpdateUsers')}" controller="Module" action="importAndUpdateUsers" />
+						<f:be.menus.actionMenuItem label="{f:translate(key: 'action.deleteUsers')}" controller="Module" action="deleteUsers" />
+						<f:be.menus.actionMenuItem label="{f:translate(key: 'action.checkLogin')}" controller="Module" action="checkLogin" />
+					</f:be.menus.actionMenu>
+				</div>
+				<div class="docheader-row2-right">
+					<f:be.pagePath />
+				</div>
+			</div>
+		</div>
+		<div id="typo3-docbody">
+			<div id="typo3-inner-docbody">
+				<f:render section="content" />
+			</div>
+		</div>
+	</div>
+</f:be.container>

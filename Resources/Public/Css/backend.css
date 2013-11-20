@@ -1,0 +1,48 @@
+/**
+ * @group: Structure
+ */
+
+div.collapsibleSection { background-color: #ededed; border-top: 1px solid #cdcdcd; border-bottom: 1px solid #cdcdcd; padding: 12px; margin-bottom: 24px; }
+
+/**
+ * @end
+ */
+
+/**
+ * @group: Form
+ */
+
+form label { float: left; height: 20px; line-height: 20px; margin-right: 10px; width: 160px; }
+form div { clear: both; margin-bottom: 5px; }
+
+form .field-row,
+form .button-row { clear: both; margin-bottom: 10px; }
+form .submit { margin-left: 100px; clear: both; margin-top: 0.5em; }
+
+fieldset {
+	padding: 1em;
+	border: none;
+}
+
+/**
+ * @end
+ */
+
+/**
+ * @group: Paginate
+ */
+
+.f3-widget-paginator { display: block; float: left; margin: 0 0 10px; }
+
+	.f3-widget-paginator li { font-weight: bold; display: block; float: left; width: 30px; text-align: center; margin: 0 2px 2px; }
+
+	.f3-widget-paginator li.current { border: 1px solid black; padding: 2px; }
+
+	.f3-widget-paginator li.next,
+	.f3-widget-paginator li.previous { width: auto; }
+
+	.f3-widget-paginator a { font-weight: normal; display: block; border: 1px solid black; padding: 2px; }
+
+/**
+ * @end
+ */

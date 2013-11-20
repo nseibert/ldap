@@ -1,0 +1,53 @@
+<f:layout name="Backend"/>
+
+<f:section name="content">
+
+	<h2><f:translate key="headline.summary" /></h2>
+	
+	<f:flashMessages renderMode="div" />
+	
+	<table border="0" cellspacing="1" cellpadding="2" style="width:100%;" class="typo3-dblist">
+		<tr class="t3-row-header">
+			<td nowrap rowspan="2"><f:translate key="header.uid" /></td>
+			<td nowrap rowspan="2"><f:translate key="header.hostPort" /></td>
+			<td nowrap colspan="3" align="center">FE</td>
+			<td nowrap colspan="3" align="center">BE</td>
+		</tr>
+		<tr class="t3-row-header">
+			<td nowrap><f:translate key="header.baseDn" /></td>
+			<td nowrap><f:translate key="header.filter" /></td>
+			<td nowrap><f:translate key="header.users" /></td>
+			<td nowrap><f:translate key="header.baseDn" /></td>
+			<td nowrap><f:translate key="header.filter" /></td>
+			<td nowrap><f:translate key="header.users" /></td>
+		</tr>
+		<f:for each="{ldapServers}" as="serverRecord">
+			<tr class="db_list_normal">
+				<td>{serverRecord.server.configuration.uid} ({serverRecord.server.configuration.title})</td>
+				<td>{serverRecord.server.configuration.host}:{serverRecord.server.configuration.port}</td>
+				<td>{serverRecord.server.configuration.feUserRules.baseDN}</td>
+				<td>{serverRecord.server.configuration.feUserRules.filter}</td>
+				<td>
+					<f:for each="{serverRecord.feUsers}" as="user">
+						<p>
+							<b>{user.dn}</b>
+							<ul>
+								<f:for each="{user.attributes}" as="value" key="attribute">
+									<li>{attribute}: {value}</li>
+								</f:for>
+							</ul>
+						</p>
+					</f:for>
+				</td>
+				<td>{serverRecord.server.configuration.beUserRules.baseDN}</td>
+				<td>{serverRecord.server.configuration.beUserRules.filter}</td>
+				<td>
+					<f:for each="{serverRecord.beUsers}" as="user">
+						<div>{user.dn}</div>
+					</f:for>
+				</td>
+			</tr>
+		</f:for>
+	</table>
+	
+</f:section>

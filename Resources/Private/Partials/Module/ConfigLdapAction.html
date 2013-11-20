@@ -1,0 +1,91 @@
+{namespace ldap = NormanSeibert\Ldap\ViewHelpers}
+
+<f:form action="{action}" controller="Module" objectName="formSettings" object="{formSettings}">
+
+	<ldap:Section title="{f:translate(key: 'headline.settings')}" collapsible="TRUE">
+		
+		<f:if condition="{0:action} == {0:'doDeleteUsers'}">
+			<f:then>
+				<f:form.hidden
+					id="useServers"
+					value=""
+					property="useServers"
+				/>
+			</f:then>
+			<f:else>
+				<fieldset>
+					<div>
+						<label><f:translate key="form.useServers" /></label>
+						<f:form.select
+							id="useServers"
+							property="useServers"
+							options="{ldapServers}"
+							optionValueField="uid"
+							optionLabelField="longName"
+							size="5"
+							multiple="multiple"
+						/>
+					</div>
+				</fieldset>
+			</f:else>
+		</f:if>
+		
+		<fieldset>
+			<div>
+				<label><f:translate key="form.frontend" /></label>
+				<f:form.checkbox
+					id="authenticateFe"
+					property="authenticateFe"
+					value="1"
+				/>
+			</div>
+			<div>
+				<label><f:translate key="form.backend" /></label>
+				<f:form.checkbox
+					id="authenticateBe"
+					property="authenticateBe"
+					value="1"
+				/>
+			</div>
+		</fieldset>
+		
+		<f:if condition="{0:action} == {0:'doDeleteUsers'}">
+			<f:then>
+				<fieldset>
+					<div>
+						<label><f:translate key="form.deactivate" /></label>
+						<f:form.checkbox
+							id="hideNotDelete"
+							property="hideNotDelete"
+							value="1"
+						/>
+					</div>
+					<div>
+						<label><f:translate key="form.deleteNonLdapUsers" /></label>
+						<f:form.checkbox
+							id="deleteNonLdapUsers"
+							property="deleteNonLdapUsers"
+							value="1"
+						/>
+					</div>
+				</fieldset>
+			</f:then>
+			<f:else>
+				<f:form.hidden
+					id="hideNotDelete"
+					value="0"
+					property="hideNotDelete"
+				/>
+				<f:form.hidden
+					id="deleteNonLdapUsers"
+					value="0"
+					property="deleteNonLdapUsers"
+				/>
+			</f:else>
+		</f:if>
+	
+	</ldap:Section>
+
+	<f:form.submit value="{f:translate(key: 'form.start')}" class="submit" />
+		
+</f:form>

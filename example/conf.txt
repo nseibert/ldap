@@ -1,0 +1,124 @@
+ldapServers {
+	localhost {
+		# server's name
+		title = lokaler LDAP-Server
+		
+		# host (mandatory)
+		host = 127.0.0.1
+		
+		# port (mandatory, int+)
+		port = 10389
+		
+		# use TLS even on port 389 (0/1, true/false)
+		forceTLS = 0
+		
+		# LDAP protocol version (empty/1/2/3)
+		version = 3
+		
+		# use server to authenticate users in the BE, FE, both (BE/FE/both)
+		authenticate = FE
+		
+		# user with read access to the directory
+		user =
+		password =
+		
+		# import settings for FE users
+		fe_users {
+			# page ID for user storage (only FE, int+)
+			pid = 0
+			
+			# baseDN (mandatory)
+			baseDN = 
+		
+			# search filter for users (mandatory)
+			filter = (&(mail=*)(objectClass=user)(objectCategory=person)(sAMAccountName=<search>))
+			
+			# import authenticated users automatically (0/1, true/false)
+			autoImport = 1
+		
+			mapping = COA
+			mapping {
+				# TYPO3 table field = LDAP attribute
+				# If an LDAP attribute is used multiple times (multivalue) the resulting array will be imploded into a comma-separated list
+				name {
+					data = field:displayname
+					# normal stdWrap functions can be used
+					# if an LDAP attribute is multivalue, use stdWrap.wrap instead of .wrap (for all stdWrap-functions beside .data)
+					wrap = * | *
+				}
+				# username is mandatory!
+				username.data = field:samaccountname
+				address.data = field:streetaddress
+				zip.data = field:postalcode
+				city.data = field:l
+				country.data = field:countrycode
+				fax.data = field:facsimiletelephonenumber
+				mail.data = field:mail
+				phone.data = field:telephonenumber
+				www.data = field:wwwhomepage
+				timestamp.data = field:logintime
+			}
+			
+			usergroups {
+				# import groups (0/1, true/false)
+				importGroups = 1
+				
+				mapping {
+					# TEXT means that an attribute ("st" in this case) will be used
+					field = TEXT
+					title.data = field:st
+					# Use stdWrap. because the LDAP attribute may contain multiple values
+					title.stdWrap.noTrimWrap = || (TEXT)
+				}
+
+				/*
+				mapping {
+					# PARENT means that the parent record will be used for "title.data"
+					field = PARENT
+					title.data = field:ou
+					title.stdWrap.noTrimWrap = || (PARENT)
+				}
+				*/
+
+				/*
+				mapping {
+					# DN means that the used field ("memberof" in this case) contains a DN
+					# This DN will be used for "title.data"
+					# This configuration is valid e.g. for an Active Directory
+					field = DN
+					field.data = field:memberof
+					title.data = field:name
+					title.stdWrap.noTrimWrap = || (DN)
+				}
+				*/
+				
+				# only import users with the following groups (comma separated list of regular expressions, all if empty)
+				restrictToGroups = /^typo3.*/i
+							
+				# always add these groups (comma separated list of uids)
+				addToGroups = 
+			}
+		}
+		
+		# import settings for BE users
+		be_users {
+			baseDN = 
+		
+			filter = (&(mail=*)(objectClass=user)(objectCategory=person)(samaccountname=<search>))   #mandatory
+			
+			autoImport = 1
+			
+			mapping = COA
+			mapping {
+				realname.data = field:displayname
+				username.data = field:samaccountname
+				options.value = 3
+				fileoper_perms.value = 1
+			}
+			
+			usergroups {
+				// see fe_users
+			}
+		}
+	}	
+}
