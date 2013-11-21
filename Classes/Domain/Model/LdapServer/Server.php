@@ -133,6 +133,9 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 	 */
 	public function getUsers($findname = '*', $doSanitize = false) {
 		$info = array();
+		$bind = NULL;
+		$connect = NULL;
+		
 		if (strlen($findname)) {
 			if ($doSanitize) {
 				$findname = \NormanSeibert\Ldap\Utility\Helpers::sanitizeQuery($findname);
@@ -161,72 +164,100 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 					}
 				}
 			}
+		}
 			
-			if ($baseDN && $filter) {
-				$filter = str_replace('<search>', $findname, $filter);
-
-				$msg = 'Query server: ' . $this->getConfiguration()->getUid() . ' with filter: ' . $filter;
+		if (!empty($filter) && !empty($baseDN)) {
+			$connect = $this->connect();
+		}
+				
+		if (!empty($connect)) {
+			if ($this->getConfiguration()->getUser() && $this->getConfiguration()->getPassword()) {
+				$bind = $this->bind($connect, $this->getConfiguration()->getUser(), $this->getConfiguration()->getPassword());
+			} else {
+				$bind = $this->bind($connect);
+			}
+		}
+				
+		if (!empty($bind)) {
+			$parsedFilter = str_replace('<search>', $findname, $filter);
+			$msg = 'Query server: ' . $this->getConfiguration()->getUid() . ' with filter: ' . $parsedFilter;
+			if ($this->ldapConfig->logLevel) {
+				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
+			}
+			$attrs = $this->getUsedAttributes();
+					
+			$info = $this->search($connect, $baseDN, $parsedFilter, $attrs, 'sub', true, LDAP_DEREF_NEVER);
+			
+			// size limit exceeded -> recursive search
+			if ($info['count'] == -1) {
+				$cnt = 0;
+				$info = array();
+				$msg = 'LDAP query limit exceeded';
 				if ($this->ldapConfig->logLevel) {
 					\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
 				}
-
-				if (!empty($filter) && !empty($baseDN)) {
-					$connect = $this->connect();
-					if (!empty($connect)) {
-						if ($this->getConfiguration()->getUser() && $this->getConfiguration()->getPassword()) {
-							$bind = $this->bind($connect, $this->getConfiguration()->getUser(), $this->getConfiguration()->getPassword());
-						} else {
-							$bind = $this->bind($connect);
-						}
+			
+				$searchCharacters = $this->getSearchCharacterRange();
+				foreach ($searchCharacters as $thisCharacter) {
+					$parsedFilter = str_replace('<search>', $findname.$thisCharacter, $filter);
+					$tmp = $this->search($connect, $baseDN, $parsedFilter, $attrs, 'sub', true, LDAP_DEREF_NEVER);
+					if ($tmp['count'] > 0) {
+						$info = array_merge($info, $tmp);
 					}
-					if (!empty($bind)) {
-						$attrs = $this->getUsedAttributes();
-						$info = $this->search($connect, $baseDN, $filter, $attrs, 'sub', true, LDAP_DEREF_NEVER);
-						ldap_unbind($connect);
-						unset($bind);
+					
+					$msg = 'Query server: ' . $this->getConfiguration()->getUid() . ' with filter: ' . $parsedFilter . ' returned ' . $tmp['count'] . ' results.';
+					if ($this->ldapConfig->logLevel > 1) {
+						\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
 					}
 				}
-				$hooks = $this->hooks['search']['result'];
-				if (is_array($hooks)) {
-					$parameters = array(
-						'server' => $this,
-						'find' => $findname,
-						'table' => $this->table,
-						'type' => 'list',
-						'result' => $info
-					);
-					foreach ($hooks as $hook) {
-						$searchHook = \TYPO3\CMS\Core\Utility\GeneralUtility::callUserFunction($hook, $parameters, $this);
-						if (!$searchHook) {
-							$msg = 'Hook "search/result" returned error (Server: ' . $this->getConfiguration()->getUid() . ')';
-							if ($this->ldapConfig->logLevel) {
-								\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 3);
-							}
-							\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::ERROR, $msg, $this->getConfiguration()->getUid());
-							return FALSE;
-						} else {
-							$info = $searchHook;
-						}
+				$info['count'] = count($info)-1;
+				
+				$msg = 'Partitioned query returned ' . $info['count'] . ' results.';
+				if ($this->ldapConfig->logLevel > 1) {
+					\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
+				}
+			}
+					
+			ldap_unbind($connect);
+			unset($bind);
+		}
+					
+		$hooks = $this->hooks['search']['result'];
+		if (is_array($hooks)) {
+			$parameters = array(
+				'server' => $this,
+				'find' => $findname,
+				'table' => $this->table,
+				'type' => 'list',
+				'result' => $info
+			);
+			foreach ($hooks as $hook) {
+				$searchHook = \TYPO3\CMS\Core\Utility\GeneralUtility::callUserFunction($hook, $parameters, $this);
+				if (!$searchHook) {
+					$msg = 'Hook "search/result" returned error (Server: ' . $this->getConfiguration()->getUid() . ')';
+					if ($this->ldapConfig->logLevel) {
+						\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 3);
 					}
+					\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::ERROR, $msg, $this->getConfiguration()->getUid());
+					return FALSE;
+				} else {
+					$info = $searchHook;
 				}
 			}
 		}
 		
 		$users = array();
-		if ($info['count'] > 0) {
-			for ($i = 0; $i < $info['count']; $i++) {
-				if ($this->table == 'be_users') {
-					$user =  $this->objectManager->create('NormanSeibert\\Ldap\\Domain\\Model\\LdapUser\\BeUser');
-				} else {
-					$user =  $this->objectManager->create('NormanSeibert\\Ldap\\Domain\\Model\\LdapUser\\FeUser');
-				}
-				$user
-					->setDN($info[$i]['dn'])
-					->setAttributes($info[$i])
-					->setLdapServer($this);
-				$users[] = $user;
+		for ($i = 0; $i < $info['count']; $i++) {
+			if ($this->table == 'be_users') {
+				$user =  $this->objectManager->create('NormanSeibert\\Ldap\\Domain\\Model\\LdapUser\\BeUser');
+			} else {
+				$user =  $this->objectManager->create('NormanSeibert\\Ldap\\Domain\\Model\\LdapUser\\FeUser');
 			}
-			
+			$user
+				->setDN($info[$i]['dn'])
+				->setAttributes($info[$i])
+				->setLdapServer($this);
+			$users[] = $user;
 		}
 		
 		$msg = 'Found ' . $info['count'] . ' records';
@@ -244,24 +275,28 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 	 * @return \NormanSeibert\Ldap\Domain\Model\LdapUser\User
 	 */
 	public function getUser($dn) {
+		$bind = NULL;
+		$connect = NULL;
+		$user = NULL;
+		
 		//TODO: findet die User ggf. auch ueber andere Server als den, ueber den urspruenglich importiert wurde.
 		$info = array();
 		if (strlen($dn)) {
 			$connect = $this->connect();
-			if ($connect) {
-				if ($this->getConfiguration()->getUser() && $this->getConfiguration()->getPassword()) {
-					$bind = $this->bind($connect, $this->getConfiguration()->getUser(), $this->getConfiguration()->getPassword());
-				} else {
-					$bind = $this->bind($connect);
-				}
+		}
+		if ($connect) {
+			if ($this->getConfiguration()->getUser() && $this->getConfiguration()->getPassword()) {
+				$bind = $this->bind($connect, $this->getConfiguration()->getUser(), $this->getConfiguration()->getPassword());
+			} else {
+				$bind = $this->bind($connect);
 			}
-			if ($bind) {
-				$distinguishedName = \NormanSeibert\Ldap\Utility\Helpers::sanitizeQuery($dn);
-				$attrs = $this->getUsedAttributes();
-				$info = $this->search($connect, $distinguishedName, '(objectClass=*)', $attrs, 'base', false, LDAP_DEREF_NEVER, 1, 0);
-				ldap_unbind($connect);
-				unset($bind);
-			}
+		}
+		if ($bind) {
+			$distinguishedName = \NormanSeibert\Ldap\Utility\Helpers::sanitizeQuery($dn);
+			$attrs = $this->getUsedAttributes();
+			$info = $this->search($connect, $distinguishedName, '(objectClass=*)', $attrs, 'base', false, LDAP_DEREF_NEVER, 1, 0);
+			ldap_unbind($connect);
+			unset($bind);
 		}
 
 		$hooks = $this->hooks['search']['result'];
@@ -288,13 +323,15 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 			}
 		}
 		
-		$user = false;
 		if ($info['count'] == 1) {
 			if ($this->table == 'be_users') {
 				$user = $this->objectManager->create('NormanSeibert\\Ldap\\Domain\\Model\\LdapUser\\BeUser');
 			} else {
 				$user = $this->objectManager->create('NormanSeibert\\Ldap\\Domain\\Model\\LdapUser\\FeUser');
 			}
+		}
+		
+		if (is_object($user)) {
 			$user
 				->setDN($distinguishedName)
 				->setAttributes($info[0])
@@ -588,6 +625,30 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 	}
 	
 	/**
+     * Retrieve the LDAP error message, if any.
+     * @param resource $resource an LDAP connection object
+     * @return string the error message string (if any) that exists on the connection
+     */
+	protected function getLdapError($resource = null) {
+        $message = '';
+        if (!empty($resource)) {
+            $message = 'LDAP error #' . ldap_errno($resource). ':  ' . ldap_error($resource);
+        }
+        return $message;
+    }
+
+    /**
+     * Get the list of individual characters used by the search splitting algorithm.
+     * @return array characters to use in split searches
+     */
+    protected function getSearchCharacterRange() {
+        $numerals = range(0, 9);
+        $alphabet = range('a', 'z');
+
+        return array_merge($alphabet, $numerals);
+    }
+	
+	/**
 	 * searches the LDAP server
 	 * 
 	 * @param resource $resource
@@ -641,37 +702,47 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 				
 		$ret = array();
 		$i = 0;
-		// Get the first entry identifier
-		$entryID = ldap_first_entry($resource, $search);
 		
-		if ($entryID) {
-			// Iterate over the entries
-			while ($entryID && (($i < $sizeLimit) || ($sizeLimit == 0))) {
-				// Get the distinguished name of the entry
-				//$dn = ldap_get_dn($resource,$entryID);
-				$dn = ldap_get_dn($resource, $entryID);
-				
-				//$return[$dn]['dn'] = $dn;
-				$ret[$i]['dn'] = $dn;
-				// Get the attributes of the entry
-				$ldapAttributes = ldap_get_attributes($resource, $entryID);
-				
-				// Iterate over the attributes
-				foreach ($ldapAttributes as $attribute => $values) {
-					// Get the number of values for this attribute
-					$count = 0;
-					if (is_array($values)) {
-						$count = $values['count'];
+		$sizeLimitErrorNumber = 4;
+        $knownSizeLimitErrors = array(
+			'SIZE LIMIT EXCEEDED'
+		);
+		
+		if ((ldap_errno($resource) == $sizeLimitErrorNumber) || in_array(strtoupper(ldap_error($resource)), $knownSizeLimitErrors)) {
+            // throw it away, since it's incomplete
+			ldap_free_result($search);
+            $i = -1;
+        } else {
+			// Get the first entry identifier
+			$entryID = ldap_first_entry($resource, $search);
+
+			if ($entryID) {
+				// Iterate over the entries
+				while ($entryID && (($i < $sizeLimit) || ($sizeLimit == 0))) {
+					// Get the distinguished name of the entry
+					$dn = ldap_get_dn($resource, $entryID);
+
+					$ret[$i]['dn'] = $dn;
+					// Get the attributes of the entry
+					$ldapAttributes = ldap_get_attributes($resource, $entryID);
+
+					// Iterate over the attributes
+					foreach ($ldapAttributes as $attribute => $values) {
+						// Get the number of values for this attribute
+						$count = 0;
+						if (is_array($values)) {
+							$count = $values['count'];
+						}
+						if ($count == 1) {
+							$ret[$i][strtolower($attribute)] = $values[0];
+						} elseif ($count > 1) {
+							$ret[$i][strtolower($attribute)] = $values;
+						}
 					}
-					if ($count == 1) {
-						$ret[$i][strtolower($attribute)] = $values[0];
-					} elseif ($count > 1) {
-						$ret[$i][strtolower($attribute)] = $values;
-					}
-				} // end while attr
-				$entryID = ldap_next_entry($resource, $entryID);
-				$i++;
-			} // End while entry_id
+					$entryID = ldap_next_entry($resource, $entryID);
+					$i++;
+				}
+			}
 		}
 	
 		$ret['count'] = $i;
