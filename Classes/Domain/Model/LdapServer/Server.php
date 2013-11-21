@@ -318,7 +318,7 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 	 * find a single group based on its DN
 	 * 
 	 * @param string $dn
-	 * @return \NormanSeibert\Ldap\Domain\Model\LdapUser\User
+	 * @return array
 	 */
 	public function getGroup($dn) {
 		$info = array();
@@ -339,7 +339,7 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 			}
 		}
 		
-		return $info;
+		return $info[0];
 	}
 	
 	/**
@@ -650,6 +650,7 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 				// Get the distinguished name of the entry
 				//$dn = ldap_get_dn($resource,$entryID);
 				$dn = ldap_get_dn($resource, $entryID);
+				
 				//$return[$dn]['dn'] = $dn;
 				$ret[$i]['dn'] = $dn;
 				// Get the attributes of the entry

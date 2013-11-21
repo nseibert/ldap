@@ -194,10 +194,12 @@ class FeUser extends \NormanSeibert\Ldap\Domain\Model\LdapUser\User {
 		
 		if ((is_array($newGroups)) && ($addnewgroups)) {
 			foreach ($newGroups as $group) {
+			
 				$pid = $this->userRules->getPid();
 				$newGroup = $this->objectManager->create('NormanSeibert\\Ldap\\Domain\\Model\\FrontendUserGroup');
 				$newGroup->setPid($pid);
 				$newGroup->setTitle($group['title']);
+				
 				$newGroup->setDN($group['dn']);
 				$newGroup->setLdapServer($this->ldapServer);
 				if ($lastRun) {
