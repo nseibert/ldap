@@ -4,7 +4,6 @@ config.tx_extbase {
 			NormanSeibert\Ldap\Domain\Model\FrontendUser {
 				mapping {
 					tableName = fe_users
-					recordType = TYPO3\CMS\Extbase\Domain\Model\FrontendUser
 					columns {
 						tx_ldap_dn.mapOnProperty = dn
 						tx_ldap_serveruid.mapOnProperty = serverUid
@@ -26,7 +25,6 @@ config.tx_extbase {
 			NormanSeibert\Ldap\Domain\Model\FrontendUserGroup {
 				mapping {
 					tableName = fe_groups
-					recordType = TYPO3\CMS\Extbase\Domain\Model\FrontendUserGroup
 					columns {
 						tx_ldap_dn.mapOnProperty = dn
 						tx_ldap_serveruid.mapOnProperty = serverUid

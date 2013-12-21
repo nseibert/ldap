@@ -64,6 +64,12 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 	 * @var array
 	 */
 	private $hooks;
+	
+	/**
+	 *
+	 * @var array
+	 */
+	private $ldapServers;
 
 	/**
 	 * @var \NormanSeibert\Ldap\Domain\Model\Configuration\Configuration
@@ -190,6 +196,26 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 	}
 	
 	/**
+	 * Find a TYPO3 user
+	 *
+	 * @return mixed User array or FALSE
+	 */
+	function getTypo3User() {
+		$user = $this->fetchUserRecord($this->username);
+		if (!is_array($user)) {
+			// Failed login attempt (no user found)
+			$this->writelog(255, 3, 3, 2, 'Login-attempt from %s (%s), username \'%s\' not found!!', array($this->authInfo['REMOTE_ADDR'], $this->authInfo['REMOTE_HOST'], $this->login['uname'])); // Logout written to log
+			\TYPO3\CMS\Core\Utility\GeneralUtility::sysLog(sprintf('Login-attempt from %s (%s), username \'%s\' not found!', $this->authInfo['REMOTE_ADDR'], $this->authInfo['REMOTE_HOST'], $this->username), 'Core', 0);
+		} else {
+			if ($this->logLevel >= 1) {
+				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('TYPO3 user found: ' . $this->username, 'ldap', -1);
+			}
+			$user['authenticated'] = FALSE;
+		}
+		return $user;
+	}
+	
+	/**
 	 * Find a user (eg. look up the user record in database when a login is sent)
 	 *
 	 * @return mixed User array or FALSE
@@ -213,60 +239,47 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 				} else {
 					$pid = $this->authInfo['db_user']['checkPidList'];
 				}
-				$ldapServers = $this->ldapConfig->getLdapServers('', '', $this->authInfo['loginType'], $this->authInfo['db_user']['checkPidList']);			
-				foreach ($ldapServers as $server) {
-					$server->setScope(strtolower($this->authInfo['loginType']), $pid);
-					$server->loadAllGroups();
-					if (!$user['authenticated']) {
-						// Authenticate the user here because only users shall be imported which are authenticated.
-						// Otherwise every user present in the directory would be imported regardless of the entered password.
-						$ldapUser = $server->authenticateUser($this->username, $this->password);
-						if (is_object($ldapUser)) {
-							// Credentials are OK
-							if ($server->getConfiguration()->getUserRules($this->authInfo['db_user']['table'])->getAutoImport()) {
-								// Authenticated users shall be imported/updated
-								if ($this->logLevel >= 1) {
-									\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('Import/update user ' . $this->username, 'ldap', 0);
+				$this->ldapServers = $this->ldapConfig->getLdapServers('', '', $this->authInfo['loginType'], $this->authInfo['db_user']['checkPidList']);
+				if (count($this->ldapServers)) {
+					foreach ($this->ldapServers as $server) {
+						$server->setScope(strtolower($this->authInfo['loginType']), $pid);
+						$server->loadAllGroups();
+						if (!$user['authenticated']) {
+							// Authenticate the user here because only users shall be imported which are authenticated.
+							// Otherwise every user present in the directory would be imported regardless of the entered password.
+							$ldapUser = $server->authenticateUser($this->username, $this->password);
+							if (is_object($ldapUser)) {
+								// Credentials are OK
+								if ($server->getConfiguration()->getUserRules($this->authInfo['db_user']['table'])->getAutoImport()) {
+									// Authenticated users shall be imported/updated
+									if ($this->logLevel >= 1) {
+										\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('Import/update user ' . $this->username, 'ldap', 0);
+									}
+									$ldapUser->loadUser();
+									$typo3User = $ldapUser->getUser();
+									if (is_object($typo3User)) {
+										$ldapUser->updateUser();
+									} else {
+										$ldapUser->addUser();
+									}
+									// Necessary to enable fetchUserRecord()
+									$this->persistenceManager = $this->objectManager->get('TYPO3\\CMS\\Extbase\\Persistence\\PersistenceManagerInterface');
+									$this->persistenceManager->persistAll();
 								}
-								$ldapUser->loadUser();
-								$typo3User = $ldapUser->getUser();
-								if (is_object($typo3User)) {
-									$ldapUser->updateUser();
-								} else {
-									$ldapUser->addUser();
-								}
-								// Necessary to enable fetchUserRecord()
-								$this->persistenceManager = $this->objectManager->get('TYPO3\\CMS\\Extbase\\Persistence\\PersistenceManagerInterface');
-								$this->persistenceManager->persistAll();
-							}
-							$user = $this->fetchUserRecord($this->username);
-							if (!is_array($user)) {
-								// Failed login attempt (no user found)
-								$this->writelog(255, 3, 3, 2, 'Login-attempt from %s (%s), username \'%s\' not found!!', array($this->authInfo['REMOTE_ADDR'], $this->authInfo['REMOTE_HOST'], $this->login['uname'])); // Logout written to log
-								\TYPO3\CMS\Core\Utility\GeneralUtility::sysLog(sprintf('Login-attempt from %s (%s), username \'%s\' not found!', $this->authInfo['REMOTE_ADDR'], $this->authInfo['REMOTE_HOST'], $this->login['uname']), 'Core', 0);
-							} else {
-								if ($this->logLevel >= 1) {
-									\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('TYPO3 user found: ' . \TYPO3\CMS\Core\Utility\GeneralUtility::arrayToLogString($user, array($this->authInfo['db_user']['userid_column'], $this->authInfo['db_user']['username_column'])), 'ldap', -1);
-								}
+								$user = $this->getTypo3User();
 								$user['authenticated'] = TRUE;
+							} else {
+								$user = $this->getTypo3User();
 							}
 						} else {
-							$user = $this->fetchUserRecord($this->username);
-							if (!is_array($user)) {
-								// Failed login attempt (no user found)
-								$this->writelog(255, 3, 3, 2, 'Login-attempt from %s (%s), username \'%s\' not found!!', array($this->authInfo['REMOTE_ADDR'], $this->authInfo['REMOTE_HOST'], $this->login['uname'])); // Logout written to log
-								\TYPO3\CMS\Core\Utility\GeneralUtility::sysLog(sprintf('Login-attempt from %s (%s), username \'%s\' not found!', $this->authInfo['REMOTE_ADDR'], $this->authInfo['REMOTE_HOST'], $this->login['uname']), 'Core', 0);
-							} else {
-								if ($this->logLevel >= 1) {
-									\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('TYPO3 user found: ' . \TYPO3\CMS\Core\Utility\GeneralUtility::arrayToLogString($user, array($this->authInfo['db_user']['userid_column'], $this->authInfo['db_user']['username_column'])), 'ldap', -1);
-								}
-								$user['authenticated'] = FALSE;
-							}
+							$user = $this->getTypo3User();
 							if ($this->logLevel >= 1) {
 								\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('Login failed', 'ldap', 2);
 							}
 						}
 					}
+				} else {
+					$user = $this->getTypo3User();
 				}
 			}
 		}
@@ -283,7 +296,7 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 	public function authUser(array $user) {
 		$ok = 100;
 		
-		if ($this->username) {
+		if (($this->username) && (count($this->ldapServers) > 0)) {
 			$ok = 0;
 			/*
 			$ldapServers = $this->ldapConfig->getLdapServers('', '', $this->authInfo['loginType'], $this->authInfo['db_user']['checkPidList']);
@@ -342,6 +355,11 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 				\TYPO3\CMS\Core\Utility\GeneralUtility::callUserFunction($hook, $parameters, $this);
 			}
 		}
+		
+		if ($this->logLevel >= 1) {
+			\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('function "authUser" returns: ' . $ok, 'ldap', 0);
+		}
+			
 		return $ok;
 	}
 	

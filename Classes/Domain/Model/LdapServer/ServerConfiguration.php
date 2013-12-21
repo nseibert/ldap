@@ -43,6 +43,12 @@ class ServerConfiguration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
 	
 	/**
 	 *
+	 * @var boolean
+	 */
+	protected $disable;
+	
+	/**
+	 *
 	 * @var string
 	 */
 	protected $host;
@@ -135,6 +141,24 @@ class ServerConfiguration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
 	 */
 	public function getTitle() {
 		return $this->title;
+	}
+	
+	/**
+	 * 
+	 * @param boolean $disable
+	 * @return \NormanSeibert\Ldap\Domain\Model\LdapServer\ServerConfiguration
+	 */
+	public function setDisable($disable) {
+		$this->disable = $disable;
+		return $this;
+	}
+	
+	/**
+	 * 
+	 * @return boolean
+	 */
+	public function getDisable() {
+		return $this->disable;
 	}
 	
 	/**

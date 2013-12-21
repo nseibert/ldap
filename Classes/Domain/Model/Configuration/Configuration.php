@@ -143,6 +143,9 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 		if (is_array($this->allLdapServers)) {
 			foreach ($this->allLdapServers as $serverUid => $server) {			
 				$load = 1;
+				if ($server['disable']) {
+					$load = 0;
+				}
 				if ($pid && $server['pid']) {
 					if (!\TYPO3\CMS\Core\Utility\GeneralUtility::inList($pid, $server['pid'])) {
 						$load = 0;

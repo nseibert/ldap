@@ -1,5 +1,8 @@
 ldapServers {
 	localhost {
+		# disable server record (0/1)
+		disable = 0
+		
 		# server's name
 		title = lokaler LDAP-Server
 		
@@ -9,7 +12,7 @@ ldapServers {
 		# port (mandatory, int+)
 		port = 10389
 		
-		# use TLS even on port 389 (0/1, true/false)
+		# use TLS even on port 389 (0/1)
 		forceTLS = 0
 		
 		# LDAP protocol version (empty/1/2/3)
@@ -33,7 +36,7 @@ ldapServers {
 			# search filter for users (mandatory)
 			filter = (&(mail=*)(objectClass=user)(objectCategory=person)(sAMAccountName=<search>))
 			
-			# import authenticated users automatically (0/1, true/false)
+			# import authenticated users automatically (0/1)
 			autoImport = 1
 		
 			mapping = COA
@@ -60,7 +63,7 @@ ldapServers {
 			}
 			
 			usergroups {
-				# import groups (0/1, true/false)
+				# import groups (0/1, false/true)
 				importGroups = 1
 				
 				mapping {
