@@ -118,9 +118,11 @@ class FeUser extends \NormanSeibert\Ldap\Domain\Model\LdapUser\User {
 			
 			$this->addUsergroupsToUserRecord($lastRun);
 			
+			// \TYPO3\CMS\Extbase\Utility\DebuggerUtility::var_dump($this->user);
+			
 			$this->userRepository->add($this->user);
 			
-			$msg = 'Create frontend user record: ' . $this->dn;
+			$msg = 'Create frontend user record "' . $username . '" (DN: ' . $this->dn . ')';
 			if ($this->ldapConfig->logLevel == 2) {
 				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
 			}
@@ -171,6 +173,9 @@ class FeUser extends \NormanSeibert\Ldap\Domain\Model\LdapUser\User {
 			if ($this->ldapConfig->logLevel == 2) {
 				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
 			}
+			
+			// \TYPO3\CMS\Core\Utility\DebugUtility::var_dump($this->user);
+			
 		} else {
 			// error condition. There should always be a username
 			$msg = 'No username (Server: ' . $this->ldapServer->getConfiguration()->getUid() . ', DN: ' . $this->dn . ')';
@@ -190,6 +195,7 @@ class FeUser extends \NormanSeibert\Ldap\Domain\Model\LdapUser\User {
 	 * @return array
 	 */
 	public function addNewGroups($newGroups, $assignedGroups, $lastRun) {
+		$assignedGroups = array();
 		$addnewgroups = $this->userRules->getGroupRules()->getImportGroups();
 		
 		if ((is_array($newGroups)) && ($addnewgroups)) {

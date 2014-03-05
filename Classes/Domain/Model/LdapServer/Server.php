@@ -436,15 +436,25 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 
 		$userMapping = $this->getConfiguration()->getUserRules($this->table)->getMapping();
 		if (is_array($userMapping)) {
-			foreach ($userMapping as $value) {
-				$attr[] = str_replace('field:', '', $value['data']);
+			foreach ($userMapping as $field => $value) {
+				if (isset($value['data'])) {
+					$attr[] = str_replace('field:', '', $value['data']);
+				} else {
+					$msg = 'Mapping for attribute "' . $this->table . '.mapping.' . $field . '" incorrect.';
+					\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 2);
+				}
 			}
 		}
 		
 		$groupMapping = $this->getConfiguration()->getUserRules($this->table)->getGroupRules()->getMapping();
 		if (is_array($groupMapping)) {
-			foreach ($groupMapping as $value) {
-				$attr[] = str_replace('field:', '', $value['data']);
+			foreach ($groupMapping as $field => $value) {
+				if (isset($value['data'])) {
+					$attr[] = str_replace('field:', '', $value['data']);
+				} else {
+					$msg = 'Mapping for attribute "' . $this->table . '.usergroups.mapping.' . $field . '" incorrect.';
+					\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 2);
+				}
 			}
 		}
 		
@@ -490,7 +500,7 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		try {
 			$connect = ldap_connect($host, $port);
 		} catch (Exception $e) {
-			$msg = 'ldap_connect('.$uid.', '.$host.':'.$port.'): Could not connect to LDAP server.';
+			$msg = 'ldap_connect(' . $uid . ', ' . $host . ':' . $port . '): Could not connect to LDAP server.';
 			\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 3);
 			\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::ERROR, $msg, $uid);
 		}
@@ -759,28 +769,25 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 	 */
 	public function authenticateUser($loginname, $password) {
 		$user = null;
+		$username = null;
 		$serverUid = $this->getConfiguration()->getUid();
-		$loginname = \NormanSeibert\Ldap\Utility\Helpers::sanitizeCredentials($loginname);
 		$password = \NormanSeibert\Ldap\Utility\Helpers::sanitizeCredentials($password);
 
-		$ldapUsers = $this->getUsers($loginname);
+		$ldapUser = $this->checkUser($loginname);
 
-		if (count($ldapUsers) == 1) {
-			$username = $ldapUsers[0]->getDN();
-		} else {
-			$msg = 'No user found (Server: ' . $serverUid . ', User: ' . $loginname . ')';
-			if ($this->ldapConfig->logLevel > 0) {
-				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
-			}
-			\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::INFO, $msg, $serverUid);
-			$username = null;
+		if (is_object($ldapUser)) {
+			$username = $ldapUser->getDN();
 		}
 
 		if (!empty($username) && !empty($password)) {
 			$connect = $this->connect();
 			$bind = $this->bind($connect, $username, $password, \TYPO3\CMS\Core\Messaging\FlashMessage::INFO);
 			if ($bind) {
-				$user = $ldapUsers[0];
+				$user = $ldapUser;
+				$msg = 'User ' . $username . ' loaded from LDAP directory (Server: ' . $serverUid . ')';
+				if ($this->ldapConfig->logLevel == 2) {
+					\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
+				}
 			} else {
 				$msg = 'LDAP server denies authentication (Server: ' . $serverUid . ', User: ' . $username . ')';
 				if ($this->ldapConfig->logLevel > 0) {
@@ -812,6 +819,38 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		}
 
 		return $user;
+	}
+	
+	/**
+	 * checks user existence
+	 * 
+	 * @param string $loginname
+	 * @return array
+	 */
+	public function checkUser($loginname) {
+		$ldapUser = null;
+		$serverUid = $this->getConfiguration()->getUid();
+		$loginname = \NormanSeibert\Ldap\Utility\Helpers::sanitizeCredentials($loginname);
+
+		$ldapUsers = $this->getUsers($loginname);
+
+		if (count($ldapUsers) < 1) {
+			$msg = 'No user found (Server: ' . $serverUid . ', User: ' . $loginname . ')';
+			if ($this->ldapConfig->logLevel > 0) {
+				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
+			}
+			\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::INFO, $msg, $serverUid);
+		} elseif (count($ldapUsers) > 1) {
+			$msg = 'Found ' . count($ldapUsers) . ' instead of one (Server: ' . $serverUid . ', User: ' . $loginname . ')';
+			if ($this->ldapConfig->logLevel > 0) {
+				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
+			}
+			\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::INFO, $msg, $serverUid);
+		} else {
+			$ldapUser = $ldapUsers[0];
+		}
+		
+		return $ldapUser;
 	}
 	
 	/**

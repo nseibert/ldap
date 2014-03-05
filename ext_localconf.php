@@ -7,14 +7,18 @@ $config = unserialize($TYPO3_CONF_VARS['EXT']['extConf']['ldap']);
 
 if ($config['enableFE'] && !$config['enableBE']) {
 	$subTypes = 'getUserFE,authUserFE';
+	if ($config['enableSSO']) $TYPO3_CONF_VARS['SVCONF']['auth']['setup']['FE_fetchUserIfNoSession'] = 1;
 }
 
 if (!$config['enableFE'] && $config['enableBE']) {
 	$subTypes = 'getUserBE,authUserBE';
+	if ($config['enableSSO']) $TYPO3_CONF_VARS['SVCONF']['auth']['setup']['BE_fetchUserIfNoSession'] = 1;
 }
 
 if ($config['enableFE'] && $config['enableBE']) {
 	$subTypes = 'getUserFE,authUserFE,getUserBE,authUserBE';
+	if ($config['enableSSO']) $TYPO3_CONF_VARS['SVCONF']['auth']['setup']['FE_fetchUserIfNoSession'] = 1;
+	if ($config['enableSSO']) $TYPO3_CONF_VARS['SVCONF']['auth']['setup']['BE_fetchUserIfNoSession'] = 1;
 }
 
 if ($config['enableFE'] || $config['enableBE']) {

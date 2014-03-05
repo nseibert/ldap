@@ -74,20 +74,20 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 		$conf = unserialize($TYPO3_CONF_VARS['EXT']['extConf']['ldap']);
 		$this->logLevel = $conf['logLevel'];
 		
-		$ok = false;
+		$ok = FALSE;
 		if ($conf['configFile']) {
 			$configFile = $conf['configFile'];
 			if (file_exists($configFile) && is_file($configFile)) {
-				$ok = true;
+				$ok = TRUE;
 			} else {
 				$configFile = PATH_site.$conf['configFile'];
 				if (file_exists($configFile) && is_file($configFile)) {
-					$ok = true;
+					$ok = TRUE;
 				}
 			}
 			if ($ok) {
 				$fileContent = \TYPO3\CMS\Core\Utility\GeneralUtility::getUrl($configFile);
-				$tsParser = $this->objectManager->get('TYPO3\\CMS\\Core\\TypoScript\\Parser\\TyposcriptParser');
+				$tsParser = $this->objectManager->get('TYPO3\\CMS\\Core\\TypoScript\\Parser\\TypoScriptParser');
 				$tsParser->parse($fileContent);
 				
 				if ($tsParser->error) {
@@ -95,12 +95,20 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 					if ($this->logLevel == 2) {
 						\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 2, $tsParser->error);
 					}
-					\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::WARNING, $msg);
+					\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::ERROR, $msg);
 				} else {
 					$this->ldapServers = $tsParser->setup['ldapServers.'];
 					unset($tsParser->setup);
 				}
+			} else {
+				$msg = 'Configuration file "' . $configFile . '" not found.';
+				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 3);
+				\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::ERROR, $msg);
 			}
+		} else {
+			$msg = 'No configuration file set in extension settings (in extension manager)';
+			\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 3);
+			\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::ERROR, $msg);
 		}
 		
 		return $conf;
@@ -145,15 +153,21 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 				$load = 1;
 				if ($server['disable']) {
 					$load = 0;
+					$msg = 'LDAP server "'. $server['title'] .'" ignored: is disabled.';
+					\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
 				}
 				if ($pid && $server['pid']) {
 					if (!\TYPO3\CMS\Core\Utility\GeneralUtility::inList($pid, $server['pid'])) {
 						$load = 0;
+						$msg = 'LDAP server "'. $server['title'] .'" ignored: does not match list of page uids ('. implode(', ', $pid) .').';
+						\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
 					}
 				}
 				if ($userPid && $server['fe_users.']['pid']) {
 					if (!\TYPO3\CMS\Core\Utility\GeneralUtility::inList($userPid, $server['fe_users.']['pid'])) {
 						$load = 0;
+						$msg = 'LDAP server "'. $server['title'] .'" ignored: does not match list of page uids ('. implode(', ', $pid) .').';
+						\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
 					}
 				}
 				if ($uid) {
@@ -168,6 +182,8 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 				if ($authenticate) {
 					if ($server['authenticate'] && ($server['authenticate'] != $authenticate) && ($server['authenticate'] != 'both')) {
 						$load = 0;
+						$msg = 'LDAP server "'. $server['title'] .'" ignored: no matching authentication configured.';
+						\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
 					}
 				}
 				if ($load) {
@@ -181,8 +197,8 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 		
 		if (!count($ldapServers)) {
 			$msg = 'No LDAP server found.';
-			\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 2);
-			\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::WARNING, $msg);
+			\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 3);
+			\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::ERROR, $msg);
 		}
 		
 		return $ldapServers;
@@ -195,10 +211,11 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 	 * @return \NormanSeibert\Ldap\Domain\Model\LdapServer\Server
 	 */
 	public function getLdapServer($uid) {
-		$serverRecord = false;
+		$serverRecord = FALSE;
 		$server = $this->allLdapServers[$uid];
 		if (is_array($server)) {
 			$errors = $this->checkServerConfiguration($server);
+			
 			if (count($errors) == 0) {
 				$groupRuleFE = $this->objectManager->create('NormanSeibert\\Ldap\\Domain\\Model\\LdapServer\\ServerConfigurationGroups');
 				$groupRuleFE
@@ -307,8 +324,12 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 			$errors[] = 'Attribute "auhenticate": '.$res['error'];
 		}
 		
-		// $instObj = $this->objectManager->get('TYPO3\\CMS\\Install\\Sql\\SchemaMigrator');
-		// $dbFields = $instObj->getFieldDefinitions_database(TYPO3_db);
+		if (version_compare(TYPO3_branch, '6.2', '<')) {
+			$sqlHandler = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Install\\Sql\\SchemaMigrator');
+		} else {
+			$sqlHandler = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Install\\Service\\SqlSchemaMigrationService');
+		}
+		$dbFields = $sqlHandler->getFieldDefinitions_database();
 		
 		$server['authenticate'] = strtolower($server['authenticate']);
 		
@@ -333,14 +354,10 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 					if (substr($fld, strlen($fld)-1, 1) == '.') {
 						$fld = substr($fld, 0, strlen($fld)-1);
 					}
-					/*
-					if (
-							(is_null($dbFields['fe_groups']['fields'][$fld]))
-							&& (is_null(\TYPO3\CMS\Core\Utility\GeneralUtility::camelCaseToLowerCaseUnderscored($dbFields['fe_groups']['fields'][$fld])))
-						) {
+					
+					if (is_null($dbFields['fe_users']['fields'][$fld])) {
 						$errors[] = 'Field "'.$fld.'" does not exist in table "fe_users".';
 					}
-					*/
 				}
 			}
 			if (is_array($server['fe_users.']['usergroups.']['mapping.'])) {
@@ -348,15 +365,12 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 					if (substr($fld, strlen($fld)-1, 1) == '.') {
 						$fld = substr($fld, 0, strlen($fld)-1);
 					}
-					/*
 					if (
 							($fld != 'field')
 							&& (is_null($dbFields['fe_groups']['fields'][$fld]))
-							&& (is_null(\TYPO3\CMS\Core\Utility\GeneralUtility::camelCaseToLowerCaseUnderscored($dbFields['fe_groups']['fields'][$fld])))
 						) {
 						$errors[] = 'Field "'.$fld.'" does not exist in table "fe_groups".';
 					}
-					*/
 				}
 			}
 
@@ -378,21 +392,17 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 			}
 			
 			if (is_array($server['be_users.']['mapping.'])) {
-				//while (list($fld, $mapping) = each($server['be_users.']['mapping.'])) {
 				foreach ($server['be_users.']['mapping.'] as $fld => $mapping) {
 					if (substr($fld, strlen($fld)-1, 1) == '.') {
 						$fld = substr($fld, 0, strlen($fld)-1);
 					}
-					if (
-							(is_null($dbFields['fe_users']['fields'][$fld]))
-							&& (is_null(\TYPO3\CMS\Core\Utility\GeneralUtility::camelCaseToLowerCaseUnderscored($dbFields['fe_users']['fields'][$fld])))
-						) {
+					
+					if (is_null($dbFields['be_users']['fields'][$fld])) {
 						$errors[] = 'Field "'.$fld.'" does not exist in table "be_users".';
 					}
 				}
 			}
 			if (is_array($server['be_users.']['usergroups.']['mapping.'])) {
-				//while (list($fld, $mapping) = each($server['be_users.']['usergroups.']['mapping.'])) {
 				foreach ($server['be_users.']['usergroups.']['mapping.'] as $fld => $mapping) {
 					if (substr($fld, strlen($fld)-1, 1) == '.') {
 						$fld = substr($fld, 0, strlen($fld)-1);
@@ -400,7 +410,6 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 					if (
 							($fld != 'field')
 							&& (is_null($dbFields['be_groups']['fields'][$fld]))
-							&& (is_null(\TYPO3\CMS\Core\Utility\GeneralUtility::camelCaseToLowerCaseUnderscored($dbFields['be_groups']['fields'][$fld])))
 						) {
 						$errors[] = 'Field "'.$fld.'" does not exist in table "be_groups".';
 					}
@@ -410,13 +419,6 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 			$res = \NormanSeibert\Ldap\Utility\Helpers::checkValue($server['be_users.']['mapping.']['username.']['data'], 'required');
 			if ($res['error']) {
 				$errors[] = 'Attribute "be_users.mapping.username.data": '.$res['error'];
-			}
-		}
-		
-		if ($server['sso.']['enable']) {
-			$res = \NormanSeibert\Ldap\Utility\Helpers::checkValue($server['sso.']['header'], 'required');
-			if ($res['error']) {
-				$errors[] = 'Attribute "sso.header": '.$res['error'];
 			}
 		}
 		

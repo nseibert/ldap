@@ -185,6 +185,7 @@ class BeUser extends \NormanSeibert\Ldap\Domain\Model\LdapUser\User {
 	 * @return array
 	 */
 	public function addNewGroups($newGroups, $assignedGroups, $lastRun) {
+		$assignedGroups = array();
 		$addnewgroups = $this->userRules->getGroupRules()->getImportGroups();
 		if ((is_array($newGroups)) && ($addnewgroups)) {
 			foreach ($newGroups as $group) {

@@ -43,7 +43,14 @@
 				<td>{serverRecord.server.configuration.beUserRules.filter}</td>
 				<td>
 					<f:for each="{serverRecord.beUsers}" as="user">
-						<div>{user.dn}</div>
+						<p>
+							<b>{user.dn}</b>
+							<ul>
+								<f:for each="{user.attributes}" as="value" key="attribute">
+									<li>{attribute}: {value}</li>
+								</f:for>
+							</ul>
+						</p>
 					</f:for>
 				</td>
 			</tr>

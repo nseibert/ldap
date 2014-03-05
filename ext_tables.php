@@ -27,43 +27,54 @@ if (TYPO3_MODE == "BE")    {
 $tempColumns = array(
 	"tx_ldap_dn" => array(
 		"exclude" => 1,        
-		"label" => "LLL:EXT:ldap/Resources/Private/Language/locallang_db.php:fe_users.tx_ldap_dn",
+		"label" => "LLL:EXT:ldap/Resources/Private/Language/locallang_db.xml:fe_users.tx_ldap_dn",
 		"config" => Array (
-			"type" => "input",
-			"size" => "30",
-			"eval" => "trim",
+			"type" => "none",
 		)
 	),
 	"tx_ldap_serveruid" => array(
 		"exclude" => 1,        
-		"label" => "LLL:EXT:ldap/Resources/Private/Language/locallang_db.php:fe_users.tx_ldap_server",
+		"label" => "LLL:EXT:ldap/Resources/Private/Language/locallang_db.xml:fe_users.tx_ldap_server",
 		"config" => Array (
-			"type" => "input",
-			"size" => "30",
-			"eval" => "trim",
+			"type" => "none",
 		)
 	),
 	"tx_ldap_lastrun" => array(
 		"exclude" => 1,        
-		"label" => "LLL:EXT:ldap/Resources/Private/Language/locallang_db.php:fe_users.tx_ldap_lastrun",
+		"label" => "LLL:EXT:ldap/Resources/Private/Language/locallang_db.xml:fe_users.tx_ldap_lastrun",
 		"config" => Array (
-			"type" => "input",
-			"size" => "30",
-			"eval" => "trim",
+			"type" => "none",
 		)
 	),
 );
 
 
-\TYPO3\CMS\Core\Utility\GeneralUtility::loadTCA("fe_users");
+if (version_compare(TYPO3_branch, '6.1', '<')) {
+	\TYPO3\CMS\Core\Utility\GeneralUtility::loadTCA("fe_users");
+}
 \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addTCAcolumns("fe_users", $tempColumns, 1);
 
-\TYPO3\CMS\Core\Utility\GeneralUtility::loadTCA("be_users");
+if (version_compare(TYPO3_branch, '6.1', '<')) {
+	\TYPO3\CMS\Core\Utility\GeneralUtility::loadTCA("be_users");
+}
 \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addTCAcolumns("be_users", $tempColumns, 1);
 
-\TYPO3\CMS\Core\Utility\GeneralUtility::loadTCA("fe_groups");
+if (version_compare(TYPO3_branch, '6.1', '<')) {
+	\TYPO3\CMS\Core\Utility\GeneralUtility::loadTCA("fe_groups");
+}
 \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addTCAcolumns("fe_groups", $tempColumns, 1);
 
-\TYPO3\CMS\Core\Utility\GeneralUtility::loadTCA("be_groups");
+if (version_compare(TYPO3_branch, '6.1', '<')) {
+	\TYPO3\CMS\Core\Utility\GeneralUtility::loadTCA("be_groups");
+}
 \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addTCAcolumns("be_groups", $tempColumns, 1);
+
+t3lib_extMgm::addTCAcolumns('fe_users',$tmp_feu_ext_columns);
+
+/*
+t3lib_extMgm::addToAllTCAtypes('fe_users', '--div--;LDAP, tx_ldap_dn, tx_ldap_serveruid, tx_ldap_lastrun');
+t3lib_extMgm::addToAllTCAtypes('fe_groups', '--div--;LDAP, tx_ldap_dn, tx_ldap_serveruid, tx_ldap_lastrun');
+t3lib_extMgm::addToAllTCAtypes('bfe_users', '--div--;LDAP, tx_ldap_dn, tx_ldap_serveruid, tx_ldap_lastrun');
+t3lib_extMgm::addToAllTCAtypes('be_groups', '--div--;LDAP, tx_ldap_dn, tx_ldap_serveruid, tx_ldap_lastrun');
+*/
 ?>

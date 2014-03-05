@@ -11,6 +11,9 @@
 			<label index="tx_euldap_scheduler">Scheduler</label>
             <label index="task.name">LDAP Integration</label>
             <label index="task.description">Imports/updates/deletes users based on LDAP directory</label>
+            <label index="fe_users.tx_ldap_dn">User's DN</label>
+            <label index="fe_users.tx_ldap_server">Imported/updated from server</label>
+            <label index="fe_users.tx_ldap_lastrun">Internal identifier of last import/update</label>
         </languageKey>
     </data>
 </T3locallang>

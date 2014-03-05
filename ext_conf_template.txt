@@ -10,9 +10,6 @@ enableBE = 0
 # cat=basic/enable; type=boolean; label=Frontend: Enable LDAP authentification for the frontend.
 enableFE = 0
 
-# cat=basic/enable; type=int+; label=Root page ID; choose an arbitrary one if your installation has multiple root pages.
-rootPageUid = 1
-
 # cat=basic/enable; type=int+; label=Logging level (0 = none, 1 = normal, 2 = extensive).
 logLevel = 1
 

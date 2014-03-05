@@ -482,9 +482,10 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 					\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 2);
 				}
 				\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::WARNING, $msg, $this->ldapServer->getConfiguration()->getUid());
-			}
-			foreach ($usergroups as $group) {
-				$this->user->addUsergroup($group);
+			} else {
+				foreach ($usergroups as $group) {
+					$this->user->addUsergroup($group);
+				}
 			}
 		} else {
 			$msg = 'User has no usergroup';
@@ -503,14 +504,16 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		if ($preserveNonLdapGroups) {
 			$usergroups = $this->user->getUsergroup();
 			$removeGroups = array();
-			// iterate two times because "remove" shortens the iterator otherwise
-			foreach ($usergroups as $group) {
-				if ($group->getServerUid()) {
-					$removeGroups[] = $group;
+			if (is_array($usergroups)) {
+				// iterate two times because "remove" shortens the iterator otherwise
+				foreach ($usergroups as $group) {
+					if ($group->getServerUid()) {
+						$removeGroups[] = $group;
+					}
 				}
-			}
-			foreach ($removeGroups as $group) {
-				$this->user->removeUsergroup($group);
+				foreach ($removeGroups as $group) {
+					$this->user->removeUsergroup($group);
+				}
 			}
 		} else {
 			$usergroup = $this->objectManager->create('TYPO3\CMS\Extbase\Persistence\ObjectStorage');
