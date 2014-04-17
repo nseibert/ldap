@@ -50,7 +50,7 @@ class FrontendUserRepository extends \TYPO3\CMS\Extbase\Domain\Repository\Fronte
 		$user = false;
 		$query = $this->createQuery();
 		$query->getQuerySettings()->setRespectStoragePage(FALSE);
-		$query->getQuerySettings()->setRespectEnableFields(FALSE);
+		\NormanSeibert\Ldap\Utility\Helpers::setRespectEnableFieldsToFalse($query);
 		$query->matching(	
 			$query->logicalAnd(
 				$query->equals("pid", $pid),
@@ -76,7 +76,7 @@ class FrontendUserRepository extends \TYPO3\CMS\Extbase\Domain\Repository\Fronte
 		$user = false;
 		$query = $this->createQuery();
 		$query->getQuerySettings()->setRespectStoragePage(FALSE);
-		$query->getQuerySettings()->setRespectEnableFields(FALSE);
+		\NormanSeibert\Ldap\Utility\Helpers::setRespectEnableFieldsToFalse($query);
 		$query->matching(	
 			$query->logicalAnd(
 				$query->equals("pid", $pid),
@@ -99,7 +99,7 @@ class FrontendUserRepository extends \TYPO3\CMS\Extbase\Domain\Repository\Fronte
 	public function findByLastRun($lastRun) {
 		$query = $this->createQuery();
 		$query->getQuerySettings()->setRespectStoragePage(FALSE);
-		$query->getQuerySettings()->setRespectEnableFields(FALSE);
+		\NormanSeibert\Ldap\Utility\Helpers::setRespectEnableFieldsToFalse($query);
 		if (is_array($lastRun)) {
 			if (count($lastRun) == 1) {
 				$query->matching(
@@ -127,7 +127,7 @@ class FrontendUserRepository extends \TYPO3\CMS\Extbase\Domain\Repository\Fronte
 	public function countByLastRun($lastRun) {
 		$query = $this->createQuery();
 		$query->getQuerySettings()->setRespectStoragePage(FALSE);
-		$query->getQuerySettings()->setRespectEnableFields(FALSE);
+		\NormanSeibert\Ldap\Utility\Helpers::setRespectEnableFieldsToFalse($query);
 		if (is_array($lastRun)) {
 			if (count($lastRun) == 1) {
 				$query->matching(
@@ -153,7 +153,7 @@ class FrontendUserRepository extends \TYPO3\CMS\Extbase\Domain\Repository\Fronte
 	public function findLdapImported() {
 		$query = $this->createQuery();
 		$query->getQuerySettings()->setRespectStoragePage(FALSE);
-		// $query->getQuerySettings()->setRespectEnableFields(FALSE);
+		// \NormanSeibert\Ldap\Utility\Helpers::setRespectEnableFieldsToFalse($query);
 		$query->matching(
 			$query->logicalNot(
 				$query->equals("dn", "")

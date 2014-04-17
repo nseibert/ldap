@@ -439,6 +439,8 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 			foreach ($userMapping as $field => $value) {
 				if (isset($value['data'])) {
 					$attr[] = str_replace('field:', '', $value['data']);
+				} elseif (isset($value['value'])) {
+					// Everything OK
 				} else {
 					$msg = 'Mapping for attribute "' . $this->table . '.mapping.' . $field . '" incorrect.';
 					\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 2);
@@ -451,6 +453,8 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 			foreach ($groupMapping as $field => $value) {
 				if (isset($value['data'])) {
 					$attr[] = str_replace('field:', '', $value['data']);
+				} elseif (isset($value['value'])) {
+					// Everything OK
 				} else {
 					$msg = 'Mapping for attribute "' . $this->table . '.usergroups.mapping.' . $field . '" incorrect.';
 					\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 2);

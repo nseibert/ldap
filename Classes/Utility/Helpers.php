@@ -243,10 +243,20 @@ class Helpers {
 	 * @param string $string String to be converted to camel case
 	 * @return string lowerCamelCasedWord
 	 */
-	static public function underscoredToLowerCamelCase($string) {
+	function underscoredToLowerCamelCase($string) {
 		$upperCamelCase = str_replace(' ', '', ucwords(str_replace('_', ' ', $string)));
 		$lowerCamelCase = lcfirst($upperCamelCase);
 		return $lowerCamelCase;
+	}
+	
+	
+	
+	function setRespectEnableFieldsToFalse($query) {
+		if (function_exists($query->getQuerySettings()->setRespectEnableFields)) {
+			$query->getQuerySettings()->setRespectEnableFields(FALSE);
+		} else {
+			$query->getQuerySettings()->setIgnoreEnableFields(TRUE);
+		}
 	}
 }
 ?>

@@ -183,26 +183,28 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 
 		if (is_array($mapping)) {
 			foreach ($mapping as $key => $value) {
-				$stdWrap = $value['stdWrap.'];
-				if (is_array($value['stdWrap.'])) {
-					unset($value['stdWrap.']);
-				}
-				$this->cObj->alternativeData = $attributes;
-				$result = $this->cObj->stdWrap($value['value'], $value);
-				if (substr($key, strlen($key) - 1, 1) == '.') {
-					$key = substr($key, 0, strlen($key) - 1);
-				}
-				if (is_array($result)) {
-					unset($result['count']);
-					$attr = array();
-					foreach ($result as $v) {
-						$attr[] = $this->cObj->stdWrap($v, $stdWrap);
+				if ($key != 'username.') {
+					$stdWrap = $value['stdWrap.'];
+					if (is_array($value['stdWrap.'])) {
+						unset($value['stdWrap.']);
 					}
-					$result = implode(', ', $attr);
-				} else {
-					$result = $this->cObj->stdWrap($result, $stdWrap);
+					$this->cObj->alternativeData = $attributes;
+					$result = $this->cObj->stdWrap($value['value'], $value);
+					if (substr($key, strlen($key) - 1, 1) == '.') {
+						$key = substr($key, 0, strlen($key) - 1);
+					}
+					if (is_array($result)) {
+						unset($result['count']);
+						$attr = array();
+						foreach ($result as $v) {
+							$attr[] = $this->cObj->stdWrap($v, $stdWrap);
+						}
+						$result = implode(', ', $attr);
+					} else {
+						$result = $this->cObj->stdWrap($result, $stdWrap);
+					}
+					$insertArray[$key] = $result;
 				}
-				$insertArray[$key] = $result;
 			}
 		}
 		
@@ -268,7 +270,7 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		foreach ($ldapGroups as $group) {
 			$this->cObj->alternativeData = $group;
 			$usergroup = $this->cObj->stdWrap('', $mapping['title.']);
-			$tmp = $this->resolveGroup('Title', $usergroup, $usergroup, $group['dn']);
+			$tmp = $this->resolveGroup('title', $usergroup, $usergroup, $group['dn']);
 			if ($tmp['newGroup']) {
 				$ret['newGroups'][] = $tmp['newGroup'];
 			}
@@ -296,7 +298,7 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		
 		if (is_array($usergroups)) {
 			foreach ($usergroups as $group) {
-				$tmp = $this->resolveGroup('Title', $group, $group);
+				$tmp = $this->resolveGroup('title', $group, $group);
 				if ($tmp['newGroup']) {
 					$ret['newGroups'][] = $tmp['newGroup'];
 				}
@@ -305,7 +307,7 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 				}
 			}
 		} elseif ($usergroups) {
-			$tmp = $this->resolveGroup('Title', $usergroups, $usergroups);
+			$tmp = $this->resolveGroup('title', $usergroups, $usergroups);
 			if ($tmp['newGroup']) {
 				$ret['newGroups'][] = $tmp['newGroup'];
 			}
@@ -335,7 +337,7 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		$usergroup = $this->cObj->stdWrap('', $mapping['title.']);
 		
 		if ($usergroup) {
-			$tmp = $this->resolveGroup('Title', $usergroup, $usergroup, $ldapGroup['dn']);
+			$tmp = $this->resolveGroup('title', $usergroup, $usergroup, $ldapGroup['dn']);
 			if ($tmp['newGroup']) {
 				$ret['newGroups'][] = $tmp['newGroup'];
 			}
@@ -412,7 +414,7 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 
 		$allGroups = $this->ldapServer->getAllGroups();
 		foreach ($allGroups as $group) {
-			$attrValue = $group->__get($attribute);
+			$attrValue = $group->_getProperty($attribute);
 			if ($selector == $attrValue) {
 				$groupFound = $group;
 			}
@@ -450,10 +452,17 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 			$ret = TRUE;
 		} else {
 			$onlygrouparray = explode(",", $onlygroup);
+			/*
 			if (is_array($onlygrouparray)) {
 				$ret = \TYPO3\CMS\Core\Utility\GeneralUtility::inArray($onlygrouparray, $groupname);
 			}
-			if (($ret == FALSE) && ($this->ldapConfig->logLevel == 2)) {
+			*/
+			if (is_array($onlygrouparray)) {
+				while ((list($key, $value) = each($onlygrouparray)) && !($ret)) {
+					if (preg_match(trim($value), $groupname)) $ret = TRUE;
+				}
+			}
+			if ((!$ret) && ($this->ldapConfig->logLevel == 2)) {
 				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('Filtered out: ' . $groupname, 'ldap', 0);
 			}
 		}

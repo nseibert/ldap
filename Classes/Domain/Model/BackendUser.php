@@ -25,10 +25,16 @@ namespace NormanSeibert\Ldap\Domain\Model;
  */
 
 /**
- * Model for TYPO3 frontend users
+ * Model for TYPO3 backend users
  */
 class BackendUser extends \TYPO3\CMS\Extbase\Domain\Model\BackendUser implements \NormanSeibert\Ldap\Domain\Model\UserInterface {
 	
+	/**
+	 *
+	 * @var string 
+	 */
+	protected $username;
+
 	/**
 	 *
 	 * @var string 
@@ -83,29 +89,6 @@ class BackendUser extends \TYPO3\CMS\Extbase\Domain\Model\BackendUser implements
 	 */
 	public function __construct() {
 		$this->usergroup = new \TYPO3\CMS\Extbase\Persistence\ObjectStorage();
-	}
-	
-	/**
-	 * Magic set call implementation.
-	 *
-	 * @param string $propertyName The name of the property to set
-	 * @param mixed $value The value for the property to set
-	 * @return void
-	 */
-	public function __set($propertyName, $value) {
-		$property = \NormanSeibert\Ldap\Utility\Helpers::underscoredToLowerCamelCase($propertyName);
-		$this->{$property} = $value;
-	}
-	
-	/**
-	 * Magic get call implementation.
-	 *
-	 * @param string $propertyName The name of the property to set
-	 * @return mixed
-	 */
-	public function __get($propertyName) {
-		$property = \NormanSeibert\Ldap\Utility\Helpers::underscoredToLowerCamelCase($propertyName);
-		return $this->{$property};
 	}
 	
 	/**

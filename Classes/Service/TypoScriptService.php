@@ -12,14 +12,10 @@ class TypoScriptService implements \TYPO3\CMS\Core\SingletonInterface {
 	 * @param string $filePath
 	 * @return void
 	 */
-	public static function loadTypoScriptFromFile($filePath) {
-		static $typoScriptParser;
+	public function loadTypoScriptFromFile($filePath) {
 		$filePath = \TYPO3\CMS\Core\Utility\GeneralUtility::getFileAbsFileName($filePath);
 		if ($filePath) {
-			if ($typoScriptParser == NULL) {
-				$typoScriptParser = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('t3lib_TSparser');
-			}
-			/* @var t3lib_TSparser $typoScriptParser */
+			$typoScriptParser = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('\\TYPO3\\CMS\\Core\TypoScript\\Parser\\TypoScriptParser');
 			$typoScript = file_get_contents($filePath);
 			if ($typoScript) {
 				$typoScriptParser->parse($typoScript);

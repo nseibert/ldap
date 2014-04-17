@@ -36,7 +36,7 @@ class BackendUserGroupRepository extends \TYPO3\CMS\Extbase\Domain\Repository\Ba
 	public function findAll() {
 		$query = $this->createQuery();
 		$query->getQuerySettings()->setRespectStoragePage(FALSE);
-		$query->getQuerySettings()->setRespectEnableFields(FALSE);
+		\NormanSeibert\Ldap\Utility\Helpers::setRespectEnableFieldsToFalse($query);
 		$groups = $query->execute();
 		return $groups->toArray();
 	}
@@ -49,7 +49,7 @@ class BackendUserGroupRepository extends \TYPO3\CMS\Extbase\Domain\Repository\Ba
 	public function findByUids($uidList) {
 		$query = $this->createQuery();
 		$query->getQuerySettings()->setRespectStoragePage(FALSE);
-		$query->getQuerySettings()->setRespectEnableFields(FALSE);
+		\NormanSeibert\Ldap\Utility\Helpers::setRespectEnableFieldsToFalse($query);
 		$query->matching(	
 			$query->in("uid", $uidList)
 		);
@@ -66,7 +66,7 @@ class BackendUserGroupRepository extends \TYPO3\CMS\Extbase\Domain\Repository\Ba
 		$user = false;
 		$query = $this->createQuery();
 		$query->getQuerySettings()->setRespectStoragePage(FALSE);
-		$query->getQuerySettings()->setRespectEnableFields(FALSE);
+		\NormanSeibert\Ldap\Utility\Helpers::setRespectEnableFieldsToFalse($query);
 		$query->matching(	
 			$query->equals("tx_ldap_dn", $dn)
 		);
@@ -86,7 +86,7 @@ class BackendUserGroupRepository extends \TYPO3\CMS\Extbase\Domain\Repository\Ba
 	public function findByLastRun($lastRun) {
 		$query = $this->createQuery();
 		$query->getQuerySettings()->setRespectStoragePage(FALSE);
-		$query->getQuerySettings()->setRespectEnableFields(FALSE);
+		\NormanSeibert\Ldap\Utility\Helpers::setRespectEnableFieldsToFalse($query);
 		$query->matching(
 			$query->in("tx_ldap_lastrun", $lastRun)
 		);
@@ -101,7 +101,7 @@ class BackendUserGroupRepository extends \TYPO3\CMS\Extbase\Domain\Repository\Ba
 	public function findLdapImported() {
 		$query = $this->createQuery();
 		$query->getQuerySettings()->setRespectStoragePage(FALSE);
-		// $query->getQuerySettings()->setRespectEnableFields(FALSE);
+		// \NormanSeibert\Ldap\Utility\Helpers::setRespectEnableFieldsToFalse($query);
 		$query->matching(
 			$query->logicalNot(
 				$query->equals("dn", "")

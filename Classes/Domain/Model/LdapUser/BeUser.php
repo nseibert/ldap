@@ -105,7 +105,13 @@ class BeUser extends \NormanSeibert\Ldap\Domain\Model\LdapUser\User {
 			// LDAP attributes from mapping
 			$insertArray = $this->mapAttributes();
 			foreach ($insertArray as $field => $value) {
-				$this->user->__set($field, $value);
+				$ret = $this->user->_setProperty($field, $value);
+				if (!$ret) {
+					$msg = 'Property "' . $field . '" is unknown to Extbase.';
+					if ($this->ldapConfig->logLevel == 2) {
+						\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
+					}
+				}
 			}
 			
 			if ($lastRun) {
@@ -150,7 +156,13 @@ class BeUser extends \NormanSeibert\Ldap\Domain\Model\LdapUser\User {
 			// LDAP attributes from mapping
 			$insertArray = $this->mapAttributes();
 			foreach ($insertArray as $field => $value) {
-				$this->user->__set($field, $value);
+				$ret = $this->user->_setProperty($field, $value);
+				if (!$ret) {
+					$msg = 'Property "' . $field . '" is unknown to Extbase.';
+					if ($this->ldapConfig->logLevel == 2) {
+						\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
+					}
+				}
 			}
 			
 			if ($lastRun) {
@@ -180,12 +192,12 @@ class BeUser extends \NormanSeibert\Ldap\Domain\Model\LdapUser\User {
 	 * adds a new TYPO3 usergroup
 	 * 
 	 * @param array $newGroups
-	 * @param array $assignedGroups
+	 * @param array $existingGroups
 	 * @param string $lastRun
 	 * @return array
 	 */
-	public function addNewGroups($newGroups, $assignedGroups, $lastRun) {
-		$assignedGroups = array();
+	public function addNewGroups($newGroups, $existingGroups, $lastRun) {
+		$assignedGroups = $existingGroups;
 		$addnewgroups = $this->userRules->getGroupRules()->getImportGroups();
 		if ((is_array($newGroups)) && ($addnewgroups)) {
 			foreach ($newGroups as $group) {
@@ -202,7 +214,13 @@ class BeUser extends \NormanSeibert\Ldap\Domain\Model\LdapUser\User {
 					$insertArray = $this->mapAttributes('group', $group['groupObject']->getAttributes());
 					unset($insertArray['field']);
 					foreach ($insertArray as $field => $value) {
-						$newGroup->__set($field, $value);
+						$ret = $newGroup->_setProperty($field, $value);
+						if (!$ret) {
+							$msg = 'Property "' . $field . '" is unknown to Extbase.';
+							if ($this->ldapConfig->logLevel == 2) {
+								\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
+							}
+						}
 					}
 				}
 				$this->usergroupRepository->add($newGroup);

@@ -72,29 +72,6 @@ class BackendUserGroup extends \TYPO3\CMS\Extbase\Domain\Model\BackendUserGroup 
 	protected $description = '';
 	
 	/**
-	 * Magic set call implementation.
-	 *
-	 * @param string $propertyName The name of the property to set
-	 * @param mixed $value The value for the property to set
-	 * @return void
-	 */
-	public function __set($propertyName, $value) {
-		$property = \NormanSeibert\Ldap\Utility\Helpers::underscoredToLowerCamelCase($propertyName);
-		$this->{$property} = $value;
-	}
-	
-	/**
-	 * Magic get call implementation.
-	 *
-	 * @param string $propertyName The name of the property to set
-	 * @return mixed
-	 */
-	public function __get($propertyName) {
-		$property = \NormanSeibert\Ldap\Utility\Helpers::underscoredToLowerCamelCase($propertyName);
-		return $this->{$property};
-	}
-	
-	/**
 	 * 
 	 * @param string $dn
 	 * @return \NormanSeibert\Ldap\Domain\Model\BackendUserGroup

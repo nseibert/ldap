@@ -36,7 +36,7 @@ class FrontendUserGroupRepository extends \TYPO3\CMS\Extbase\Domain\Repository\F
 	public function findAll() {
 		$query = $this->createQuery();
 		$query->getQuerySettings()->setRespectStoragePage(FALSE);
-		$query->getQuerySettings()->setRespectEnableFields(FALSE);
+		\NormanSeibert\Ldap\Utility\Helpers::setRespectEnableFieldsToFalse($query);
 		$groups = $query->execute();
 		return $groups->toArray();
 	}
@@ -49,7 +49,7 @@ class FrontendUserGroupRepository extends \TYPO3\CMS\Extbase\Domain\Repository\F
 	public function findByUids($uidList) {
 		$query = $this->createQuery();
 		$query->getQuerySettings()->setRespectStoragePage(FALSE);
-		$query->getQuerySettings()->setRespectEnableFields(FALSE);
+		\NormanSeibert\Ldap\Utility\Helpers::setRespectEnableFieldsToFalse($query);
 		$query->matching(	
 			$query->in("uid", $uidList)
 		);
@@ -65,7 +65,7 @@ class FrontendUserGroupRepository extends \TYPO3\CMS\Extbase\Domain\Repository\F
 	public function findByPid($pid) {
 		$query = $this->createQuery();
 		$query->getQuerySettings()->setRespectStoragePage(FALSE);
-		$query->getQuerySettings()->setRespectEnableFields(FALSE);
+		\NormanSeibert\Ldap\Utility\Helpers::setRespectEnableFieldsToFalse($query);
 		$query->matching(	
 			$query->equals("pid", $pid)
 		);
@@ -83,7 +83,7 @@ class FrontendUserGroupRepository extends \TYPO3\CMS\Extbase\Domain\Repository\F
 		$user = false;
 		$query = $this->createQuery();
 		$query->getQuerySettings()->setRespectStoragePage(FALSE);
-		$query->getQuerySettings()->setRespectEnableFields(FALSE);
+		\NormanSeibert\Ldap\Utility\Helpers::setRespectEnableFieldsToFalse($query);
 		$query->matching(	
 			$query->logicalAnd(
 				$query->equals("pid", $pid),
@@ -121,7 +121,7 @@ class FrontendUserGroupRepository extends \TYPO3\CMS\Extbase\Domain\Repository\F
 	public function findLdapImported() {
 		$query = $this->createQuery();
 		$query->getQuerySettings()->setRespectStoragePage(FALSE);
-		// $query->getQuerySettings()->setRespectEnableFields(FALSE);
+		// \NormanSeibert\Ldap\Utility\Helpers::setRespectEnableFieldsToFalse($query);
 		$query->matching(
 			$query->logicalNot(
 				$query->equals("dn", "")

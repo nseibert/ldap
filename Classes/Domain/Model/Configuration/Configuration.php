@@ -166,7 +166,7 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 				if ($userPid && $server['fe_users.']['pid']) {
 					if (!\TYPO3\CMS\Core\Utility\GeneralUtility::inList($userPid, $server['fe_users.']['pid'])) {
 						$load = 0;
-						$msg = 'LDAP server "'. $server['title'] .'" ignored: does not match list of page uids ('. implode(', ', $pid) .').';
+						$msg = 'LDAP server "'. $server['title'] .'" ignored: does not match list of page uids ('. implode(', ', $userPid) .').';
 						\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
 					}
 				}
@@ -323,14 +323,16 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 		if ($res['error']) {
 			$errors[] = 'Attribute "auhenticate": '.$res['error'];
 		}
-		
+
+		/*
 		if (version_compare(TYPO3_branch, '6.2', '<')) {
 			$sqlHandler = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Install\\Sql\\SchemaMigrator');
 		} else {
 			$sqlHandler = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Install\\Service\\SqlSchemaMigrationService');
 		}
 		$dbFields = $sqlHandler->getFieldDefinitions_database();
-		
+		*/
+
 		$server['authenticate'] = strtolower($server['authenticate']);
 		
 		if (($server['authenticate'] == 'fe') || ($server['authenticate'] == 'both')) {
@@ -354,9 +356,12 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 					if (substr($fld, strlen($fld)-1, 1) == '.') {
 						$fld = substr($fld, 0, strlen($fld)-1);
 					}
-					
-					if (is_null($dbFields['fe_users']['fields'][$fld])) {
-						$errors[] = 'Field "'.$fld.'" does not exist in table "fe_users".';
+					// check whether property exists by creating a new object				
+					$newObj = $this->objectManager->create('NormanSeibert\\Ldap\\Domain\\Model\\FrontendUser');
+					$ret = $newObj->_hasProperty($fld);
+					$newObj = NULL;
+					if (!$ret) {
+						$errors[] = 'Property "fe_users.'.$fld.'" is unknown to Extbase.';
 					}
 				}
 			}
@@ -365,18 +370,19 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 					if (substr($fld, strlen($fld)-1, 1) == '.') {
 						$fld = substr($fld, 0, strlen($fld)-1);
 					}
-					if (
-							($fld != 'field')
-							&& (is_null($dbFields['fe_groups']['fields'][$fld]))
-						) {
-						$errors[] = 'Field "'.$fld.'" does not exist in table "fe_groups".';
+					// check whether property exists by creating a new object				
+					$newObj = $this->objectManager->create('NormanSeibert\\Ldap\\Domain\\Model\\FrontendUserGroup');
+					$ret = $newObj->_hasProperty($fld);
+					$newObj = NULL;
+					if (!$ret) {
+						$errors[] = 'Property "fe_groups.'.$fld.'" is unknown to Extbase.';
 					}
 				}
 			}
 
 			$res = \NormanSeibert\Ldap\Utility\Helpers::checkValue($server['fe_users.']['mapping.']['username.']['data'], 'required');
 			if ($res['error']) {
-				$errors[] = 'Attribute "fe_users.mapping.username.data": '.$res['error'];
+				$errors[] = 'Attribute "fe_users.mapping.userName.data": '.$res['error'];
 			}
 		}
 		
@@ -396,9 +402,12 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 					if (substr($fld, strlen($fld)-1, 1) == '.') {
 						$fld = substr($fld, 0, strlen($fld)-1);
 					}
-					
-					if (is_null($dbFields['be_users']['fields'][$fld])) {
-						$errors[] = 'Field "'.$fld.'" does not exist in table "be_users".';
+					// check whether property exists by creating a new object				
+					$newObj = $this->objectManager->create('NormanSeibert\\Ldap\\Domain\\Model\\BackendUser');
+					$ret = $newObj->_hasProperty($fld);
+					$newObj = NULL;
+					if (!$ret) {
+						$errors[] = 'Property "be_users.'.$fld.'" is unknown to Extbase.';
 					}
 				}
 			}
@@ -407,18 +416,19 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 					if (substr($fld, strlen($fld)-1, 1) == '.') {
 						$fld = substr($fld, 0, strlen($fld)-1);
 					}
-					if (
-							($fld != 'field')
-							&& (is_null($dbFields['be_groups']['fields'][$fld]))
-						) {
-						$errors[] = 'Field "'.$fld.'" does not exist in table "be_groups".';
+					// check whether property exists by creating a new object				
+					$newObj = $this->objectManager->create('NormanSeibert\\Ldap\\Domain\\Model\\BackendUserGroup');
+					$ret = $newObj->_hasProperty($fld);
+					$newObj = NULL;
+					if (!$ret) {
+						$errors[] = 'Property "be_groups.'.$fld.'" is unknown to Extbase.';
 					}
 				}
 			}
 			
 			$res = \NormanSeibert\Ldap\Utility\Helpers::checkValue($server['be_users.']['mapping.']['username.']['data'], 'required');
 			if ($res['error']) {
-				$errors[] = 'Attribute "be_users.mapping.username.data": '.$res['error'];
+				$errors[] = 'Attribute "be_users.mapping.userName.data": '.$res['error'];
 			}
 		}
 		

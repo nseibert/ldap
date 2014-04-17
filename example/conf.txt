@@ -113,10 +113,10 @@ ldapServers {
 			
 			mapping = COA
 			mapping {
-				realname.data = field:displayname
 				username.data = field:samaccountname
-				options.value = 3
-				fileoper_perms.value = 1
+				realName.data = field:displayname
+				# Static value, "isAdministrator" is the Extbase property mapped to the field "admin"
+				isAdministrator.value = 1
 			}
 			
 			usergroups {
