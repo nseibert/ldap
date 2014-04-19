@@ -244,6 +244,8 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		
 		$assignedGroups = $this->addNewGroups($ret['newGroups'], $ret['existingGroups'], $lastRun);
 
+//		\TYPO3\CMS\Core\Utility\DebugUtility::debug($assignedGroups);
+
 		return $assignedGroups;
 	}
 	
@@ -381,6 +383,8 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 			$ldapGroup = $this->ldapServer->getGroup($groupDNs);
 			$this->cObj->alternativeData = $ldapGroup;
 			$usergroup = $this->cObj->stdWrap('', $mapping['title.']);
+//			\TYPO3\CMS\Core\Utility\DebugUtility::debug($ldapGroup);
+//			\TYPO3\CMS\Core\Utility\DebugUtility::debug($usergroup);
 			$tmp = $this->resolveGroup('dn', $groupDNs, $usergroup, $groupDNs);
 			if ($tmp['newGroup']) {
 				$ret['newGroups'][] = $tmp['newGroup'];
@@ -392,8 +396,6 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		
 //		\TYPO3\CMS\Core\Utility\DebugUtility::debug($ret['newGroups']);
 //		\TYPO3\CMS\Core\Utility\DebugUtility::debug(count($ret['existingGroups']));
-		
-//		exit();
 		
 		return $ret;
 	}
@@ -478,6 +480,7 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 	protected function addUsergroupsToUserRecord($lastRun = NULL) {
 		if (is_object($this->userRules->getGroupRules())) {
 			$assignedGroups = $this->assignGroups($lastRun);
+//			\TYPO3\CMS\Core\Utility\DebugUtility::debug($assignedGroups);
 			if ($this->userRules->getGroupRules()->getAddToGroups()) {
 				$addToGroups = $this->userRules->getGroupRules()->getAddToGroups();
 				$groupsToAdd = $this->usergroupRepository->findByUids(explode(',', $addToGroups));
@@ -485,6 +488,7 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 			} else {
 				$usergroups = $assignedGroups;
 			}
+//			\TYPO3\CMS\Core\Utility\DebugUtility::debug($usergroups);
 			if (count($usergroups) == 0) {
 				$msg = 'User has no usergroup';
 				if ($this->ldapConfig->logLevel == 2) {
