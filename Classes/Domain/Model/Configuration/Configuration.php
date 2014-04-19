@@ -352,32 +352,32 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 			}
 			
 			if (is_array($server['fe_users.']['mapping.'])) {
+				$newObj = $this->objectManager->create('NormanSeibert\\Ldap\\Domain\\Model\\FrontendUser');
 				foreach ($server['fe_users.']['mapping.'] as $fld => $mapping) {
 					if (substr($fld, strlen($fld)-1, 1) == '.') {
 						$fld = substr($fld, 0, strlen($fld)-1);
 					}
-					// check whether property exists by creating a new object				
-					$newObj = $this->objectManager->create('NormanSeibert\\Ldap\\Domain\\Model\\FrontendUser');
 					$ret = $newObj->_hasProperty($fld);
-					$newObj = NULL;
 					if (!$ret) {
 						$errors[] = 'Property "fe_users.'.$fld.'" is unknown to Extbase.';
 					}
 				}
+				$newObj = NULL;
 			}
-			if (is_array($server['fe_users.']['usergroups.']['mapping.'])) {
+			if (is_array($server['fe_users.']['usergroups.']['mapping.'])) {				
+				$newObj = $this->objectManager->create('NormanSeibert\\Ldap\\Domain\\Model\\FrontendUserGroup');
 				foreach ($server['fe_users.']['usergroups.']['mapping.'] as $fld => $mapping) {
 					if (substr($fld, strlen($fld)-1, 1) == '.') {
 						$fld = substr($fld, 0, strlen($fld)-1);
 					}
-					// check whether property exists by creating a new object				
-					$newObj = $this->objectManager->create('NormanSeibert\\Ldap\\Domain\\Model\\FrontendUserGroup');
-					$ret = $newObj->_hasProperty($fld);
-					$newObj = NULL;
-					if (!$ret) {
-						$errors[] = 'Property "fe_groups.'.$fld.'" is unknown to Extbase.';
+					if ($fld != 'field') {
+						$ret = $newObj->_hasProperty($fld);
+						if (!$ret) {
+							$errors[] = 'Property "fe_groups.'.$fld.'" is unknown to Extbase.';
+						}
 					}
 				}
+				$newObj = NULL;
 			}
 
 			$res = \NormanSeibert\Ldap\Utility\Helpers::checkValue($server['fe_users.']['mapping.']['username.']['data'], 'required');
@@ -397,33 +397,33 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 				$errors[] = 'Attribute "be_users.baseDN": '.$res['error'];
 			}
 			
-			if (is_array($server['be_users.']['mapping.'])) {
+			if (is_array($server['be_users.']['mapping.'])) {				
+				$newObj = $this->objectManager->create('NormanSeibert\\Ldap\\Domain\\Model\\BackendUser');
 				foreach ($server['be_users.']['mapping.'] as $fld => $mapping) {
 					if (substr($fld, strlen($fld)-1, 1) == '.') {
 						$fld = substr($fld, 0, strlen($fld)-1);
 					}
-					// check whether property exists by creating a new object				
-					$newObj = $this->objectManager->create('NormanSeibert\\Ldap\\Domain\\Model\\BackendUser');
 					$ret = $newObj->_hasProperty($fld);
-					$newObj = NULL;
 					if (!$ret) {
 						$errors[] = 'Property "be_users.'.$fld.'" is unknown to Extbase.';
 					}
 				}
+				$newObj = NULL;
 			}
-			if (is_array($server['be_users.']['usergroups.']['mapping.'])) {
+			if (is_array($server['be_users.']['usergroups.']['mapping.'])) {			
+				$newObj = $this->objectManager->create('NormanSeibert\\Ldap\\Domain\\Model\\BackendUserGroup');
 				foreach ($server['be_users.']['usergroups.']['mapping.'] as $fld => $mapping) {
 					if (substr($fld, strlen($fld)-1, 1) == '.') {
 						$fld = substr($fld, 0, strlen($fld)-1);
 					}
-					// check whether property exists by creating a new object				
-					$newObj = $this->objectManager->create('NormanSeibert\\Ldap\\Domain\\Model\\BackendUserGroup');
-					$ret = $newObj->_hasProperty($fld);
-					$newObj = NULL;
-					if (!$ret) {
-						$errors[] = 'Property "be_groups.'.$fld.'" is unknown to Extbase.';
+					if ($fld != 'field') {
+						$ret = $newObj->_hasProperty($fld);
+						if (!$ret) {
+							$errors[] = 'Property "be_groups.'.$fld.'" is unknown to Extbase.';
+						}
 					}
 				}
+				$newObj = NULL;
 			}
 			
 			$res = \NormanSeibert\Ldap\Utility\Helpers::checkValue($server['be_users.']['mapping.']['username.']['data'], 'required');
