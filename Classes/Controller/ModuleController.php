@@ -58,7 +58,7 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 	protected $ldapConfig;
 
 	/**
-	 * @var NormanSeibert\Ldap\Domain\Model\BackendModule\ModuleData
+	 * @var \NormanSeibert\Ldap\Domain\Model\BackendModule\ModuleData
 	 *  */
 	protected $moduleData;
 
@@ -135,7 +135,8 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 	/**
 	 * initializes/stores the form's content
 	 *
-	 * @param type \NormanSeibert\Ldap\Domain\Model\FormSettings $settings
+	 * @param \NormanSeibert\Ldap\Domain\Model\BackendModule\FormSettings $settings
+	 * @return \NormanSeibert\Ldap\Domain\Model\BackendModule\FormSettings
 	 */
 	private function initializeFormSettings($settings = NULL) {
 		if ($settings === NULL) {
