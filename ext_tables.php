@@ -11,7 +11,7 @@ if (TYPO3_MODE == "BE")    {
 			'm1',	 // Submodule key
 			'',		 // Position
 			array(
-				'Module' => 'summary, importUsers, doImportUsers, updateUsers,
+				'Module' => 'check, summary, importUsers, doImportUsers, updateUsers,
 							doUpdateUsers, importAndUpdateUsers, doImportAndUpdateUsers,
 							deleteUsers, doDeleteUsers, checkLogin, doCheckLogin'
 			),

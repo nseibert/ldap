@@ -486,6 +486,16 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		
 		return $this;
 	}
+
+	/**
+	 * checks the LDAP server connection
+	 * 
+	 * @return resource
+	 */
+	public function checkConnection() {
+		$connect = $this->connect();
+		return $connect;
+	}
 	
 	/**
 	 * connects to the LDAP server
@@ -569,6 +579,22 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		
 		return $connect;
 	}
+
+	/**
+	 * checks the LDAP server binding
+	 * 
+	 * @return resource
+	 */
+	public function checkBind($connect) {
+		if (!empty($connect)) {
+			if ($this->getConfiguration()->getUser() && $this->getConfiguration()->getPassword()) {
+				$bind = $this->bind($connect, $this->getConfiguration()->getUser(), $this->getConfiguration()->getPassword());
+			} else {
+				$bind = $this->bind($connect);
+			}
+		}
+		return $bind;
+	}
 	
 	/**
 	 * Binds to the LDAP server
@@ -605,12 +631,11 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		if (!$bind) {
 			if ($this->ldapConfig->logLevel == 2) {
 				$msg = 'ldap_bind('.$host.':'.$port.', '.$user.', '.$pass.'): Could not bind to LDAP server.';
-				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 3);
 			} else {
 				$msg = 'ldap_bind('.$host.':'.$port.', '.$user.', ***): Could not bind to LDAP server.';
-				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 3);
+				
 			}
-			$msg = 'ldap_bind('.$host.':'.$port.', '.$user.', ***): Could not bind to LDAP server.';
+			\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 3);
 			\NormanSeibert\Ldap\Utility\Helpers::addError($warnLevel, $msg, $uid);
 		}
 		

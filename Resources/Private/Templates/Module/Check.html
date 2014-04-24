@@ -1,0 +1,30 @@
+<f:layout name="Backend"/>
+
+<f:section name="content">
+
+	<h1><f:translate key="headline.check" /></h1>
+
+	<f:if condition="{errorCount}">
+		<f:then>
+			<f:flashMessages renderMode="div" />
+		</f:then>
+		<f:else>
+			<div class="typo3-message message-ok">
+				<div class="header-container">
+					<div class="message-header message-left"><strong><f:translate key="msg.configuration.title" /></strong></div>
+					<div class="message-header message-right"></div>
+				</div>
+				<div class="message-body">
+					<f:format.nl2br><f:translate key="msg.configuration.message" /></f:format.nl2br>
+				</div>
+			</div>
+			<p>
+				<h3>Check your LDAP connections next:</h3>
+				<f:form action="summary" controller="Module">
+					<f:form.submit value="{f:translate(key: 'form.summary')}" />
+				</f:form>
+			</p>
+		</f:else>
+	</f:if>
+	
+</f:section>

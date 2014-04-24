@@ -35,7 +35,6 @@ namespace NormanSeibert\Ldap\Utility;
  * @see	   References to other sections (if any)...
  */
 
-
 /**
  * Short description for class
  * 
@@ -51,17 +50,10 @@ namespace NormanSeibert\Ldap\Utility;
  * @see	   References to other sections (if any)...
  */
 class Helpers {
+
+	protected $error = -1;
 	
 	function addError($severity = \TYPO3\CMS\Core\Messaging\FlashMessage::INFO, $message = '', $server = '', $data = null) {
-		/*
-		$debugTrace = debug_backtrace();
-		if (isset($debugTrace[1])) {
-			$file = $debugTrace[1]['file'] ? $debugTrace[1]['file'] : 'n/a';
-			$line = $debugTrace[1]['line'] ? $debugTrace[1]['line'] : 'n/a';
-			$class = $debugTrace[1]['class'] ? $debugTrace[1]['class'] : 'n/a';
-			$function = $debugTrace[1]['function'] ? $debugTrace[1]['function'] : 'n/a';
-		} 
-		*/
 		$msg = $message;
 		if ($data) {
 			$msg .= '<br/>'.\TYPO3\CMS\Core\Utility\GeneralUtility::view_array($data);
@@ -76,10 +68,11 @@ class Helpers {
 		if ($severity > $this->error) {
 			$this->error = $severity;
 		}
-	}
-	
-	function displayErrors() {
-		\TYPO3\CMS\Core\Utility\DebugUtility::debug($this->arrErrors);
+		$this->arrErrors[] = array(
+			'message' => $msg,
+			'server' => $server,
+			'severity' => $severity
+		);
 	}
 	
 	function checkValue($value, $eval, $list = '') {

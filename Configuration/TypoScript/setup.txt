@@ -73,7 +73,7 @@ module.tx_ldap {
 	settings {
 			// This is a dummy entry. It is used in  NormanSeibert\Ldap\Controller\ModuleController
 			// to test that some TypoScript configuration is set.
-			// This entry can be removed if extbase setup is made frontend TS independant
+			// This entry can be removed if extbase setup is made frontend TS independent
 			// or if there are other settings set.
 		dummy = foo
 	}

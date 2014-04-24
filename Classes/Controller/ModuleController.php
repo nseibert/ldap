@@ -110,7 +110,18 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 	}
 
 	/**
-	 * Compiles the overview to check LDAP installation and configurtaion.
+	 * Checks LDAP configuration.
+	 *
+	 * @return void
+	 */
+	public function checkAction() {
+		$ldapServers = $this->ldapConfig->getLdapServers();
+		$flashMessages = \TYPO3\CMS\Core\Messaging\FlashMessageQueue::getAllMessages();
+		$this->view->assign('errorCount', count($flashMessages));
+	}
+
+	/**
+	 * Queries LDAP and compiles a list of users and attributes.
 	 *
 	 * @return void
 	 */

@@ -436,10 +436,10 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 	}
 	
 	/**
-	 * checks whether PHP's LDAP functioanlity is available
+	 * checks whether PHP's LDAP functionality is available
 	 * @return boolean
 	 */
-	private function checkLdapExtension() {
+	public function checkLdapExtension() {
 		$result = extension_loaded('ldap');
 		if (!$result) {
 			$msg = 'PHP LDAP extension not loaded.';
