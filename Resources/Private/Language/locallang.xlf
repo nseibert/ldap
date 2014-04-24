@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<xliff version="1.0">
+	<file source-language="en" datatype="plaintext" original="messages" date="2014-04-24T20:19:35Z">
+		<header>
+			<type>module</type>
+			<generator>LFEditor</generator>
+		</header>
+		<body>
+		<trans-unit id="action.check" xml:space="preserve">
+			<source>Check configuration</source>
+		</trans-unit>
+		<trans-unit id="action.checkLogin" xml:space="preserve">
+			<source>Check login</source>
+		</trans-unit>
+		<trans-unit id="action.deleteUsers" xml:space="preserve">
+			<source>Deactivate/delete users</source>
+		</trans-unit>
+		<trans-unit id="action.importAndUpdateUsers" xml:space="preserve">
+			<source>Import and update Users</source>
+		</trans-unit>
+		<trans-unit id="action.importUsers" xml:space="preserve">
+			<source>Import users</source>
+		</trans-unit>
+		<trans-unit id="action.summary" xml:space="preserve">
+			<source>Get LDAP connection summary</source>
+		</trans-unit>
+		<trans-unit id="action.updateUsers" xml:space="preserve">
+			<source>Update users</source>
+		</trans-unit>
+		<trans-unit id="form.authenticate" xml:space="preserve">
+			<source>Process these types of users</source>
+		</trans-unit>
+		<trans-unit id="form.authenticationFail" xml:space="preserve">
+			<source>Authentication failed!</source>
+		</trans-unit>
+		<trans-unit id="form.authenticationSuccess" xml:space="preserve">
+			<source>Authentication successful!</source>
+		</trans-unit>
+		<trans-unit id="form.backend" xml:space="preserve">
+			<source>Backend Users:</source>
+		</trans-unit>
+		<trans-unit id="form.check" xml:space="preserve">
+			<source>Check Login</source>
+		</trans-unit>
+		<trans-unit id="form.deactivate" xml:space="preserve">
+			<source>Disable users only:</source>
+		</trans-unit>
+		<trans-unit id="form.deleteNonLdapUsers" xml:space="preserve">
+			<source>Delete/disable non-LDAP users:</source>
+		</trans-unit>
+		<trans-unit id="form.frontend" xml:space="preserve">
+			<source>Frontend Users:</source>
+		</trans-unit>
+		<trans-unit id="form.loginType" xml:space="preserve">
+			<source>Check login for:</source>
+		</trans-unit>
+		<trans-unit id="form.noUserFound" xml:space="preserve">
+			<source>No matching user found</source>
+		</trans-unit>
+		<trans-unit id="form.password" xml:space="preserve">
+			<source>Password:</source>
+		</trans-unit>
+		<trans-unit id="form.servers" xml:space="preserve">
+			<source>LDAP servers</source>
+		</trans-unit>
+		<trans-unit id="form.start" xml:space="preserve">
+			<source>Start LDAP operation</source>
+		</trans-unit>
+		<trans-unit id="form.submit" xml:space="preserve">
+			<source>Send</source>
+		</trans-unit>
+		<trans-unit id="form.summary" xml:space="preserve">
+			<source>Open LDAP connection summary</source>
+		</trans-unit>
+		<trans-unit id="form.useServers" xml:space="preserve">
+			<source>Use these LDAP servers</source>
+		</trans-unit>
+		<trans-unit id="form.user" xml:space="preserve">
+			<source>Username:</source>
+		</trans-unit>
+		<trans-unit id="header.baseDn" xml:space="preserve">
+			<source>BaseDN</source>
+		</trans-unit>
+		<trans-unit id="header.dn" xml:space="preserve">
+			<source>DN</source>
+		</trans-unit>
+		<trans-unit id="header.email" xml:space="preserve">
+			<source>E-Mail Address</source>
+		</trans-unit>
+		<trans-unit id="header.filter" xml:space="preserve">
+			<source>Filter</source>
+		</trans-unit>
+		<trans-unit id="header.hostPort" xml:space="preserve">
+			<source>Host:Port</source>
+		</trans-unit>
+		<trans-unit id="header.ldapServer" xml:space="preserve">
+			<source>LDAP Server</source>
+		</trans-unit>
+		<trans-unit id="header.name" xml:space="preserve">
+			<source>Name</source>
+		</trans-unit>
+		<trans-unit id="header.page" xml:space="preserve">
+			<source>Page</source>
+		</trans-unit>
+		<trans-unit id="header.title" xml:space="preserve">
+			<source>Title</source>
+		</trans-unit>
+		<trans-unit id="header.uid" xml:space="preserve">
+			<source>UID</source>
+		</trans-unit>
+		<trans-unit id="header.usergroups" xml:space="preserve">
+			<source>Usergroups</source>
+		</trans-unit>
+		<trans-unit id="header.username" xml:space="preserve">
+			<source>Username</source>
+		</trans-unit>
+		<trans-unit id="header.users" xml:space="preserve">
+			<source>Users (first 3 found)</source>
+		</trans-unit>
+		<trans-unit id="headline.be_users" xml:space="preserve">
+			<source>Backend Users</source>
+		</trans-unit>
+		<trans-unit id="headline.check" xml:space="preserve">
+			<source>Check configuration</source>
+		</trans-unit>
+		<trans-unit id="headline.checkLogin" xml:space="preserve">
+			<source>Check Login</source>
+		</trans-unit>
+		<trans-unit id="headline.deleteUsers" xml:space="preserve">
+			<source>Deactivate/delete users not in directory</source>
+		</trans-unit>
+		<trans-unit id="headline.deletedResults" xml:space="preserve">
+			<source>Deleted/deactivated users</source>
+		</trans-unit>
+		<trans-unit id="headline.fe_users" xml:space="preserve">
+			<source>Frontend Users</source>
+		</trans-unit>
+		<trans-unit id="headline.importAndUpdateResults" xml:space="preserve">
+			<source>Results of import/update from LDAP</source>
+		</trans-unit>
+		<trans-unit id="headline.importAndUpdateUsers" xml:space="preserve">
+			<source>Import new users from directory and update existing ones</source>
+		</trans-unit>
+		<trans-unit id="headline.importResults" xml:space="preserve">
+			<source>Results of import from LDAP</source>
+		</trans-unit>
+		<trans-unit id="headline.importUsers" xml:space="preserve">
+			<source>Import new users from directory</source>
+		</trans-unit>
+		<trans-unit id="headline.installation" xml:space="preserve">
+			<source>Installation</source>
+		</trans-unit>
+		<trans-unit id="headline.settings" xml:space="preserve">
+			<source>Settings</source>
+		</trans-unit>
+		<trans-unit id="headline.summary" xml:space="preserve">
+			<source>LDAP connection summary</source>
+		</trans-unit>
+		<trans-unit id="headline.updateResults" xml:space="preserve">
+			<source>Results of update from LDAP</source>
+		</trans-unit>
+		<trans-unit id="headline.updateUsers" xml:space="preserve">
+			<source>Update user data from directory</source>
+		</trans-unit>
+		<trans-unit id="mlang_tabs_tab" xml:space="preserve">
+			<source>LDAP Integration</source>
+		</trans-unit>
+		<trans-unit id="msg.configuration.message" xml:space="preserve">
+			<source>Congratulations! Your PHP installation supports LDAP functions and you have a valid configuration file in place.</source>
+		</trans-unit>
+		<trans-unit id="msg.configuration.title" xml:space="preserve">
+			<source>Configuration is OK</source>
+		</trans-unit>
+		</body>
+	</file>
+</xliff>

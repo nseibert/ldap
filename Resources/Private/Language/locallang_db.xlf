@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<xliff version="1.0">
+	<file source-language="en" datatype="plaintext" original="messages" date="2014-04-24T20:19:53Z">
+		<header>
+			<fileId>EXT:ldap/locallang_db.xml</fileId>
+			<generator>LFEditor</generator>
+		</header>
+		<body>
+		<trans-unit id="fe_users.tx_ldap_dn" xml:space="preserve">
+			<source>User's DN</source>
+		</trans-unit>
+		<trans-unit id="fe_users.tx_ldap_lastrun" xml:space="preserve">
+			<source>Internal identifier of last import/update</source>
+		</trans-unit>
+		<trans-unit id="fe_users.tx_ldap_server" xml:space="preserve">
+			<source>Imported/updated from server</source>
+		</trans-unit>
+		<trans-unit id="task.description" xml:space="preserve">
+			<source>Imports/updates/deletes users based on LDAP directory</source>
+		</trans-unit>
+		<trans-unit id="task.name" xml:space="preserve">
+			<source>LDAP Integration</source>
+		</trans-unit>
+		<trans-unit id="tx_euldap_scheduler" xml:space="preserve">
+			<source>Scheduler</source>
+		</trans-unit>
+		</body>
+	</file>
+</xliff>
