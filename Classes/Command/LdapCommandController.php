@@ -48,12 +48,6 @@ class LdapCommandController extends \TYPO3\CMS\Extbase\Mvc\Controller\CommandCon
 	protected $ldapConfig;
 	
 	/**
-	 * @var \TYPO3\CMS\Extbase\Persistence\PersistenceManagerInterface
-	 * @inject
-	 */
-	protected $persistenceManager;
-	
-	/**
 	 * import users from LDAP directory
 	 * @param string $servers Comma sparated server identifiers from configuration file
 	 * @param boolean $processFe import frontend users
@@ -70,14 +64,12 @@ class LdapCommandController extends \TYPO3\CMS\Extbase\Mvc\Controller\CommandCon
 				if ($processFe) {
 					$importer->init($server, 'fe');
 					$runs[] = $importer->doImport();
-					$this->persistenceManager->persistAll();
 					$feUsers = $this->feUserRepository->countByLastRun($runs);
 					$this->outputLine('Frontend users: ' . $feUsers);
 				}
 				if ($processBe) {
 					$importer->init($server, 'be');
 					$runs[] = $importer->doImport();
-					$this->persistenceManager->persistAll();
 					$beUsers = $this->beUserRepository->countByLastRun($runs);
 					$this->outputLine('Backend users: ' . $beUsers);
 				}
@@ -102,14 +94,12 @@ class LdapCommandController extends \TYPO3\CMS\Extbase\Mvc\Controller\CommandCon
 				if ($processFe) {
 					$importer->init($server, 'fe');
 					$runs[] = $importer->doUpdate();
-					$this->persistenceManager->persistAll();
 					$feUsers = $this->feUserRepository->countByLastRun($runs);
 					$this->outputLine('Frontend users: ' . $feUsers);
 				}
 				if ($processBe) {
 					$importer->init($server, 'be');
 					$runs[] = $importer->doUpdate();
-					$this->persistenceManager->persistAll();
 					$beUsers = $this->beUserRepository->countByLastRun($runs);
 					$this->outputLine('Backend users: ' . $beUsers);
 				}
@@ -134,14 +124,12 @@ class LdapCommandController extends \TYPO3\CMS\Extbase\Mvc\Controller\CommandCon
 				if ($processFe) {
 					$importer->init($server, 'fe');
 					$runs[] = $importer->doImportOrUpdate();
-					$this->persistenceManager->persistAll();
 					$feUsers = $this->feUserRepository->countByLastRun($runs);
 					$this->outputLine('Frontend users: ' . $feUsers);
 				}
 				if ($processBe) {
 					$importer->init($server, 'be');
 					$runs[] = $importer->doImportOrUpdate();
-					$this->persistenceManager->persistAll();
 					$beUsers = $this->beUserRepository->countByLastRun($runs);
 					$this->outputLine('Backend users: ' . $beUsers);
 				}
@@ -162,14 +150,12 @@ class LdapCommandController extends \TYPO3\CMS\Extbase\Mvc\Controller\CommandCon
 		if ($processFe) {
 			$importer->init(NULL, 'fe');
 			$runs[] = $importer->doDelete($hideNotDelete, $deleteNonLdapUsers);
-			$this->persistenceManager->persistAll();
 			$feUsers = $this->feUserRepository->countByLastRun($runs);
 			$this->outputLine('Frontend users: ' . $feUsers);
 		}
 		if ($processBe) {
 			$importer->init(NULL, 'be');
 			$runs[] = $importer->doDelete($hideNotDelete, $deleteNonLdapUsers);
-			$this->persistenceManager->persistAll();
 			$beUsers = $this->beUserRepository->countByLastRun($runs);
 			$this->outputLine('Backend users: ' . $beUsers);
 		}

@@ -242,8 +242,6 @@ class Helpers {
 		return $lowerCamelCase;
 	}
 	
-	
-	
 	function setRespectEnableFieldsToFalse($query) {
 		if (function_exists($query->getQuerySettings()->setRespectEnableFields)) {
 			$query->getQuerySettings()->setRespectEnableFields(FALSE);
@@ -251,5 +249,16 @@ class Helpers {
 			$query->getQuerySettings()->setIgnoreEnableFields(TRUE);
 		}
 	}
+
+    /**
+     * Get the list of individual characters used by the search splitting algorithm.
+     * @return array characters to use in split searches
+     */
+    public function getSearchCharacterRange() {
+        $numerals = range(0, 9);
+        $alphabet = range('a', 'z');
+
+        return array_merge($alphabet, $numerals);
+    }
 }
 ?>

@@ -38,6 +38,7 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 	/**
 	 *
 	 * @var \TYPO3\CMS\Extbase\Object\ObjectManager
+	 * @inject
 	 */
 	protected $objectManager;
 	
@@ -156,34 +157,36 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 					$msg = 'LDAP server "'. $server['title'] .'" ignored: is disabled.';
 					\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
 				}
-				if ($pid && $server['pid']) {
-					if (!\TYPO3\CMS\Core\Utility\GeneralUtility::inList($pid, $server['pid'])) {
-						$load = 0;
-						$msg = 'LDAP server "'. $server['title'] .'" ignored: does not match list of page uids ('. implode(', ', $pid) .').';
-						\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
-					}
-				}
-				if ($userPid && $server['fe_users.']['pid']) {
-					if (!\TYPO3\CMS\Core\Utility\GeneralUtility::inList($userPid, $server['fe_users.']['pid'])) {
-						$load = 0;
-						$msg = 'LDAP server "'. $server['title'] .'" ignored: does not match list of page uids ('. implode(', ', $userPid) .').';
-						\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
-					}
-				}
-				if ($uid) {
-					if ($server['uid']) {
-						if ($server['uid'] != $uid) {
+				if ($load) {
+					if ($pid && $server['pid']) {
+						if (!\TYPO3\CMS\Core\Utility\GeneralUtility::inList($pid, $server['pid'])) {
 							$load = 0;
+							$msg = 'LDAP server "'. $server['title'] .'" ignored: does not match list of page uids ('. implode(', ', $pid) .').';
+							\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
 						}
 					}
-				}
-				$server['authenticate'] = strtolower($server['authenticate']);
-				$authenticate = strtolower($authenticate);
-				if ($authenticate) {
-					if ($server['authenticate'] && ($server['authenticate'] != $authenticate) && ($server['authenticate'] != 'both')) {
-						$load = 0;
-						$msg = 'LDAP server "'. $server['title'] .'" ignored: no matching authentication configured.';
-						\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
+					if ($userPid && $server['fe_users.']['pid']) {
+						if (!\TYPO3\CMS\Core\Utility\GeneralUtility::inList($userPid, $server['fe_users.']['pid'])) {
+							$load = 0;
+							$msg = 'LDAP server "'. $server['title'] .'" ignored: does not match list of page uids ('. implode(', ', $userPid) .').';
+							\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
+						}
+					}
+					if ($uid) {
+						if ($server['uid']) {
+							if ($server['uid'] != $uid) {
+								$load = 0;
+							}
+						}
+					}
+					$server['authenticate'] = strtolower($server['authenticate']);
+					$authenticate = strtolower($authenticate);
+					if ($authenticate) {
+						if ($server['authenticate'] && ($server['authenticate'] != $authenticate) && ($server['authenticate'] != 'both')) {
+							$load = 0;
+							$msg = 'LDAP server "'. $server['title'] .'" ignored: no matching authentication configured.';
+							\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
+						}
 					}
 				}
 				if ($load) {
@@ -323,15 +326,6 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 		if ($res['error']) {
 			$errors[] = 'Attribute "auhenticate": '.$res['error'];
 		}
-
-		/*
-		if (version_compare(TYPO3_branch, '6.2', '<')) {
-			$sqlHandler = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Install\\Sql\\SchemaMigrator');
-		} else {
-			$sqlHandler = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Install\\Service\\SqlSchemaMigrationService');
-		}
-		$dbFields = $sqlHandler->getFieldDefinitions_database();
-		*/
 
 		$server['authenticate'] = strtolower($server['authenticate']);
 		

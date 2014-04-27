@@ -56,6 +56,7 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 	/**
 	 *
 	 * @var \TYPO3\CMS\Extbase\Object\ObjectManager
+	 * @inject
 	 */
 	protected $objectManager;
 	
@@ -150,7 +151,6 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 			}
 		} else {
 			$mapping = $this->userRules->getMapping();
-			
 			$rawLdapUsername = $mapping['username.']['data'];
 			$ldapUsername = str_replace('field:', '', $rawLdapUsername);
 			$username = $this->getAttribute($ldapUsername);
@@ -218,6 +218,7 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 	 */
 	protected function assignGroups($lastRun = NULL) {
 		$mapping = $this->userRules->getGroupRules()->getMapping();
+
 		if (is_array($mapping)) {
 			if ($this->userRules->getGroupRules()->getReverseMapping()) {
 				$ret = $this->reverseAssignGroups($lastRun);
@@ -480,15 +481,17 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 	protected function addUsergroupsToUserRecord($lastRun = NULL) {
 		if (is_object($this->userRules->getGroupRules())) {
 			$assignedGroups = $this->assignGroups($lastRun);
-//			\TYPO3\CMS\Core\Utility\DebugUtility::debug($assignedGroups);
+			// \TYPO3\CMS\Core\Utility\DebugUtility::debug($assignedGroups);
 			if ($this->userRules->getGroupRules()->getAddToGroups()) {
 				$addToGroups = $this->userRules->getGroupRules()->getAddToGroups();
+				// \TYPO3\CMS\Core\Utility\DebugUtility::debug($addToGroups);
 				$groupsToAdd = $this->usergroupRepository->findByUids(explode(',', $addToGroups));
+				// \TYPO3\CMS\Core\Utility\DebugUtility::debug($groupsToAdd);
 				$usergroups = array_merge($assignedGroups, $groupsToAdd);
 			} else {
 				$usergroups = $assignedGroups;
 			}
-//			\TYPO3\CMS\Core\Utility\DebugUtility::debug($usergroups);
+			// \TYPO3\CMS\Core\Utility\DebugUtility::debug($usergroups);
 			if (count($usergroups) == 0) {
 				$msg = 'User has no usergroup';
 				if ($this->ldapConfig->logLevel == 2) {
@@ -507,6 +510,8 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 			}
 			\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::WARNING, $msg, $this->ldapServer->getConfiguration()->getUid());
 		}
+
+		// exit();
 	}
 	
 	/**

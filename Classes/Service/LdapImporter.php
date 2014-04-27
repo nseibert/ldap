@@ -28,6 +28,12 @@ namespace NormanSeibert\Ldap\Service;
  * Service to import users from LDAP directory to TYPO3 database
  */
 class LdapImporter {
+
+	/**
+	 * @var \NormanSeibert\Ldap\Domain\Model\Configuration\Configuration
+	 * @inject
+	 */
+	protected $ldapConfig;
 	
 	/**
 	 * @var \NormanSeibert\Ldap\Domain\Model\LdapServer\Server
@@ -48,7 +54,7 @@ class LdapImporter {
 	
 	/**
 	 *
-	 * @var TYPO3\CMS\Extbase\Object\ObjectManager
+	 * @var \TYPO3\CMS\Extbase\Object\ObjectManager
 	 * @inject
 	 */
 	protected $objectManager;
@@ -69,7 +75,95 @@ class LdapImporter {
 		} else {
 			$this->table = 'fe_users';
 		}
-		// $this->objectManager = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\Object\\ObjectManager');
+		$this->ldapConfig = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('\\NormanSeibert\\Ldap\\Domain\\Model\\Configuration\\Configuration');
+	}
+
+	/**
+	 * creates new TYPO3 users
+	 *
+	 * @param string $runIdentifier
+	 */
+	private function storeNewUsers($runIdentifier, $ldapUsers) {
+		foreach ($ldapUsers as $user) {
+			$user->loadUser();
+			$typo3User = $user->getUser();
+			if (!is_object($typo3User)) {
+				$user->addUser($runIdentifier);
+			}
+		}
+	}
+
+	/**
+	 * updates TYPO3 users
+	 *
+	 * @param string $runIdentifier
+	 */
+	private function updateUsers($runIdentifier, $ldapUsers) {
+		foreach ($ldapUsers as $user) {
+			$user->loadUser();
+			$typo3User = $user->getUser();
+			if (is_object($typo3User)) {
+				$user->updateUser($runIdentifier);
+			}
+		}
+	}
+
+	/**
+	 * imports or updates TYPO3 users
+	 *
+	 * @param string $runIdentifier
+	 */
+	private function storeUsers($runIdentifier, $ldapUsers) {
+		foreach ($ldapUsers as $user) {
+			$user->loadUser();
+			$typo3User = $user->getUser();
+			if (is_object($typo3User)) {
+				$user->updateUser($runIdentifier);
+			} else {
+				$user->addUser($runIdentifier);
+			}
+		}
+	}
+
+	/**
+	 * retrieves user records from LDAP
+	 *
+	 * @param string $runIdentifier
+	 * @param string $command
+	 */
+	private function getUsers($runIdentifier, $command) {
+		$ldapUsers = $this->ldapServer->getUsers('*', false);
+		if (is_array($ldapUsers)) {
+			switch ($command) {
+				case 'import':
+					$this->storeNewUsers($runIdentifier, $ldapUsers);
+					break;
+				case 'update':
+					$this->updateUsers($runIdentifier, $ldapUsers);
+					break;
+				case 'importOrUpdate':
+					$this->storeUsers($runIdentifier, $ldapUsers);
+					break;
+			}
+		} else {
+			// recursive search
+			$cnt = 0;
+			if ($this->ldapConfig->logLevel) {
+				$msg = 'LDAP query limit exceeded';
+				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
+			}			
+			$searchCharacters = \NormanSeibert\Ldap\Utility\Helpers::getSearchCharacterRange();
+			foreach ($searchCharacters as $thisCharacter) {
+				$ldapUsers = $this->ldapServer->getUsers('*' . $thisCharacter, false);					
+				$msg = 'Query server: ' . $this->ldapServer->getConfiguration()->getUid() . ' with getUsers("*' . $thisCharacter . '") returned ' . count($ldapUsers) . ' results.';
+				if ($this->ldapConfig->logLevel > 1) {
+					\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
+				}
+				if (is_array($ldapUsers)) {
+					$this->storeNewUsers($runIdentifier, $ldapUsers);
+				}
+			}
+		}
 	}
 	
 	/**
@@ -80,14 +174,7 @@ class LdapImporter {
 	public function doImport() {
 		$runIdentifier = uniqid();
 		$this->ldapServer->loadAllGroups();
-		$ldapUsers = $this->ldapServer->getUsers('*', false);
-		foreach ($ldapUsers as $user) {
-			$user->loadUser();
-			$typo3User = $user->getUser();
-			if (!is_object($typo3User)) {
-				$user->addUser($runIdentifier);
-			}
-		}		
+		$this->getUsers($runIdentifier, 'import');
 		return $runIdentifier;
 	}
 	
@@ -99,14 +186,7 @@ class LdapImporter {
 	public function doUpdate() {
 		$runIdentifier = uniqid();
 		$this->ldapServer->loadAllGroups();
-		$ldapUsers = $this->ldapServer->getUsers('*', false);
-		foreach ($ldapUsers as $user) {
-			$user->loadUser();
-			$typo3User = $user->getUser();
-			if (is_object($typo3User)) {
-				$user->updateUser($runIdentifier);
-			}
-		}		
+		$this->getUsers($runIdentifier, 'update');
 		return $runIdentifier;
 	}
 	
@@ -118,16 +198,7 @@ class LdapImporter {
 	public function doImportOrUpdate() {
 		$runIdentifier = uniqid();
 		$this->ldapServer->loadAllGroups();
-		$ldapUsers = $this->ldapServer->getUsers('*', false);
-		foreach ($ldapUsers as $user) {
-			$user->loadUser();
-			$typo3User = $user->getUser();
-			if (is_object($typo3User)) {
-				$user->updateUser($runIdentifier);
-			} else {
-				$user->addUser($runIdentifier);
-			}
-		}		
+		$this->getUsers($runIdentifier, 'importOrUpdate');	
 		return $runIdentifier;
 	}
 	
