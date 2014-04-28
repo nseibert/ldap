@@ -75,7 +75,7 @@ class LdapImporter {
 		} else {
 			$this->table = 'fe_users';
 		}
-		$this->ldapConfig = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('\\NormanSeibert\\Ldap\\Domain\\Model\\Configuration\\Configuration');
+		$this->ldapConfig = $this->objectManager->get('\\NormanSeibert\\Ldap\\Domain\\Model\\Configuration\\Configuration');
 	}
 
 	/**

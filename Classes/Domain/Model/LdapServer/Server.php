@@ -777,10 +777,11 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		if (!empty($username) && !empty($password)) {
 			$connect = $this->connect();
 			$bind = $this->bind($connect, $username, $password, \TYPO3\CMS\Core\Messaging\FlashMessage::INFO);
+
 			if ($bind) {
 				$user = $ldapUser;
-				$msg = 'User ' . $username . ' loaded from LDAP directory (Server: ' . $serverUid . ')';
 				if ($this->ldapConfig->logLevel == 2) {
+					$msg = 'User ' . $username . ' loaded from LDAP directory (Server: ' . $serverUid . ')';
 					\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
 				}
 			} else {

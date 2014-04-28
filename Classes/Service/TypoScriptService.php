@@ -1,7 +1,7 @@
 <?php
 namespace NormanSeibert\Ldap\Service;
 
-class TypoScriptService implements \TYPO3\CMS\Core\SingletonInterface {
+class TypoScriptService {
 
 	/**
 	 * @var array
@@ -15,7 +15,8 @@ class TypoScriptService implements \TYPO3\CMS\Core\SingletonInterface {
 	public function loadTypoScriptFromFile($filePath) {
 		$filePath = \TYPO3\CMS\Core\Utility\GeneralUtility::getFileAbsFileName($filePath);
 		if ($filePath) {
-			$typoScriptParser = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('\\TYPO3\\CMS\\Core\TypoScript\\Parser\\TypoScriptParser');
+			$objectManager = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\Object\\ObjectManager');
+			$typoScriptParser = $objectManager->get('TYPO3\\CMS\\Core\\TypoScript\\Parser\\TypoScriptParser');
 			$typoScript = file_get_contents($filePath);
 			if ($typoScript) {
 				$typoScriptParser->parse($typoScript);

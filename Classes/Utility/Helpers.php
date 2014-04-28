@@ -58,7 +58,8 @@ class Helpers {
 		if ($data) {
 			$msg .= '<br/>'.\TYPO3\CMS\Core\Utility\GeneralUtility::view_array($data);
 		}
-		$message = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(
+		$objectManager = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\Object\\ObjectManager');
+		$message = $objectManager->get(
 			'TYPO3\\CMS\\Core\\Messaging\\FlashMessage',
 			$msg,
 			$server,
