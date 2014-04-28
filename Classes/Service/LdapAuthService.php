@@ -79,16 +79,10 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 	
 	/**
 	 *
-	 * @var TYPO3\CMS\Extbase\Object\ObjectManager
+	 * @var \TYPO3\CMS\Extbase\Object\ObjectManager
 	 * @inject
 	 */
 	protected $objectManager;
-	
-	/**
-	 * @var \TYPO3\CMS\Extbase\Persistence\PersistenceManagerInterface
-	 * @inject
-	 */
-	protected $persistenceManager;
 	
 	/**
 	 * Initialize authentication service
@@ -122,22 +116,18 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 		// for testing purposes only!
 		// $_SERVER[$this->conf['ssoHeader']] = 'admin';
 		
-		if (strlen($this->password) == 0) {
-			if ($this->pObj->security_level == 'rsa') {
-				if (\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::isLoaded('rsaauth')) {
-					$backend = \TYPO3\CMS\Rsaauth\Backend\BackendFactory::getBackend();
-					$storage = \TYPO3\CMS\Rsaauth\Storage\StorageFactory::getStorage();
-					$key = $storage->get();
-					
-					if ($key != NULL && substr($this->loginData['uident'], 0, 4) == 'rsa:') {
-						$this->password = $backend->decrypt($key, substr($this->loginData['uident'], 4));
-					}
-				} else {
-					\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('You have an error in your TYPO3 configuration. Your security level is set to "rsa" but the  extension "rsaauth" is not loaded.', 'ldap', 3);
+		if (substr($this->loginData['uident'], 0, 4) == 'rsa:') {
+			if (\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::isLoaded('rsaauth')) {
+				$backend = \TYPO3\CMS\Rsaauth\Backend\BackendFactory::getBackend();
+				$storage = \TYPO3\CMS\Rsaauth\Storage\StorageFactory::getStorage();
+				$key = $storage->get();
+				if ($key != NULL) {
+					$this->password = $backend->decrypt($key, substr($this->loginData['uident'], 4));
 				}
-			} elseif ($this->pObj->security_level == 'superchallenged') {
-				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('LDAP extension does not work with security level "superchallenged". Please install und activate extension "rsaauth".', 'ldap', 3);
+			} else {
+				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('You have an error in your TYPO3 configuration. Your security level is set to "rsa" but the  extension "rsaauth" is not loaded.', 'ldap', 3);
 			}
+
 			if ($this->loginData['status'] == 'logout') {
 				// do nothing so far
 			} elseif ($this->conf['enableSSO'] && $this->conf['ssoHeader'] && ($_SERVER[$this->conf['ssoHeader']])) {
@@ -202,7 +192,12 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 					foreach ($this->ldapServers as $server) {
 						$server->setScope(strtolower($this->authInfo['loginType']), $pid);
 						$server->loadAllGroups();
-						if (!$user['authenticated']) {
+
+						if ($user['authenticated']) {
+							if ($this->logLevel >= 1) {
+								\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('User already authenticated', 'ldap', 0);
+							}
+						} else {
 							// Authenticate the user here because only users shall be imported which are authenticated.
 							// Otherwise every user present in the directory would be imported regardless of the entered password.
 							
@@ -234,16 +229,17 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 								$user['authenticated'] = TRUE;
 							} else {
 								$user = $this->getTypo3User();
-							}
-						} else {
-							$user = $this->getTypo3User();
-							if ($this->logLevel >= 1) {
-								\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('Login failed', 'ldap', 2);
+								if ($this->logLevel >= 1) {
+									\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('Login failed', 'ldap', 2);
+								}
 							}
 						}
 					}
 				} else {
 					$user = $this->getTypo3User();
+					if ($this->logLevel >= 1) {
+						\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('No LDAP servers configured', 'ldap', 2);
+					}
 				}
 			}
 		}
@@ -355,7 +351,7 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 
 		// inject content object into the configuration manager
 		$this->configurationManager = $this->objectManager->get('TYPO3\\CMS\\Extbase\\Configuration\\ConfigurationManagerInterface');
-		$contentObject = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('tslib_cObj');
+		$contentObject = $this->objectManager->get('TYPO3\\CMS\\Frontend\\ContentObject\\ContentObjectRenderer');
 		$this->configurationManager->setContentObject($contentObject);
 
 		$this->typoScriptService->makeTypoScriptBackup();
@@ -385,7 +381,7 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 		if (!is_array($typoScriptSetup['config.']['tx_extbase.']['objects.'])) {
 			return;
 		}
-		$objectContainer = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\Object\\Container\\Container');
+		$objectContainer = $this->objectManager->get('TYPO3\\CMS\\Extbase\\Object\\Container\\Container');
 		foreach ($typoScriptSetup['config.']['tx_extbase.']['objects.'] as $classNameWithDot => $classConfiguration) {
 			if (isset($classConfiguration['className'])) {
 				$originalClassName = rtrim($classNameWithDot, '.');
