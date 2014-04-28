@@ -7,6 +7,20 @@ class TypoScriptService {
 	 * @var array
 	 */
 	protected $typoScriptBackup;
+	
+	/**
+	 *
+	 * @var \TYPO3\CMS\Extbase\Object\ObjectManager
+	 * @inject
+	 */
+	protected $objectManager;
+	
+	/**
+	 * 
+	 */
+	public function __construct() {
+		$this->objectManager = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\Object\\ObjectManager');
+	}
 
 	/**
 	 * @param string $filePath
@@ -15,8 +29,7 @@ class TypoScriptService {
 	public function loadTypoScriptFromFile($filePath) {
 		$filePath = \TYPO3\CMS\Core\Utility\GeneralUtility::getFileAbsFileName($filePath);
 		if ($filePath) {
-			$objectManager = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\Object\\ObjectManager');
-			$typoScriptParser = $objectManager->get('TYPO3\\CMS\\Core\\TypoScript\\Parser\\TypoScriptParser');
+			$typoScriptParser = $this->objectManager->get('TYPO3\\CMS\\Core\\TypoScript\\Parser\\TypoScriptParser');
 			$typoScript = file_get_contents($filePath);
 			if ($typoScript) {
 				$typoScriptParser->parse($typoScript);

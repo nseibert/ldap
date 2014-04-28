@@ -89,6 +89,13 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 	
 	/**
 	 * 
+	 */
+	public function __construct() {
+		$this->objectManager = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\Object\\ObjectManager');
+	}
+	
+	/**
+	 * 
 	 * @param string $uid
 	 * @return \NormanSeibert\Ldap\Domain\Model\LdapServer\Server
 	 */
