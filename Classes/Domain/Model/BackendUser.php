@@ -79,7 +79,7 @@ class BackendUser extends \TYPO3\CMS\Extbase\Domain\Model\BackendUser implements
 	
 	/**
 	 *
-	 * @var \TYPO3\CMS\Extbase\Persistence\ObjectStorage<\NormanSeibert\Ldap\Domain\Model\BackendUserGroup>
+	 * @var \NormanSeibert\Ldap\Domain\Model\BackendUserGroup
 	 */
 	protected $usergroup;
 
