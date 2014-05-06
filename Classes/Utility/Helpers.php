@@ -59,8 +59,7 @@ class Helpers {
 			$msg .= '<br/>'.\TYPO3\CMS\Core\Utility\GeneralUtility::view_array($data);
 		}
 		$objectManager = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\Object\\ObjectManager');
-		$objectManager = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\Object\\ObjectManager');
-		$message = $this->objectManager->get(
+		$message = $objectManager->get(
 			'TYPO3\\CMS\\Core\\Messaging\\FlashMessage',
 			$msg,
 			$server,
