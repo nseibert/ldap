@@ -710,7 +710,8 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		
 		$sizeLimitErrorNumber = 4;
         $knownSizeLimitErrors = array(
-			'SIZE LIMIT EXCEEDED'
+			'SIZE LIMIT EXCEEDED',
+			'SIZELIMIT EXCEEDED'
 		);
 		
 		if ((ldap_errno($ds) == $sizeLimitErrorNumber) || in_array(strtoupper(ldap_error($ds)), $knownSizeLimitErrors)) {
@@ -757,7 +758,7 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 	
 		$ret['count'] = $i;
 
-		ldap_free_result($search);
+		@ldap_free_result($search);
 		
 		return $ret;
 	}
