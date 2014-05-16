@@ -492,47 +492,6 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 	}
 	
 	/**
-	 * adds TYPO3 usergroups to the user record
-	 * 
-	 * @param string $lastRun
-	 */
-	protected function addUsergroupsToUserRecord($lastRun = NULL) {
-		if (is_object($this->userRules->getGroupRules())) {
-			$assignedGroups = $this->assignGroups($lastRun);
-			// \TYPO3\CMS\Core\Utility\DebugUtility::debug($assignedGroups);
-			if ($this->userRules->getGroupRules()->getAddToGroups()) {
-				$addToGroups = $this->userRules->getGroupRules()->getAddToGroups();
-				// \TYPO3\CMS\Core\Utility\DebugUtility::debug($addToGroups);
-				$groupsToAdd = $this->usergroupRepository->findByUids(explode(',', $addToGroups));
-				// \TYPO3\CMS\Core\Utility\DebugUtility::debug($groupsToAdd);
-				$usergroups = array_merge($assignedGroups, $groupsToAdd);
-			} else {
-				$usergroups = $assignedGroups;
-			}
-			// \TYPO3\CMS\Core\Utility\DebugUtility::debug($usergroups);
-			if (count($usergroups) == 0) {
-				$msg = 'User has no usergroup';
-				if ($this->ldapConfig->logLevel == 2) {
-					\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 2);
-				}
-				\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::WARNING, $msg, $this->ldapServer->getConfiguration()->getUid());
-			} else {
-				foreach ($usergroups as $group) {
-					$this->user->addUsergroup($group);
-				}
-			}
-		} else {
-			$msg = 'User has no usergroup';
-			if ($this->ldapConfig->logLevel == 2) {
-				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 2);
-			}
-			\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::WARNING, $msg, $this->ldapServer->getConfiguration()->getUid());
-		}
-
-		// exit();
-	}
-	
-	/**
 	 * removes usergroups from the user record
 	 */
 	protected function removeUsergroupsFromUserRecord() {

@@ -187,6 +187,29 @@ class BeUser extends \NormanSeibert\Ldap\Domain\Model\LdapUser\User {
 			\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::WARNING, $msg, $this->ldapServer->getConfiguration()->getUid());
 		}
 	}
+
+	/**
+	 * adds TYPO3 usergroups to the user record
+	 * 
+	 * @param string $lastRun
+	 */
+	protected function addUsergroupsToUserRecord($lastRun = NULL) {
+		if (is_object($this->userRules->getGroupRules())) {
+			$assignedGroups = $this->assignGroups($lastRun);
+			if ($this->userRules->getGroupRules()->getAddToGroups()) {
+				$addToGroups = $this->userRules->getGroupRules()->getAddToGroups();
+				$groupsToAdd = $this->usergroupRepository->findByUids(explode(',', $addToGroups));
+				$usergroups = array_merge($assignedGroups, $groupsToAdd);
+			} else {
+				$usergroups = $assignedGroups;
+			}
+			if (count($usergroups) > 0) {
+				foreach ($usergroups as $group) {
+					$this->user->addUsergroup($group);
+				}
+			}
+		}
+	}
 	
 	/**
 	 * adds a new TYPO3 usergroup
