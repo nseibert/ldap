@@ -78,8 +78,7 @@ class BackendUser extends \TYPO3\CMS\Extbase\Domain\Model\BackendUser implements
 	protected $ldapConfig;
 	
 	/**
-	 *
-	 * @var \NormanSeibert\Ldap\Domain\Model\BackendUserGroup
+	 * @var \TYPO3\CMS\Extbase\Persistence\ObjectStorage<\TYPO3\CMS\Extbase\Domain\Model\BackendUserGroup>
 	 */
 	protected $usergroup;
 
