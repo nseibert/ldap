@@ -1,20 +1,20 @@
 # cat=basic/enable; type=string; label=Path to configuration file: If set the complete LDAP server configurations will be retrieved from this file (see example directory in extension folder). Specify a file name related to web site root directory.
 configFile = typo3conf/ldap_conf.txt
 
-# cat=basic/enable; type=boolean; label=Enable authentication against LDAP only. If checked, users not found in the directory may not log on.
-onlyLDAP = 0
-
-# cat=basic/enable; type=boolean; label=Backend: Enable LDAP authentification for the backend.
-enableBE = 0
-
-# cat=basic/enable; type=boolean; label=Frontend: Enable LDAP authentification for the frontend.
-enableFE = 0
-
 # cat=basic/enable; type=int+; label=Logging level (0 = none, 1 = normal, 2 = extensive).
 logLevel = 1
 
-# cat=basic/enable; type=boolean; label=Enable Single-Sign-On (SSO).
+# cat=login/enable; type=boolean; label=Frontend: Enable LDAP authentification for the frontend.
+enableFE = 0
+
+# cat=login/enable; type=boolean; label=Backend: Enable LDAP authentification for the backend.
+enableBE = 0
+
+# cat=login/enable; type=boolean; label=Enable authentication against LDAP only. If checked, users not found in the directory may not log on.
+onlyLDAP = 0
+
+# cat=sso/enable; type=boolean; label=Enable Single-Sign-On (SSO).
 enableSSO = 0
 
-# cat=basic/enable; type=string; label=Use this server header for SSO user name.
+# cat=sso/enable; type=string; label=Use this server header for SSO user name.
 ssoHeader = PHP_AUTH_USER

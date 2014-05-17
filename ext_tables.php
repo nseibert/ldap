@@ -70,11 +70,4 @@ if (version_compare(TYPO3_branch, '6.1', '<')) {
 \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addTCAcolumns("be_groups", $tempColumns, 1);
 
 t3lib_extMgm::addTCAcolumns('fe_users',$tmp_feu_ext_columns);
-
-/*
-t3lib_extMgm::addToAllTCAtypes('fe_users', '--div--;LDAP, tx_ldap_dn, tx_ldap_serveruid, tx_ldap_lastrun');
-t3lib_extMgm::addToAllTCAtypes('fe_groups', '--div--;LDAP, tx_ldap_dn, tx_ldap_serveruid, tx_ldap_lastrun');
-t3lib_extMgm::addToAllTCAtypes('bfe_users', '--div--;LDAP, tx_ldap_dn, tx_ldap_serveruid, tx_ldap_lastrun');
-t3lib_extMgm::addToAllTCAtypes('be_groups', '--div--;LDAP, tx_ldap_dn, tx_ldap_serveruid, tx_ldap_lastrun');
-*/
 ?>
