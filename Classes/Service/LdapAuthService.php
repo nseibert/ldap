@@ -110,6 +110,7 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 		
 		// for testing purposes only!
 		// $_SERVER[$this->conf['ssoHeader']] = 'admin@entios.local';
+		// $_SERVER[$this->conf['ssoHeader']] = 'entios\\admin';
 
 		// SSO
 		if (($this->loginData['status'] != 'logout') && empty($this->password) && $this->conf['enableSSO']) {
@@ -129,18 +130,23 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 			$this->password = '';
 			$this->authInfo['db_user']['checkPidList'] = '';
 			$this->authInfo['db_user']['check_pid_clause'] = '';
+
+			$slotReturn = $this->signalSlotDispatcher->dispatch(
+				__CLASS__,
+				'beforeSSO',
+				array(
+					'username' => $this->username
+				)
+			);
+			// Before TYPO3 6.2 there is no return value!
+			if ($slotReturn) {
+				$this->username = $slotReturn['username'];
+			}
+			
 			if ($this->logLevel > 0) {
 				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('SSO active for user: ' . $this->username, 'ldap', 0);
 			}
 		}
-		$slotReturn = $this->signalSlotDispatcher->dispatch(
-			__CLASS__,
-			'beforeSSO',
-			array(
-				'username' => $this->username
-			)
-		);
-		$this->username = $slotReturn['username'];
 	}
 	
 	/**
