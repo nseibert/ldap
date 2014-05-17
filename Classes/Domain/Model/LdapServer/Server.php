@@ -92,6 +92,7 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 	 */
 	public function __construct() {
 		$this->objectManager = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\Object\\ObjectManager');
+		$this->signalSlotDispatcher = $this->objectManager->get('TYPO3\\CMS\\Extbase\\SignalSlot\\Dispatcher');
 	}
 	
 	/**
@@ -149,28 +150,6 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 			}
 			$baseDN = $this->getConfiguration()->getUserRules($this->table)->getBaseDN();
 			$filter = $this->getConfiguration()->getUserRules($this->table)->getFilter();
-
-			$hooks = $this->hooks['search']['filter'];
-			if (is_array($hooks)) {
-				$parameters = array(
-					'server' => $this,
-					'find' => $findname,
-					'table' => $this->table
-				);
-				foreach ($hooks as $hook) {
-					$searchHook = \TYPO3\CMS\Core\Utility\GeneralUtility::callUserFunction($hook, $parameters, $this);
-					if (!$searchHook) {
-						$msg = 'Hook "search/filter" returned error (Server: ' . $this->getConfiguration()->getUid() . ')';
-						if ($this->ldapConfig->logLevel) {
-							\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 3);
-						}
-						\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::ERROR, $msg, $this->getConfiguration()->getUid());
-						return FALSE;
-					} else {
-						$filter = $searchHook;
-					}
-				}
-			}
 		}
 			
 		if (!empty($filter) && !empty($baseDN)) {
@@ -201,29 +180,14 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 			}
 		}
 					
-		$hooks = $this->hooks['search']['result'];
-		if (is_array($hooks)) {
-			$parameters = array(
-				'server' => $this,
-				'find' => $findname,
-				'table' => $this->table,
-				'type' => 'list',
-				'result' => $info
-			);
-			foreach ($hooks as $hook) {
-				$searchHook = \TYPO3\CMS\Core\Utility\GeneralUtility::callUserFunction($hook, $parameters, $this);
-				if (!$searchHook) {
-					$msg = 'Hook "search/result" returned error (Server: ' . $this->getConfiguration()->getUid() . ')';
-					if ($this->ldapConfig->logLevel) {
-						\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 3);
-					}
-					\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::ERROR, $msg, $this->getConfiguration()->getUid());
-					return FALSE;
-				} else {
-					$info = $searchHook;
-				}
-			}
-		}
+		$parameters = array(
+			'server' => $this,
+			'find' => $findname,
+			'table' => $this->table,
+			'type' => 'list',
+			'result' => $info
+		);
+		$this->signalSlotDispatcher->dispatch(__CLASS__, 'getUsersResults', $parameters);
 		
 		$users = array();
 		for ($i = 0; $i < $info['count']; $i++) {
@@ -276,29 +240,14 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 			$info = $this->search($connect, $distinguishedName, '(objectClass=*)', $attrs, 'base', false, LDAP_DEREF_NEVER, 1, 0);
 		}
 
-		$hooks = $this->hooks['search']['result'];
-		if (is_array($hooks)) {
-			$parameters = array(
-				'server' => $this,
-				'dn' => $dn,
-				'table' => $this->table,
-				'type' => 'single',
-				'result' => $info
-			);
-			foreach ($hooks as $hook) {
-				$searchHook = \TYPO3\CMS\Core\Utility\GeneralUtility::callUserFunction($hook, $parameters, $this);
-				if (!$searchHook) {
-					$msg = 'Hook "search/result" returned error (Server: ' . $this->getConfiguration()->getUid() . ')';
-					if ($this->ldapConfig->logLevel) {
-						\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 3);
-					}
-					\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::ERROR, $msg, $this->getConfiguration()->getUid());
-					return FALSE;
-				} else {
-					$info = $searchHook;
-				}
-			}
-		}
+		$parameters = array(
+			'server' => $this,
+			'dn' => $dn,
+			'table' => $this->table,
+			'type' => 'single',
+			'result' => $info
+		);
+		$this->signalSlotDispatcher->dispatch(__CLASS__, 'getUserResults', $parameters);
 		
 		if ($info['count'] == 1) {
 			if ($this->table == 'be_users') {
@@ -533,26 +482,6 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 			\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::ERROR, $msg, $uid);
 		}
 		
-		$hooks = $this->hooks['connect'];
-		if (is_array($hooks)) {
-			$parameters = array(
-				'server' => $this,
-				'connect' => $connect,
-				'msg' => $msg
-			);
-			foreach ($hooks as $hook) {
-				$connectHook = \TYPO3\CMS\Core\Utility\GeneralUtility::callUserFunction($hook, $parameters, $this);
-				if (!$connectHook) {
-					$msg = 'Hook "connect" returned error (Server: '.$uid.')';
-					if ($this->ldapConfig->logLevel) {
-						\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 3);
-					}
-					\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::ERROR, $msg, $uid);
-					return FALSE;
-				}
-			}
-		}
-		
 		return $connect;
 	}
 
@@ -613,27 +542,6 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 			}
 			\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 3);
 			\NormanSeibert\Ldap\Utility\Helpers::addError($warnLevel, $msg, $uid);
-		}
-		
-		$hooks = $this->hooks['bind'];
-		if (is_array($hooks)) {
-			$parameters = array(
-				'server' => $this,
-				'connect' => $conn,
-				'bind' => $bind,
-				'msg'	  => $msg
-			);
-			foreach ($hooks as $hook) {
-				$bindHook = \TYPO3\CMS\Core\Utility\GeneralUtility::callUserFunction($hook, $parameters, $this);
-				if (!$bindHook) {
-					$msg = 'Hook "bind" returned error (Server: '.$uid.')';
-					if ($this->ldapConfig->logLevel) {
-						\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 3);
-					}
-					\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::ERROR, $msg, $uid);
-					return FALSE;
-				}
-			}
 		}
 		
 		return $bind;
@@ -798,27 +706,6 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 					\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 2);
 				}
 				\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::WARNING, $msg, $serverUid);
-			}
-		}
-
-		$hooks = $this->hooks['auth'];
-		if (is_array($hooks)) {
-			$parameters = array(
-				'server' => $this,
-				'username' => $loginname,
-				'user' => $user,
-				'msg' => $msg
-			);
-			foreach ($hooks as $hook) {
-				$authHook = \TYPO3\CMS\Core\Utility\GeneralUtility::callUserFunction($hook, $parameters, $this);
-				if (!$authHook) {
-					$msg = 'Hook "auth" returned error (Server: ' . $serverUid . ', User: ' . $username . ')';
-					if ($this->ldapConfig->logLevel) {
-						\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 3);
-					}
-					\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::ERROR, $msg, $serverUid);
-					return FALSE;
-				}
 			}
 		}
 

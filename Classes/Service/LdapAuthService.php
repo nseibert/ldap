@@ -63,12 +63,6 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 	 *
 	 * @var array
 	 */
-	private $hooks;
-	
-	/**
-	 *
-	 * @var array
-	 */
 	private $ldapServers;
 
 	/**
@@ -94,53 +88,59 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 	 */
 	function initAuth($subType, $loginData, $authenticationInformation, $parentObject) {
 		$this->objectManager = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\Object\\ObjectManager');
+		$this->signalSlotDispatcher = $this->objectManager->get('TYPO3\\CMS\\Extbase\\SignalSlot\\Dispatcher');
 		$this->typoScriptService = $this->objectManager->get('NormanSeibert\\Ldap\\Service\\TypoScriptService');
 		$this->ldapConfig = $this->objectManager->get('NormanSeibert\\Ldap\\Domain\\Model\\Configuration\\Configuration');
 		$this->conf = $this->ldapConfig->getConfiguration();
 		$this->logLevel = $this->conf['logLevel'];
-		$this->hooks = $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/ldap'];
 		$this->pObj = $parentObject;
 		$this->loginData = $loginData;
 		$this->authInfo = $authenticationInformation;
 		
-		$this->username = $this->loginData['uname'];
-		$this->password = $this->loginData['uident_text'];
-		
-		// $this->initTSFE($this->conf['rootPageUid']);
+		// Initialize TSFE and Extbase
 		if (version_compare(TYPO3_branch, '6.0', '>')) {
 			\TYPO3\CMS\Core\Core\Bootstrap::getInstance()->loadCachedTca();
 		}
 		$this->initializeRequiredTsfeParts();
 		$this->initializeExtbaseFramework();
+
+		// Plaintext or RSA authentication
+		$this->username = $this->loginData['uname'];
+		$this->password = $this->loginData['uident_text'];
 		
 		// for testing purposes only!
-		// $_SERVER[$this->conf['ssoHeader']] = 'admin';
-		
-		if (substr($this->loginData['uident'], 0, 4) == 'rsa:') {
-			if (\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::isLoaded('rsaauth')) {
-				$backend = \TYPO3\CMS\Rsaauth\Backend\BackendFactory::getBackend();
-				$storage = \TYPO3\CMS\Rsaauth\Storage\StorageFactory::getStorage();
-				$key = $storage->get();
-				if ($key != NULL) {
-					$this->password = $backend->decrypt($key, substr($this->loginData['uident'], 4));
-				}
-			} else {
-				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('You have an error in your TYPO3 configuration. Your security level is set to "rsa" but the  extension "rsaauth" is not loaded.', 'ldap', 3);
-			}
+		// $_SERVER[$this->conf['ssoHeader']] = 'admin@entios.local';
 
-			if ($this->loginData['status'] == 'logout') {
-				// do nothing so far
-			} elseif ($this->conf['enableSSO'] && $this->conf['ssoHeader'] && ($_SERVER[$this->conf['ssoHeader']])) {
-				$this->username = $_SERVER[$this->conf['ssoHeader']];
-				$this->loginData['status'] = 'login';
-				$this->password = '';
-				$this->authInfo['db_user']['checkPidList'] = '';
-				$this->authInfo['db_user']['check_pid_clause'] = '';
-				if ($this->logLevel > 0) {
-					\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('SSO active for user: ' . $this->username, 'ldap', 0);
-				}
+		// SSO
+		if (($this->loginData['status'] != 'logout') && empty($this->password) && $this->conf['enableSSO']) {
+			$this->activateSSO();
+		}
+	}
+
+	/**
+	 * Activates Single Sign On (SSO)
+	 *
+	 * @return void
+	 */
+	function activateSSO() {
+		if ($this->conf['ssoHeader'] && ($_SERVER[$this->conf['ssoHeader']])) {
+			$this->username = $_SERVER[$this->conf['ssoHeader']];
+			$this->loginData['status'] = 'login';
+			$this->password = '';
+			$this->authInfo['db_user']['checkPidList'] = '';
+			$this->authInfo['db_user']['check_pid_clause'] = '';
+			if ($this->logLevel > 0) {
+				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('SSO active for user: ' . $this->username, 'ldap', 0);
 			}
 		}
+		$slotReturn = $this->signalSlotDispatcher->dispatch(
+			__CLASS__,
+			'beforeSSO',
+			array(
+				'username' => $this->username
+			)
+		);
+		$this->username = $slotReturn['username'];
 	}
 	
 	/**
@@ -287,17 +287,12 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 			$ok = false;
 		}
 
-		$hooks = $this->hooks['ext/ldap']['login'];
-		if (is_array($hooks)) {
-			$parameters = array(
-				'username' => $this->username,
-				'user' => $user,
-				'status' => $ok
-			);
-			foreach ($hooks as $hook) {
-				\TYPO3\CMS\Core\Utility\GeneralUtility::callUserFunction($hook, $parameters, $this);
-			}
-		}
+		$parameters = array(
+			'username' => $this->username,
+			'user' => $user,
+			'status' => $ok
+		);
+		$this->signalSlotDispatcher->dispatch(__CLASS__, 'beforeAuthentication', $parameters);
 		
 		if ($this->logLevel >= 1) {
 			\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('function "authUser" returns: ' . $ok, 'ldap', 0);
