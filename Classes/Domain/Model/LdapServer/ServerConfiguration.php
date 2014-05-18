@@ -25,7 +25,7 @@ namespace NormanSeibert\Ldap\Domain\Model\LdapServer;
  */
 
 /**
- * Model for an LDAP server's configuraion
+ * Model for an LDAP server's configuration
  */
 class ServerConfiguration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 

@@ -1,12 +1,6 @@
 <?php
 namespace NormanSeibert\Ldap\Utility;
 /**
- * Short description for file
- * 
- * Long description (if any) ...
- * 
- * PHP version 5
- * 
  * This script is part of the TYPO3 project. The TYPO3 project is
  * free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,34 +19,31 @@ namespace NormanSeibert\Ldap\Utility;
  * 
  * This copyright notice MUST APPEAR in all copies of the script!
  * 
- * @category  CategoryName
  * @package   ldap
- * @author	Norman Seibert <seibert@entios.de>
+ * @author	  Norman Seibert <seibert@entios.de>
  * @copyright 2013 Norman Seibert
- * @license   http://www.opensource.org/licenses/bsd-license.php The BSD License
- * @version   CVS: $Id:$
- * @link	  http://pear.php.net/package/ldap
- * @see	   References to other sections (if any)...
  */
 
 /**
- * Short description for class
- * 
- * Long description (if any) ...
- * 
- * @category  CategoryName
- * @package   ldap
- * @author	Norman Seibert <seibert@entios.de>
- * @copyright 2013 Norman Seibert
- * @license   http://www.opensource.org/licenses/bsd-license.php The BSD License
- * @version   Release: @package_version@
- * @link	  http://pear.php.net/package/ldap
- * @see	   References to other sections (if any)...
+ * Variouselper functions
  */
 class Helpers {
 
+	/**
+	 *
+	 * @var int
+	 */
 	protected $error = -1;
-	
+
+	/**
+	 * Adds an error to TYPO3's backend flashmessage queue
+	 * 
+	 * @param int $severity
+	 * @param string $message
+	 * @param string $server
+	 * @param array $data
+	 * @return void
+	 */
 	function addError($severity = \TYPO3\CMS\Core\Messaging\FlashMessage::INFO, $message = '', $server = '', $data = null) {
 		$msg = $message;
 		if ($data) {
@@ -76,13 +67,20 @@ class Helpers {
 		);
 	}
 	
+	/**
+	 * Checks a value (typically from LDAP configuration) against evaluation rules
+	 * 
+	 * @param string $value
+	 * @param string $eval
+	 * @param string $list
+	 * @return array
+	 */
 	function checkValue($value, $eval, $list = '') {
 		$res = array();
 		$newValue = $value;
 		$set = true;
 		$arrEval = explode(',', $eval);
 
-		//while ((list($key, $func) = each($arrEval)) && $set) {
 		foreach ($arrEval as $key => $func) {
 			if ($set) {
 				switch ($func) {
@@ -137,6 +135,12 @@ class Helpers {
 		return $res;
 	}
 	
+	/**
+	 * Sanitize query string to prevent LDAP injection
+	 * 
+	 * @param string $string
+	 * @return string
+	 */
 	function sanitizeQuery($string) {
 		$sanitized = array(
 			'\\' => '\5c',
@@ -150,6 +154,12 @@ class Helpers {
 		return $res;
 	}
 	
+	/**
+	 * Sanitize username/password to prevent LDAP injection
+	 * 
+	 * @param string $string
+	 * @return string
+	 */
 	function sanitizeCredentials($string) {
 		$sanitized = array(
 			"\x00" => '\00'
@@ -159,6 +169,15 @@ class Helpers {
 		return $res;
 	}
 	
+	/**
+	 * Generates a random password
+	 * 
+	 * @param int $l length
+	 * @param int $c number of alphabetic characters
+	 * @param int $l number of numeric characters
+	 * @param int $l number of special characters
+	 * @return string
+	 */
 	function generatePassword($l = 8, $c = 0, $n = 0, $s = 0) {
 		// get count of all required minimum special chars
 		$count = $c + $n + $s;
