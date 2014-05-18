@@ -5,7 +5,7 @@ if (!defined("TYPO3_MODE")) {
 
 if (TYPO3_MODE == "BE")    {
 	if (TYPO3_MODE === 'BE' && !(TYPO3_REQUESTTYPE & TYPO3_REQUESTTYPE_INSTALL)) {
-		Tx_Extbase_Utility_Extension::registerModule(
+        \TYPO3\CMS\Extbase\Utility\ExtensionUtility::registerModule(
 			'NormanSeibert.' . $_EXTKEY,
 			'tools',	 // Make module a submodule of 'web'
 			'm1',	 // Submodule key
@@ -68,6 +68,3 @@ if (version_compare(TYPO3_branch, '6.1', '<')) {
 	\TYPO3\CMS\Core\Utility\GeneralUtility::loadTCA("be_groups");
 }
 \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addTCAcolumns("be_groups", $tempColumns, 1);
-
-t3lib_extMgm::addTCAcolumns('fe_users',$tmp_feu_ext_columns);
-?>

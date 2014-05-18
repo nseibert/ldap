@@ -25,7 +25,6 @@ $EM_CONF[$_EXTKEY] = array(
 	'state' => 'stable',
 	'uploadfolder' => 0,
 	'createDirs' => '',
-	'modify_tables' => '',
 	'clearcacheonload' => 0,
 	'lockType' => '',
 	'author' => 'Norman Seibert',
@@ -45,5 +44,3 @@ $EM_CONF[$_EXTKEY] = array(
 	),
 	'_md5_values_when_last_written' => '',
 );
-
-?>

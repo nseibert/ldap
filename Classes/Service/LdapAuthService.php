@@ -28,12 +28,6 @@ namespace NormanSeibert\Ldap\Service;
  * Service to authenticate users against LDAP directory
  */
 class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
-	
-	/**
-	 * 
-	 * @var string
-	 */
-	private $extKey = 'ldap';
 
 	/**
 	 *
@@ -49,15 +43,27 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 	
 	/**
 	 *
-	 * @var interger
+	 * @var integer
 	 */
 	private $logLevel;
-	
-	/**
-	 *
-	 * @var string
-	 */
-	private $authenticatedUser = '';
+
+    /**
+     *
+     * @var string
+     */
+    private $username = '';
+
+    /**
+     *
+     * @var string
+     */
+    private $password = '';
+
+    /**
+     *
+     * @var array
+     */
+    private $loginData = array();
 	
 	/**
 	 *
@@ -67,7 +73,6 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 
 	/**
 	 * @var \NormanSeibert\Ldap\Domain\Model\Configuration\Configuration
-	 * @inject
 	 */
 	protected $ldapConfig;
 	
@@ -77,7 +82,44 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 	 * @inject
 	 */
 	protected $objectManager;
-	
+
+    /**
+     *
+     * @var \TYPO3\CMS\Extbase\Persistence\PersistenceManagerInterface
+     */
+    protected $persistenceManager;
+
+    /**
+     *
+     * @var \TYPO3\CMS\Extbase\SignalSlot\Dispatcher
+     * @inject
+     */
+    protected $signalSlotDispatcher;
+
+    /**
+     *
+     * @var \NormanSeibert\Ldap\Service\TypoScriptService
+    */
+    protected $typoScriptService;
+
+    /**
+     *
+     * @var \TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface
+     */
+    protected $configurationManager;
+
+    /**
+     *
+     * @var \TYPO3\CMS\Extbase\Reflection\ReflectionService
+     */
+    protected $reflectionService;
+
+    /**
+     *
+     * @var \TYPO3\CMS\Core\Cache\CacheManager
+     */
+    protected $cacheManager;
+
 	/**
 	 * Initialize authentication service
 	 *
@@ -196,6 +238,7 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 				$this->ldapServers = $this->ldapConfig->getLdapServers('', '', $this->authInfo['loginType'], $this->authInfo['db_user']['checkPidList']);
 				if (count($this->ldapServers)) {
 					foreach ($this->ldapServers as $server) {
+                        /* @var $server \NormanSeibert\Ldap\Domain\Model\LdapServer\Server */
 						$server->setScope(strtolower($this->authInfo['loginType']), $pid);
 						$server->loadAllGroups();
 
@@ -208,8 +251,10 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 							// Otherwise every user present in the directory would be imported regardless of the entered password.
 							
 							if ($this->conf['enableSSO'] && $this->conf['ssoHeader'] && ($_SERVER[$this->conf['ssoHeader']])) {
+                                /* @var $ldapUser \NormanSeibert\Ldap\Domain\Model\LdapUser\User */
 								$ldapUser = $server->checkUser($this->username);
 							} else {
+                                /* @var $ldapUser \NormanSeibert\Ldap\Domain\Model\LdapUser\User */
 								$ldapUser = $server->authenticateUser($this->username, $this->password);
 							}
 							
@@ -228,7 +273,7 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 										$ldapUser->addUser();
 									}
 									// Necessary to enable fetchUserRecord()
-									// $this->persistenceManager = $this->objectManager->get('TYPO3\\CMS\\Extbase\\Persistence\\PersistenceManagerInterface');
+									$this->persistenceManager = $this->objectManager->get('TYPO3\\CMS\\Extbase\\Persistence\\PersistenceManagerInterface');
 									$this->persistenceManager->persistAll();
 								}
 								$user = $this->getTypo3User();
@@ -308,16 +353,17 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 			
 		return $ok;
 	}
-	
-	/**
-	 * Get a user from DB by username
-	 * provided for usage from services
-	 *
-	 * @param string $username user name
-	 * @param string $extraWhere Additional WHERE clause: " AND ...
-	 * @param array $dbUser User db table definition: $this->db_user
-	 * @return mixed User array or FALSE
-	 */
+
+    /**
+     * Get a user from DB by username
+     * provided for usage from services
+     *
+     * @param string $username user name
+     * @param string $extraWhere Additional WHERE clause: " AND ...
+     * @param string $dbUserSetup
+     * @internal param array $dbUser User db table definition: $this->db_user
+     * @return mixed User array or FALSE
+     */
 	function fetchUserRecord($username, $extraWhere = '', $dbUserSetup = '') {
 		$dbUser = is_array($dbUserSetup) ? $dbUserSetup : $this->authInfo['db_user'];
 		$user = $this->pObj->fetchUserRecord($dbUser, $username, $extraWhere);

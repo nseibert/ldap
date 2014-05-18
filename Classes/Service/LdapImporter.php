@@ -29,6 +29,11 @@ namespace NormanSeibert\Ldap\Service;
  */
 class LdapImporter {
 
+    /**
+     * @var string
+     */
+    protected $table;
+
 	/**
 	 * @var \NormanSeibert\Ldap\Domain\Model\Configuration\Configuration
 	 * @inject
@@ -78,13 +83,15 @@ class LdapImporter {
 		$this->ldapConfig = $this->objectManager->get('NormanSeibert\\Ldap\\Domain\\Model\\Configuration\\Configuration');
 	}
 
-	/**
-	 * creates new TYPO3 users
-	 *
-	 * @param string $runIdentifier
-	 */
+    /**
+     * creates new TYPO3 users
+     *
+     * @param string $runIdentifier
+     * @param array $ldapUsers
+     */
 	private function storeNewUsers($runIdentifier, $ldapUsers) {
 		foreach ($ldapUsers as $user) {
+            /* @var $user \NormanSeibert\Ldap\Domain\Model\LdapUser\User */
 			$user->loadUser();
 			$typo3User = $user->getUser();
 			if (!is_object($typo3User)) {
@@ -93,13 +100,15 @@ class LdapImporter {
 		}
 	}
 
-	/**
-	 * updates TYPO3 users
-	 *
-	 * @param string $runIdentifier
-	 */
+    /**
+     * updates TYPO3 users
+     *
+     * @param string $runIdentifier
+     * @param array $ldapUsers
+     */
 	private function updateUsers($runIdentifier, $ldapUsers) {
 		foreach ($ldapUsers as $user) {
+            /* @var $user \NormanSeibert\Ldap\Domain\Model\LdapUser\User */
 			$user->loadUser();
 			$typo3User = $user->getUser();
 			if (is_object($typo3User)) {
@@ -108,13 +117,15 @@ class LdapImporter {
 		}
 	}
 
-	/**
-	 * imports or updates TYPO3 users
-	 *
-	 * @param string $runIdentifier
-	 */
+    /**
+     * imports or updates TYPO3 users
+     *
+     * @param string $runIdentifier
+     * @param array $ldapUsers
+     */
 	private function storeUsers($runIdentifier, $ldapUsers) {
 		foreach ($ldapUsers as $user) {
+            /* @var $user \NormanSeibert\Ldap\Domain\Model\LdapUser\User */
 			$user->loadUser();
 			$typo3User = $user->getUser();
 			if (is_object($typo3User)) {
@@ -147,7 +158,6 @@ class LdapImporter {
 			}
 		} else {
 			// recursive search
-			$cnt = 0;
 			if ($this->ldapConfig->logLevel) {
 				$msg = 'LDAP query limit exceeded';
 				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
@@ -225,6 +235,7 @@ class LdapImporter {
 		$tmpServer = NULL;
 		$removeUsers = array();
 		foreach ($users as $user) {
+            /* @var $user \NormanSeibert\Ldap\Domain\Model\UserInterface */
 			if (!is_object($user->getLdapServer())) {
 				$user->setLastRun($runIdentifier);
 				if ($hide) {

@@ -57,6 +57,7 @@ class LdapCommandController extends \TYPO3\CMS\Extbase\Mvc\Controller\CommandCon
 		$ldapServers = $this->ldapConfig->getLdapServers();
 		$serverUids = \TYPO3\CMS\Core\Utility\GeneralUtility::trimExplode(',', $servers, TRUE);
 		foreach ($ldapServers as $server) {
+            /* @var $server \NormanSeibert\Ldap\Domain\Model\LdapServer\Server */
 			if (\TYPO3\CMS\Core\Utility\GeneralUtility::inArray($serverUids, $server->getConfiguration()->getUid())) {
 				$this->outputLine('Importing from server: ' . $server->getConfiguration()->getUid());
 				$importer = $this->objectManager->get('NormanSeibert\\Ldap\\Service\\LdapImporter');
@@ -87,6 +88,7 @@ class LdapCommandController extends \TYPO3\CMS\Extbase\Mvc\Controller\CommandCon
 		$ldapServers = $this->ldapConfig->getLdapServers();
 		$serverUids = \TYPO3\CMS\Core\Utility\GeneralUtility::trimExplode(',', $servers, TRUE);
 		foreach ($ldapServers as $server) {
+            /* @var $server \NormanSeibert\Ldap\Domain\Model\LdapServer\Server */
 			if (\TYPO3\CMS\Core\Utility\GeneralUtility::inArray($serverUids, $server->getConfiguration()->getUid())) {
 				$this->outputLine('Updating from server: ' . $server->getConfiguration()->getUid());
 				$importer = $this->objectManager->get('NormanSeibert\\Ldap\\Service\\LdapImporter');
@@ -117,6 +119,7 @@ class LdapCommandController extends \TYPO3\CMS\Extbase\Mvc\Controller\CommandCon
 		$ldapServers = $this->ldapConfig->getLdapServers();
 		$serverUids = \TYPO3\CMS\Core\Utility\GeneralUtility::trimExplode(',', $servers, TRUE);
 		foreach ($ldapServers as $server) {
+            /* @var $server \NormanSeibert\Ldap\Domain\Model\LdapServer\Server */
 			if (\TYPO3\CMS\Core\Utility\GeneralUtility::inArray($serverUids, $server->getConfiguration()->getUid())) {
 				$this->outputLine('Importing/updating from server: ' . $server->getConfiguration()->getUid());
 				$importer = $this->objectManager->get('NormanSeibert\\Ldap\\Service\\LdapImporter');

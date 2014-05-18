@@ -35,7 +35,7 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 	protected $extensionName = 'Ldap';
 
 	/**
-	 * @var PageRenderer
+	 * @var \TYPO3\CMS\Core\Page\PageRenderer
 	 */
 	protected $pageRenderer;
 
@@ -115,7 +115,7 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 	 * @return void
 	 */
 	public function checkAction() {
-		$ldapServers = $this->ldapConfig->getLdapServers();
+		$this->ldapConfig->getLdapServers();
 		$flashMessages = \TYPO3\CMS\Core\Messaging\FlashMessageQueue::getAllMessages();
 		$this->view->assign('errorCount', count($flashMessages));
 	}
@@ -129,6 +129,7 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 		$ldapServers = $this->ldapConfig->getLdapServers();
 		$servers = array();
 		foreach ($ldapServers as $server) {
+            /* @var $server \NormanSeibert\Ldap\Domain\Model\LdapServer\Server */
 			$server->setLimitLdapResults(3);
 			$server->setScope('fe');
 			$feUsers = $server->getUsers('*');
@@ -191,11 +192,14 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 	 * configures the import and display the result list
 	 */
 	public function importUsersAction() {
+        $beUsers = NULL;
+        $feUsers = NULL;
 		$settings = $this->initializeFormSettings();
 
 		$ldapServers = $this->ldapConfig->getLdapServers();
 		$serverConfigurations = array();
 		foreach ($ldapServers as $server) {
+            /* @var $server \NormanSeibert\Ldap\Domain\Model\LdapServer\Server */
 			$serverConfigurations[] = $server->getConfiguration();
 		}
 
@@ -213,13 +217,11 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 		$this->view->assign('fe_users', $feUsers);
 	}
 
-	/**
-	 * imports users
-	 *
-	 * @param \NormanSeibert\Ldap\Domain\Model\FormSettings $formSettings
-	 * @dontvalidate $formSettings
-	 * @dontverifyrequesthash
-	 */
+    /**
+     * imports users
+     *
+     * @param \NormanSeibert\Ldap\Domain\Model\BackendModule\FormSettings $formSettings
+     */
 	public function doImportUsersAction(\NormanSeibert\Ldap\Domain\Model\BackendModule\FormSettings $formSettings = NULL) {
 		$settings = $this->initializeFormSettings($formSettings);
 		$this->view->assign('formSettings', $settings);
@@ -228,6 +230,7 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 		$importer = $this->objectManager->get('NormanSeibert\\Ldap\\Service\\LdapImporter');
 		$runs = array();
 		foreach ($ldapServers as $server) {
+            /* @var $server \NormanSeibert\Ldap\Domain\Model\LdapServer\Server */
 			if (\TYPO3\CMS\Core\Utility\GeneralUtility::inArray($settings->getUseServers(), $server->getConfiguration()->getUid())) {
 				if ($settings->getAuthenticateFe()) {
 					$importer->init($server, 'fe');
@@ -251,11 +254,14 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 	 * configures the update and display the result list
 	 */
 	public function updateUsersAction() {
+        $beUsers = NULL;
+        $feUsers = NULL;
 		$settings = $this->initializeFormSettings();
 
 		$ldapServers = $this->ldapConfig->getLdapServers();
 		$serverConfigurations = array();
 		foreach ($ldapServers as $server) {
+            /* @var $server \NormanSeibert\Ldap\Domain\Model\LdapServer\Server */
 			$serverConfigurations[] = $server->getConfiguration();
 		}
 
@@ -272,14 +278,12 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 		$this->view->assign('be_users', $beUsers);
 		$this->view->assign('fe_users', $feUsers);
 	}
-	
-	/**
-	 * updates users
-	 *
-	 * @param \NormanSeibert\Ldap\Domain\Model\FormSettings $formSettings
-	 * @dontvalidate $formSettings
-	 * @dontverifyrequesthash
-	 */
+
+    /**
+     * updates users
+     *
+     * @param \NormanSeibert\Ldap\Domain\Model\BackendModule\FormSettings $formSettings
+     */
 	public function doUpdateUsersAction(\NormanSeibert\Ldap\Domain\Model\BackendModule\FormSettings $formSettings = NULL) {
 		$settings = $this->initializeFormSettings($formSettings);
 		$this->view->assign('formSettings', $settings);
@@ -288,6 +292,7 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 		$importer = $this->objectManager->get('NormanSeibert\\Ldap\\Service\\LdapImporter');
 		$runs = array();
 		foreach ($ldapServers as $server) {
+            /* @var $server \NormanSeibert\Ldap\Domain\Model\LdapServer\Server */
 			if (\TYPO3\CMS\Core\Utility\GeneralUtility::inArray($settings->getUseServers(), $server->getConfiguration()->getUid())) {
 				if ($settings->getAuthenticateFe()) {
 					$importer->init($server, 'fe');
@@ -311,11 +316,14 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 	 * configures the import/update and display the result list
 	 */
 	public function importAndUpdateUsersAction() {
+        $beUsers = NULL;
+        $feUsers = NULL;
 		$settings = $this->initializeFormSettings();
 
 		$ldapServers = $this->ldapConfig->getLdapServers();
 		$serverConfigurations = array();
 		foreach ($ldapServers as $server) {
+            /* @var $server \NormanSeibert\Ldap\Domain\Model\LdapServer\Server */
 			$serverConfigurations[] = $server->getConfiguration();
 		}
 
@@ -332,14 +340,12 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 		$this->view->assign('be_users', $beUsers);
 		$this->view->assign('fe_users', $feUsers);
 	}
-	
-	/**
-	 * imports or updates users
-	 *
-	 * @param \NormanSeibert\Ldap\Domain\Model\FormSettings $formSettings
-	 * @dontvalidate $formSettings
-	 * @dontverifyrequesthash
-	 */
+
+    /**
+     * imports or updates users
+     *
+     * @param \NormanSeibert\Ldap\Domain\Model\BackendModule\FormSettings $formSettings
+     */
 	public function doImportAndUpdateUsersAction(\NormanSeibert\Ldap\Domain\Model\BackendModule\FormSettings $formSettings = NULL) {
 		$settings = $this->initializeFormSettings($formSettings);
 		$this->view->assign('formSettings', $settings);
@@ -371,6 +377,8 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 	 * configures the deletion/deactivation and display the result list
 	 */
 	public function deleteUsersAction() {
+        $beUsers = NULL;
+        $feUsers = NULL;
 		$settings = $this->initializeFormSettings();
 
 		if ($this->request->hasArgument('runs')) {
@@ -385,14 +393,12 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 		$this->view->assign('be_users', $beUsers);
 		$this->view->assign('fe_users', $feUsers);
 	}
-	
-	/**
-	 * deletes/deactivates users
-	 *
-	 * @param \NormanSeibert\Ldap\Domain\Model\FormSettings $formSettings
-	 * @dontvalidate $formSettings
-	 * @dontverifyrequesthash
-	 */
+
+    /**
+     * deletes/deactivates users
+     *
+     * @param \NormanSeibert\Ldap\Domain\Model\BackendModule\FormSettings $formSettings
+     */
 	public function doDeleteUsersAction(\NormanSeibert\Ldap\Domain\Model\BackendModule\FormSettings $formSettings = NULL) {
 		$settings = $this->initializeFormSettings($formSettings);
 		$this->view->assign('formSettings', $settings);
@@ -419,11 +425,13 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 	 * configures the login mask
 	 */
 	public function checkLoginAction() {
+        $user = NULL;
 		$settings = $this->initializeFormSettings();
 
 		$ldapServers = $this->ldapConfig->getLdapServers();
 		$serverConfigurations = array();
 		foreach ($ldapServers as $server) {
+            /* @var $server \NormanSeibert\Ldap\Domain\Model\LdapServer\Server */
 			$serverConfigurations[] = $server->getConfiguration();
 		}
 		
@@ -436,14 +444,12 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 		$this->view->assign('returnUrl', 'mod.php?M=tools_LdapM1');
 		$this->view->assign('user', $user);
 	}
-	
-	/**
-	 * checks whether a user can be authenticated successfully
-	 *
-	 * @param \NormanSeibert\Ldap\Domain\Model\FormSettings $formSettings
-	 * @dontvalidate $formSettings
-	 * @dontverifyrequesthash
-	 */
+
+    /**
+     * checks whether a user can be authenticated successfully
+     *
+     * @param \NormanSeibert\Ldap\Domain\Model\BackendModule\FormSettings $formSettings
+     */
 	public function doCheckLoginAction(\NormanSeibert\Ldap\Domain\Model\BackendModule\FormSettings $formSettings = NULL) {
 		$settings = $this->initializeFormSettings($formSettings);
 		$this->view->assign('formSettings', $settings);
@@ -454,6 +460,7 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 		$user['authenticated'] = FALSE;
 		$ldapServers = $this->ldapConfig->getLdapServers();
 		foreach ($ldapServers as $server) {
+            /* @var $server \NormanSeibert\Ldap\Domain\Model\LdapServer\Server */
 			if (!$user['found']) {
 				if (\TYPO3\CMS\Core\Utility\GeneralUtility::inArray($settings->getUseServers(), $server->getConfiguration()->getUid())) {
 					$server->setScope($settings->getLoginType());
@@ -461,9 +468,11 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 					$password = \NormanSeibert\Ldap\Utility\Helpers::sanitizeCredentials($settings->getPassword());
 					$ldapUsers = $server->getUsers($loginname);
 					if (count($ldapUsers) == 1) {
+                        /* @var $ldapUser \NormanSeibert\Ldap\Domain\Model\LdapUser\User */
+                        $ldapUser = $ldapUsers[0];
 						$user['found'] = TRUE;
 						$user['serverUid'] = $server->getConfiguration()->getUid();
-						$user['dn'] = $ldapUsers[0]->getDN();
+						$user['dn'] = $ldapUser->getDN();
 						$ldapUser = $server->authenticateUser($loginname, $password);
 						if (is_object($ldapUser)) {
 							$user['authenticated'] = TRUE;

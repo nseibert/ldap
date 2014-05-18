@@ -142,7 +142,7 @@ class FormSettings extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 	
 	/**
 	 * 
-	 * @param type $username
+	 * @param string
 	 */
 	public function setLoginname($username) {
 		$this->loginname = $username;

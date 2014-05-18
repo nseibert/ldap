@@ -28,12 +28,12 @@ namespace NormanSeibert\Ldap\Domain\Model\Configuration;
  * Model for the extension's configuration of LDAP servsers
  */
 class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \TYPO3\CMS\Core\SingletonInterface {
-	
-	/**
-	 *
-	 * @var array 
-	 */
-	protected $allLdapServers;
+
+    /**
+     *
+     * @var array
+     */
+    protected $ldapServers;
 	
 	/**
 	 *
@@ -121,6 +121,7 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 	 * @return array
 	 */
 	private function getLdapServersFromFile() {
+        $ldapServers = array();
 		$allLdapServers = $this->ldapServers;
 		if (count($allLdapServers) == 0) {
 			$msg = 'No LDAP server found.';
@@ -140,9 +141,9 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 	 * loads LDAP server definitions
 	 * 
 	 * @param string $uid
-	 * @param int $pid
+	 * @param array $pid
 	 * @param string $authenticate
-	 * @param int $userPid
+	 * @param array $userPid
 	 * @return array
 	 */
 	public function getLdapServers($uid = NULL, $pid = NULL, $authenticate = NULL, $userPid = NULL) {
@@ -220,7 +221,7 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 			$errors = $this->checkServerConfiguration($server);
 			
 			if (count($errors) == 0) {
-				$groupRuleFE = $this->objectManager->create('NormanSeibert\\Ldap\\Domain\\Model\\LdapServer\\ServerConfigurationGroups');
+				$groupRuleFE = $this->objectManager->get('NormanSeibert\\Ldap\\Domain\\Model\\LdapServer\\ServerConfigurationGroups');
 				$groupRuleFE
 					->setImportGroups($server['fe_users.']['usergroups.']['importGroups'])
 					->setMapping($server['fe_users.']['usergroups.']['mapping.'])
@@ -231,7 +232,7 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 					->setRestrictToGroups($server['fe_users.']['usergroups.']['restrictToGroups'])
 					->setPreserveNonLdapGroups($server['fe_users.']['usergroups.']['preserveNonLdapGroups']);
 				
-				$userRuleFE = $this->objectManager->create('NormanSeibert\\Ldap\\Domain\\Model\\LdapServer\\ServerConfigurationUsers');
+				$userRuleFE = $this->objectManager->get('NormanSeibert\\Ldap\\Domain\\Model\\LdapServer\\ServerConfigurationUsers');
 				$userRuleFE
 					->setPid($server['fe_users.']['pid'])
 					->setBaseDN($server['fe_users.']['baseDN'])
@@ -240,7 +241,7 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 					->setMapping($server['fe_users.']['mapping.'])
 					->setGroupRules($groupRuleFE);
 
-				$groupRuleBE = $this->objectManager->create('NormanSeibert\\Ldap\\Domain\\Model\\LdapServer\\ServerConfigurationGroups');
+				$groupRuleBE = $this->objectManager->get('NormanSeibert\\Ldap\\Domain\\Model\\LdapServer\\ServerConfigurationGroups');
 				$groupRuleBE
 					->setImportGroups($server['be_users.']['usergroups.']['importGroups'])
 					->setMapping($server['be_users.']['usergroups.']['mapping.'])
@@ -251,7 +252,7 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 					->setRestrictToGroups($server['be_users.']['usergroups.']['restrictToGroups'])
 					->setPreserveNonLdapGroups($server['be_users.']['usergroups.']['preserveNonLdapGroups']);
 				
-				$userRuleBE = $this->objectManager->create('NormanSeibert\\Ldap\\Domain\\Model\\LdapServer\\ServerConfigurationUsers');
+				$userRuleBE = $this->objectManager->get('NormanSeibert\\Ldap\\Domain\\Model\\LdapServer\\ServerConfigurationUsers');
 				$userRuleBE
 					->setBaseDN($server['be_users.']['baseDN'])
 					->setFilter($server['be_users.']['filter'])
@@ -259,7 +260,7 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 					->setMapping($server['be_users.']['mapping.'])
 					->setGroupRules($groupRuleBE);
 				
-				$serverConfiguration = $this->objectManager->create('NormanSeibert\\Ldap\\Domain\\Model\\LdapServer\\ServerConfiguration');
+				$serverConfiguration = $this->objectManager->get('NormanSeibert\\Ldap\\Domain\\Model\\LdapServer\\ServerConfiguration');
 				$serverConfiguration
 					->setUid($server['uid'])
 					->setTitle($server['title'])
@@ -275,7 +276,7 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 					$serverConfiguration->setVersion($server['version']);
 				}
 
-				$serverRecord =  $this->objectManager->create('NormanSeibert\\Ldap\\Domain\\Model\\LdapServer\\Server');
+				$serverRecord =  $this->objectManager->get('NormanSeibert\\Ldap\\Domain\\Model\\LdapServer\\Server');
 				$serverRecord->setConfiguration($serverConfiguration);
 				
 			} else {
@@ -286,7 +287,7 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 			}
 		} else {
 			$msg = 'LDAP server not found: uid = "'.$uid.'":';
-			\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 2, $errors);
+			\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 2);
 			\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::WARNING, $msg, $server['uid']);
 		}
 		
@@ -346,7 +347,7 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 			}
 			
 			if (is_array($server['fe_users.']['mapping.'])) {
-				$newObj = $this->objectManager->create('NormanSeibert\\Ldap\\Domain\\Model\\FrontendUser');
+				$newObj = $this->objectManager->get('NormanSeibert\\Ldap\\Domain\\Model\\FrontendUser');
 				foreach ($server['fe_users.']['mapping.'] as $fld => $mapping) {
 					if (substr($fld, strlen($fld)-1, 1) == '.') {
 						$fld = substr($fld, 0, strlen($fld)-1);
@@ -359,7 +360,7 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 				$newObj = NULL;
 			}
 			if (is_array($server['fe_users.']['usergroups.']['mapping.'])) {				
-				$newObj = $this->objectManager->create('NormanSeibert\\Ldap\\Domain\\Model\\FrontendUserGroup');
+				$newObj = $this->objectManager->get('NormanSeibert\\Ldap\\Domain\\Model\\FrontendUserGroup');
 				foreach ($server['fe_users.']['usergroups.']['mapping.'] as $fld => $mapping) {
 					if (substr($fld, strlen($fld)-1, 1) == '.') {
 						$fld = substr($fld, 0, strlen($fld)-1);
@@ -392,7 +393,7 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 			}
 			
 			if (is_array($server['be_users.']['mapping.'])) {				
-				$newObj = $this->objectManager->create('NormanSeibert\\Ldap\\Domain\\Model\\BackendUser');
+				$newObj = $this->objectManager->get('NormanSeibert\\Ldap\\Domain\\Model\\BackendUser');
 				foreach ($server['be_users.']['mapping.'] as $fld => $mapping) {
 					if (substr($fld, strlen($fld)-1, 1) == '.') {
 						$fld = substr($fld, 0, strlen($fld)-1);
@@ -405,7 +406,7 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 				$newObj = NULL;
 			}
 			if (is_array($server['be_users.']['usergroups.']['mapping.'])) {			
-				$newObj = $this->objectManager->create('NormanSeibert\\Ldap\\Domain\\Model\\BackendUserGroup');
+				$newObj = $this->objectManager->get('NormanSeibert\\Ldap\\Domain\\Model\\BackendUserGroup');
 				foreach ($server['be_users.']['usergroups.']['mapping.'] as $fld => $mapping) {
 					if (substr($fld, strlen($fld)-1, 1) == '.') {
 						$fld = substr($fld, 0, strlen($fld)-1);

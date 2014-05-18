@@ -27,7 +27,7 @@ namespace NormanSeibert\Ldap\Domain\Repository;
 /**
  * Repository for TYPO3 frontend users
  */
-class FrontendUserRepository extends \TYPO3\CMS\Extbase\Domain\Repository\FrontendUserRepository {
+class FrontendUserRepository extends \TYPO3\CMS\Extbase\Domain\Repository\FrontendUserRepository implements \NormanSeibert\Ldap\Domain\Repository\UserRepositoryInterface {
 	
 	/**
 	 * 

@@ -27,14 +27,15 @@ namespace NormanSeibert\Ldap\Domain\Repository;
 /**
  * Repository for TYPO3 backend users
  */
-class BackendUserRepository extends \TYPO3\CMS\Extbase\Domain\Repository\BackendUserRepository {
+class BackendUserRepository extends \TYPO3\CMS\Extbase\Domain\Repository\BackendUserRepository implements \NormanSeibert\Ldap\Domain\Repository\UserRepositoryInterface {
 	
 	/**
 	 * 
 	 * @param string $username
+     * @param int $pid
 	 * @return \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
 	 */
-	public function findByUsername($username) {
+	public function findByUsername($username, $pid = NULL) {
 		$user = false;
 		$query = $this->createQuery();
 		$query->getQuerySettings()->setRespectStoragePage(FALSE);
@@ -54,9 +55,10 @@ class BackendUserRepository extends \TYPO3\CMS\Extbase\Domain\Repository\Backend
 	/**
 	 * 
 	 * @param string $dn
+     * @param int $pid
 	 * @return \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
 	 */
-	public function findByDn($dn) {
+	public function findByDn($dn, $pid = NULL) {
 		$user = false;
 		$query = $this->createQuery();
 		$query->getQuerySettings()->setRespectStoragePage(FALSE);

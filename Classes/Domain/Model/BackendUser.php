@@ -27,7 +27,7 @@ namespace NormanSeibert\Ldap\Domain\Model;
 /**
  * Model for TYPO3 backend users
  */
-class BackendUser extends \TYPO3\CMS\Extbase\Domain\Model\BackendUser {
+class BackendUser extends \TYPO3\CMS\Extbase\Domain\Model\BackendUser implements \NormanSeibert\Ldap\Domain\Model\UserInterface {
 	
 	/**
 	 *
@@ -80,7 +80,7 @@ class BackendUser extends \TYPO3\CMS\Extbase\Domain\Model\BackendUser {
 	 *
 	 */
 	public function __construct() {
-		$this->usergroup = new \TYPO3\CMS\Extbase\Persistence\ObjectStorage();
+        $this->usergroup = new \TYPO3\CMS\Extbase\Persistence\ObjectStorage();
 	}
 	
 	/**

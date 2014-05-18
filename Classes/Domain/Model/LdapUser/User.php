@@ -56,7 +56,6 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 	/**
 	 *
 	 * @var \TYPO3\CMS\Extbase\Object\ObjectManager
-	 * @inject
 	 */
 	protected $objectManager;
 	
@@ -65,8 +64,30 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 	 * @var \NormanSeibert\Ldap\Domain\Model\UserInterface
 	 */
 	protected $user;
-	
-	/**
+
+    /**
+     *
+     * @var \NormanSeibert\Ldap\Domain\Repository\UserRepositoryInterface
+     */
+    protected $userRepository;
+
+    /**
+     *
+     * @var \NormanSeibert\Ldap\Domain\Model\LdapServer\ServerConfigurationUsers
+     */
+	protected $userRules;
+
+    /**
+     * @var \TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer
+     */
+    protected $cObj;
+
+    /**
+     * @var boolean
+     */
+    protected $importGroups;
+
+    /**
 	 * 
 	 */
 	public function __construct() {
@@ -160,6 +181,7 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 			\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
 		}
 		// search for DN
+        /* @var $user \NormanSeibert\Ldap\Domain\Repository\UserRepositoryInterface */
 		$user = $this->userRepository->findByDn($this->dn, $pid);
 		// search for Username if no record with DN found
 		if (is_object($user)) {
@@ -235,11 +257,12 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 	 * @return array
 	 */
 	protected function assignGroups($lastRun = NULL) {
+        $ret = array();
 		$mapping = $this->userRules->getGroupRules()->getMapping();
 
 		if (is_array($mapping)) {
 			if ($this->userRules->getGroupRules()->getReverseMapping()) {
-				$ret = $this->reverseAssignGroups($lastRun);
+				$ret = $this->reverseAssignGroups();
 			} else {
 				switch (strtolower($mapping['field'])) {
 					case 'text':
@@ -267,11 +290,10 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 	}
 	
 	/** Assigns TYPO3 usergroups to the current TYPO3 user by additionally querying the LDAP server for groups
-	 * 
-	 * @param string $lastRun
+	 *
 	 * @return array
 	 */
-	private function reverseAssignGroups($lastRun = NULL) {
+	private function reverseAssignGroups() {
 		$ret = array();
 		$mapping = $this->userRules->getGroupRules()->getMapping();
 		
@@ -297,11 +319,10 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 	}
 	
 	/** Determines usergroups based on a text attribute
-	 * 
-	 * @param array $mapping
+	 *
 	 * @return array
 	 */
-	private function assignGroupsText($mapping) {
+	private function assignGroupsText() {
 		$ret = array();
 		$mapping = $this->userRules->getGroupRules()->getMapping();
 		
@@ -330,12 +351,12 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		
 		return $ret;
 	}
-	
-	/** Determines usergroups based on the user records parent record
-	 * 
-	 * @param array $mapping
-	 * @return array
-	 */
+
+    /** Determines usergroups based on the user records parent record
+     *
+     * @internal param array $mapping
+     * @return array
+     */
 	private function assignGroupsParent() {
 		$ret = array();
 		$mapping = $this->userRules->getGroupRules()->getMapping();
@@ -420,6 +441,7 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 
 		$allGroups = $this->ldapServer->getAllGroups();
 		foreach ($allGroups as $group) {
+            /* @var $group \NormanSeibert\Ldap\Domain\Model\UserGroupInterface */
 			$attrValue = $group->_getProperty($attribute);
 			if ($selector == $attrValue) {
 				$groupFound = $group;
@@ -459,7 +481,7 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		} else {
 			$onlygrouparray = explode(",", $onlygroup);
 			if (is_array($onlygrouparray)) {
-				while ((list($key, $value) = each($onlygrouparray)) && !($ret)) {
+				while ((list(, $value) = each($onlygrouparray)) && !($ret)) {
 					if (preg_match(trim($value), $groupname)) $ret = TRUE;
 				}
 			}
@@ -482,6 +504,7 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 			if (is_array($usergroups)) {
 				// iterate two times because "remove" shortens the iterator otherwise
 				foreach ($usergroups as $group) {
+                    /* @var $group \NormanSeibert\Ldap\Domain\Model\UserGroupInterface */
 					if ($group->getServerUid()) {
 						$removeGroups[] = $group;
 					}
@@ -491,9 +514,47 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 				}
 			}
 		} else {
-			$usergroup = $this->objectManager->create('TYPO3\CMS\Extbase\Persistence\ObjectStorage');
+			$usergroup = $this->objectManager->get('TYPO3\CMS\Extbase\Persistence\ObjectStorage');
 			$this->user->setUsergroup($usergroup);
 		}
 	}
+
+    /**
+     *
+     * @return \NormanSeibert\Ldap\Domain\Model\UserInterface
+     */
+    public function getUser() {
+
+    }
+
+    /**
+     * adds a new TYPO3 user
+     *
+     * @param string $lastRun
+     */
+    public function addUser($lastRun = NULL) {
+
+    }
+
+    /**
+     * updates a TYPO3 user
+     *
+     * @param string $lastRun
+     */
+    public function updateUser($lastRun = NULL) {
+
+    }
+
+    /**
+     * adds a new TYPO3 usergroup
+     *
+     * @param array $newGroups
+     * @param array $existingGroups
+     * @param string $lastRun
+     * @return array
+     */
+    public function addNewGroups($newGroups, $existingGroups, $lastRun) {
+    	
+    }
 }
 ?>

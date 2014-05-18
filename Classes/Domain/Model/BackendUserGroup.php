@@ -27,7 +27,7 @@ namespace NormanSeibert\Ldap\Domain\Model;
 /**
  * Model for TYPO3 backend users
  */
-class BackendUserGroup extends \TYPO3\CMS\Extbase\Domain\Model\BackendUserGroup {
+class BackendUserGroup extends \TYPO3\CMS\Extbase\Domain\Model\BackendUserGroup implements \NormanSeibert\Ldap\Domain\Model\UserGroupInterface {
 	
 	/**
 	 *
@@ -56,7 +56,6 @@ class BackendUserGroup extends \TYPO3\CMS\Extbase\Domain\Model\BackendUserGroup 
 	/**
 	 *
 	 * @var \TYPO3\CMS\Extbase\Object\ObjectManager
-	 * @inject
 	 */
 	protected $objectManager;
 	

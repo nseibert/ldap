@@ -48,7 +48,7 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 	protected $ldapConfig;
 	
 	/**
-	 * @var \NormanSeibert\Ldap\Domain\Model\LdapServer\Configuration
+	 * @var \NormanSeibert\Ldap\Domain\Model\LdapServer\ServerConfiguration
 	 */
 	protected $configuration;
 	
@@ -86,6 +86,13 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 	 * @inject
 	 */
 	protected $objectManager;
+
+    /**
+     *
+     * @var \TYPO3\CMS\Extbase\SignalSlot\Dispatcher
+     * @inject
+     */
+    protected $signalSlotDispatcher;
 	
 	/**
 	 * 
@@ -126,7 +133,7 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 	
 	/**
 	 * 
-	 * @return \NormanSeibert\Ldap\Domain\Model\LdapServer\Configuration
+	 * @return \NormanSeibert\Ldap\Domain\Model\LdapServer\ServerConfiguration
 	 */
 	public function getConfiguration() {
 		return $this->configuration;
@@ -140,9 +147,12 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 	 * @return array
 	 */
 	public function getUsers($findname = '*', $doSanitize = false) {
+		$users = NULL;
 		$info = array();
 		$bind = NULL;
 		$connect = NULL;
+        $filter = NULL;
+        $baseDN = NULL;
 		
 		if (strlen($findname)) {
 			if ($doSanitize) {
@@ -173,34 +183,31 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 			$attrs = $this->getUsedAttributes();
 					
 			$info = $this->search($connect, $baseDN, $parsedFilter, $attrs, 'sub', true, LDAP_DEREF_NEVER);
-			
-			// size limit exceeded
-			if ($info['count'] == -1) {
-				return false;	
-			}
 		}
-					
-		$parameters = array(
-			'server' => $this,
-			'find' => $findname,
-			'table' => $this->table,
-			'type' => 'list',
-			'result' => $info
-		);
-		$this->signalSlotDispatcher->dispatch(__CLASS__, 'getUsersResults', $parameters);
 		
-		$users = array();
-		for ($i = 0; $i < $info['count']; $i++) {
-			if ($this->table == 'be_users') {
-				$user =  $this->objectManager->create('NormanSeibert\\Ldap\\Domain\\Model\\LdapUser\\BeUser');
-			} else {
-				$user =  $this->objectManager->create('NormanSeibert\\Ldap\\Domain\\Model\\LdapUser\\FeUser');
+		if ($info['count'] >= 0) {		
+			$parameters = array(
+				'server' => $this,
+				'find' => $findname,
+				'table' => $this->table,
+				'type' => 'list',
+				'result' => $info
+			);
+			$this->signalSlotDispatcher->dispatch(__CLASS__, 'getUsersResults', $parameters);
+
+			$users = array();
+			for ($i = 0; $i < $info['count']; $i++) {
+				if ($this->table == 'be_users') {
+					$user =  $this->objectManager->get('NormanSeibert\\Ldap\\Domain\\Model\\LdapUser\\BeUser');
+				} else {
+					$user =  $this->objectManager->get('NormanSeibert\\Ldap\\Domain\\Model\\LdapUser\\FeUser');
+				}
+				$user
+					->setDN($info[$i]['dn'])
+					->setAttributes($info[$i])
+					->setLdapServer($this);
+				$users[] = $user;
 			}
-			$user
-				->setDN($info[$i]['dn'])
-				->setAttributes($info[$i])
-				->setLdapServer($this);
-			$users[] = $user;
 		}
 		
 		$msg = 'Found ' . $info['count'] . ' records';
@@ -221,6 +228,7 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		$bind = NULL;
 		$connect = NULL;
 		$user = NULL;
+        $distinguishedName = NULL;
 		
 		//TODO: findet die User ggf. auch ueber andere Server als den, ueber den urspruenglich importiert wurde.
 		$info = array();
@@ -251,9 +259,9 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		
 		if ($info['count'] == 1) {
 			if ($this->table == 'be_users') {
-				$user = $this->objectManager->create('NormanSeibert\\Ldap\\Domain\\Model\\LdapUser\\BeUser');
+				$user = $this->objectManager->get('NormanSeibert\\Ldap\\Domain\\Model\\LdapUser\\BeUser');
 			} else {
-				$user = $this->objectManager->create('NormanSeibert\\Ldap\\Domain\\Model\\LdapUser\\FeUser');
+				$user = $this->objectManager->get('NormanSeibert\\Ldap\\Domain\\Model\\LdapUser\\FeUser');
 			}
 		}
 		
@@ -285,6 +293,7 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 	 */
 	public function getGroup($dn) {
 		$info = array();
+        $bind = NULL;
 		if (strlen($dn)) {
 			$connect = $this->connect();
 			if ($connect) {
@@ -444,7 +453,6 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		}
 
 		if ($connect) {
-			$this->persistentConnection = $connect;
 			if ($version == 3) {
 				try {
 					ldap_set_option($connect, LDAP_OPT_PROTOCOL_VERSION, 3);
@@ -477,7 +485,7 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 				\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::ERROR, $msg, $uid);
 			}
 		} else {
-			$msg = 'ldap_connect('.uid.', '.$host.':'.$port.'): Could not connect to LDAP server.';
+			$msg = 'ldap_connect('.$uid.', '.$host.':'.$port.'): Could not connect to LDAP server.';
 			\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 3);
 			\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::ERROR, $msg, $uid);
 		}
@@ -485,12 +493,14 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		return $connect;
 	}
 
-	/**
-	 * checks the LDAP server binding
-	 * 
-	 * @return resource
-	 */
+    /**
+     * checks the LDAP server binding
+     *
+     * @param $connect
+     * @return resource
+     */
 	public function checkBind($connect) {
+        $bind = NULL;
 		if (!empty($connect)) {
 			if ($this->getConfiguration()->getUser() && $this->getConfiguration()->getPassword()) {
 				$bind = $this->bind($connect, $this->getConfiguration()->getUser(), $this->getConfiguration()->getPassword());
@@ -510,6 +520,7 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 	 * @return resource
 	 */
 	private function bind($conn, $user = '', $pass = '', $warnLevel = \TYPO3\CMS\Core\Messaging\FlashMessage::ERROR) {
+        $bind = NULL;
 		$uid = $this->getConfiguration()->getUid();
 		$host = $this->getConfiguration()->getHost();
 		$port = $this->getConfiguration()->getPort();
@@ -571,6 +582,7 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 	 * @return array
 	 */
 	private function search($ds, $baseDN, $filter, $attributes = array(), $scope = 'sub') {
+        $search = NULL;
 		$sizeLimit = 0;
 		
 		// sometimes the attribute filter does not seem to work => disable it
@@ -684,6 +696,7 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		$serverUid = $this->getConfiguration()->getUid();
 		$password = \NormanSeibert\Ldap\Utility\Helpers::sanitizeCredentials($password);
 
+        /* @var $ldapUser \NormanSeibert\Ldap\Domain\Model\LdapUser\User */
 		$ldapUser = $this->checkUser($loginname);
 
 		if (is_object($ldapUser)) {

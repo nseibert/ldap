@@ -27,7 +27,7 @@ namespace NormanSeibert\Ldap\Domain\Model;
 /**
  * Model for TYPO3 frontend users
  */
-class FrontendUserGroup extends \TYPO3\CMS\Extbase\Domain\Model\FrontendUserGroup {
+class FrontendUserGroup extends \TYPO3\CMS\Extbase\Domain\Model\FrontendUserGroup implements \NormanSeibert\Ldap\Domain\Model\UserGroupInterface {
 	
 	/**
 	 *

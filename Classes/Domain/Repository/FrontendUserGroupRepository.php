@@ -106,7 +106,7 @@ class FrontendUserGroupRepository extends \TYPO3\CMS\Extbase\Domain\Repository\F
 	public function findByLastRun($lastRun) {
 		$query = $this->createQuery();
 		$query->getQuerySettings()->setRespectStoragePage(FALSE);
-		$query->getQuerySettings()->setRespectEnableFields(FALSE);
+        \NormanSeibert\Ldap\Utility\Helpers::setRespectEnableFieldsToFalse($query);
 		$query->matching(
 			$query->in("tx_ldap_lastrun", $lastRun)
 		);

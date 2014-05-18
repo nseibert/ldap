@@ -48,7 +48,7 @@ class ModuleDataStorageService implements \TYPO3\CMS\Core\SingletonInterface {
 	public function loadModuleData() {
 		$moduleData = $GLOBALS['BE_USER']->getModuleData(self::KEY);
 		if (empty($moduleData) || !$moduleData) {
-			$moduleData = $this->objectManager->create('NormanSeibert\\Ldap\\Domain\\Model\\BackendModule\\ModuleData');
+			$moduleData = $this->objectManager->get('NormanSeibert\\Ldap\\Domain\\Model\\BackendModule\\ModuleData');
 		} else {
 			$moduleData = unserialize($moduleData);
 		}

@@ -25,15 +25,9 @@ namespace NormanSeibert\Ldap\Utility;
  */
 
 /**
- * Variouselper functions
+ * Various helper functions
  */
 class Helpers {
-
-	/**
-	 *
-	 * @var int
-	 */
-	protected $error = -1;
 
 	/**
 	 * Adds an error to TYPO3's backend flashmessage queue
@@ -44,10 +38,10 @@ class Helpers {
 	 * @param array $data
 	 * @return void
 	 */
-	function addError($severity = \TYPO3\CMS\Core\Messaging\FlashMessage::INFO, $message = '', $server = '', $data = null) {
+	static function addError($severity = \TYPO3\CMS\Core\Messaging\FlashMessage::INFO, $message = '', $server = '', $data = null) {
 		$msg = $message;
 		if ($data) {
-			$msg .= '<br/>'.\TYPO3\CMS\Core\Utility\GeneralUtility::view_array($data);
+			$msg .= '<br/>'.\TYPO3\CMS\Core\Utility\ArrayUtility::flatten($data);
 		}
 		$objectManager = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\Object\\ObjectManager');
 		$message = $objectManager->get(
@@ -57,14 +51,6 @@ class Helpers {
 			$severity
 		);
 		\TYPO3\CMS\Core\Messaging\FlashMessageQueue::addMessage($message);
-		if ($severity > $this->error) {
-			$this->error = $severity;
-		}
-		$this->arrErrors[] = array(
-			'message' => $msg,
-			'server' => $server,
-			'severity' => $severity
-		);
 	}
 	
 	/**
@@ -75,13 +61,12 @@ class Helpers {
 	 * @param string $list
 	 * @return array
 	 */
-	function checkValue($value, $eval, $list = '') {
+	static function checkValue($value, $eval, $list = '') {
 		$res = array();
-		$newValue = $value;
 		$set = true;
 		$arrEval = explode(',', $eval);
 
-		foreach ($arrEval as $key => $func) {
+		foreach ($arrEval as $func) {
 			if ($set) {
 				switch ($func) {
 					case 'int':
@@ -141,7 +126,7 @@ class Helpers {
 	 * @param string $string
 	 * @return string
 	 */
-	function sanitizeQuery($string) {
+	static function sanitizeQuery($string) {
 		$sanitized = array(
 			'\\' => '\5c',
 			'*' => '\2a',
@@ -160,7 +145,7 @@ class Helpers {
 	 * @param string $string
 	 * @return string
 	 */
-	function sanitizeCredentials($string) {
+	static function sanitizeCredentials($string) {
 		$sanitized = array(
 			"\x00" => '\00'
 		);
@@ -168,17 +153,17 @@ class Helpers {
 		
 		return $res;
 	}
-	
-	/**
-	 * Generates a random password
-	 * 
-	 * @param int $l length
-	 * @param int $c number of alphabetic characters
-	 * @param int $l number of numeric characters
-	 * @param int $l number of special characters
-	 * @return string
-	 */
-	function generatePassword($l = 8, $c = 0, $n = 0, $s = 0) {
+
+    /**
+     * Generates a random password
+     *
+     * @param int $l number of special characters
+     * @param int $c number of alphabetic characters
+     * @param int $n number of numeric characters
+     * @param int $s number of special characters
+     * @return string
+     */
+	static function generatePassword($l = 8, $c = 0, $n = 0, $s = 0) {
 		// get count of all required minimum special chars
 		$count = $c + $n + $s;
 		$ok = true;
@@ -254,15 +239,19 @@ class Helpers {
 	 * Example: Converts minimal_value to minimalValue
 	 *
 	 * @param string $string String to be converted to camel case
-	 * @return string lowerCamelCasedWord
+	 * @return string
 	 */
-	function underscoredToLowerCamelCase($string) {
+	static function underscoredToLowerCamelCase($string) {
 		$upperCamelCase = str_replace(' ', '', ucwords(str_replace('_', ' ', $string)));
 		$lowerCamelCase = lcfirst($upperCamelCase);
 		return $lowerCamelCase;
 	}
-	
-	function setRespectEnableFieldsToFalse($query) {
+
+    /**
+     * sets the enable fields of the query correctly for TYPO3 6.x
+     * @param \TYPO3\CMS\Extbase\Persistence\QueryInterface $query
+     */
+    static function setRespectEnableFieldsToFalse($query) {
 		if (function_exists($query->getQuerySettings()->setRespectEnableFields)) {
 			$query->getQuerySettings()->setRespectEnableFields(FALSE);
 		} else {
@@ -274,7 +263,7 @@ class Helpers {
      * Get the list of individual characters used by the search splitting algorithm.
      * @return array characters to use in split searches
      */
-    public function getSearchCharacterRange() {
+    static function getSearchCharacterRange() {
         $numerals = range(0, 9);
         $alphabet = range('a', 'z');
 

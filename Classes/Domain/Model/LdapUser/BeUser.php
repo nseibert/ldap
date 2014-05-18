@@ -63,11 +63,11 @@ class BeUser extends \NormanSeibert\Ldap\Domain\Model\LdapUser\User {
 		$this->userRules = $this->ldapServer->getConfiguration()->getBeUserRules();
 		return $this;
 	}
-	
-	/**
-	 * 
-	 * @param \NormanSeibert\Ldap\Domain\Model\FrontendUser $user
-	 */
+
+    /**
+     *
+     * @param \NormanSeibert\Ldap\Domain\Model\BackendUser|\NormanSeibert\Ldap\Domain\Model\FrontendUser $user
+     */
 	public function setUser(\NormanSeibert\Ldap\Domain\Model\BackendUser $user) {
 		$this->user = $user;
 	}
@@ -94,7 +94,7 @@ class BeUser extends \NormanSeibert\Ldap\Domain\Model\LdapUser\User {
 		$username = $this->getAttribute($ldapUsername);
 
 		if ($username) {
-			$this->user = $this->objectManager->create('NormanSeibert\\Ldap\\Domain\\Model\\BackendUser');
+			$this->user = $this->objectManager->get('NormanSeibert\\Ldap\\Domain\\Model\\BackendUser');
 			
 			$this->user->setPid(0);
 			$this->user->setUsername($username);
@@ -224,7 +224,8 @@ class BeUser extends \NormanSeibert\Ldap\Domain\Model\LdapUser\User {
 		$addnewgroups = $this->userRules->getGroupRules()->getImportGroups();
 		if ((is_array($newGroups)) && ($addnewgroups)) {
 			foreach ($newGroups as $group) {
-				$newGroup = $this->objectManager->create('NormanSeibert\\Ldap\\Domain\\Model\\BackendUserGroup');
+                /* @var $newGroup \NormanSeibert\Ldap\Domain\Model\BackendUserGroup */
+				$newGroup = $this->objectManager->get('NormanSeibert\\Ldap\\Domain\\Model\\BackendUserGroup');
 				$newGroup->setPid(0);
 				$newGroup->setTitle($group['title']);
 				$newGroup->setDN($group['dn']);
@@ -234,7 +235,9 @@ class BeUser extends \NormanSeibert\Ldap\Domain\Model\LdapUser\User {
 				}
 				// LDAP attributes from mapping
 				if ($group['groupObject']) {
-					$insertArray = $this->mapAttributes('group', $group['groupObject']->getAttributes());
+                    /* @var $groupObject \NormanSeibert\Ldap\Domain\Model\LdapUser\User */
+                    $groupObject = $group['groupObject'];
+                    $insertArray = $this->mapAttributes('group', $groupObject->getAttributes());
 					unset($insertArray['field']);
 					foreach ($insertArray as $field => $value) {
 						$ret = $newGroup->_setProperty($field, $value);
