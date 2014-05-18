@@ -27,7 +27,7 @@ namespace NormanSeibert\Ldap\Domain\Model;
 /**
  * Model for TYPO3 frontend users
  */
-class FrontendUser extends \TYPO3\CMS\Extbase\Domain\Model\FrontendUser implements \NormanSeibert\Ldap\Domain\Model\UserInterface {
+class FrontendUser extends \TYPO3\CMS\Extbase\Domain\Model\FrontendUser {
 	
 	/**
 	 * @var boolean

@@ -263,8 +263,6 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		
 		$assignedGroups = $this->addNewGroups($ret['newGroups'], $ret['existingGroups'], $lastRun);
 
-//		\TYPO3\CMS\Core\Utility\DebugUtility::debug($assignedGroups);
-
 		return $assignedGroups;
 	}
 	
@@ -278,13 +276,6 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		$mapping = $this->userRules->getGroupRules()->getMapping();
 		
 		$groupname = mb_strtolower($this->getAttribute('dn'));
-		
-		/*
-		$this->userRules->setBaseDN($this->userRules->getGroupRules()->getBaseDN());
-		$this->userRules->setFilter($this->userRules->getGroupRules()->getFilter());
-		$this->userRules->setMapping($this->userRules->getGroupRules()->getMapping());
-		$this->userRules->setGroupRules($this->objectManager->create('NormanSeibert\\Ldap\\Domain\\Model\\LdapServer\\ServerConfigurationGroups'));
-		*/
 		
 		$ldapGroups = $this->ldapServer->getGroups($groupname);
 		
@@ -388,7 +379,6 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 				if (is_array($ldapGroup)) {
 					$this->cObj->alternativeData = $ldapGroup;
 					$usergroup = $this->cObj->stdWrap('', $mapping['title.']);
-//					\TYPO3\CMS\Core\Utility\DebugUtility::debug($usergroup);
 					$tmp = $this->resolveGroup('dn', $groupDN, $usergroup, $groupDN);
 					if ($tmp['newGroup']) {
 						$ret['newGroups'][] = $tmp['newGroup'];
@@ -402,8 +392,6 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 			$ldapGroup = $this->ldapServer->getGroup($groupDNs);
 			$this->cObj->alternativeData = $ldapGroup;
 			$usergroup = $this->cObj->stdWrap('', $mapping['title.']);
-//			\TYPO3\CMS\Core\Utility\DebugUtility::debug($ldapGroup);
-//			\TYPO3\CMS\Core\Utility\DebugUtility::debug($usergroup);
 			$tmp = $this->resolveGroup('dn', $groupDNs, $usergroup, $groupDNs);
 			if ($tmp['newGroup']) {
 				$ret['newGroups'][] = $tmp['newGroup'];
@@ -412,9 +400,6 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 				$ret['existingGroups'][] = $tmp['existingGroup'];
 			}
 		}
-		
-//		\TYPO3\CMS\Core\Utility\DebugUtility::debug($ret['newGroups']);
-//		\TYPO3\CMS\Core\Utility\DebugUtility::debug(count($ret['existingGroups']));
 		
 		return $ret;
 	}
@@ -473,11 +458,6 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 			$ret = TRUE;
 		} else {
 			$onlygrouparray = explode(",", $onlygroup);
-			/*
-			if (is_array($onlygrouparray)) {
-				$ret = \TYPO3\CMS\Core\Utility\GeneralUtility::inArray($onlygrouparray, $groupname);
-			}
-			*/
 			if (is_array($onlygrouparray)) {
 				while ((list($key, $value) = each($onlygrouparray)) && !($ret)) {
 					if (preg_match(trim($value), $groupname)) $ret = TRUE;

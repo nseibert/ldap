@@ -27,7 +27,7 @@ namespace NormanSeibert\Ldap\Domain\Model;
 /**
  * Model for TYPO3 backend users
  */
-class BackendUser extends \TYPO3\CMS\Extbase\Domain\Model\BackendUser implements \NormanSeibert\Ldap\Domain\Model\UserInterface {
+class BackendUser extends \TYPO3\CMS\Extbase\Domain\Model\BackendUser {
 	
 	/**
 	 *
@@ -63,13 +63,6 @@ class BackendUser extends \TYPO3\CMS\Extbase\Domain\Model\BackendUser implements
 	 * @var string 
 	 */
 	protected $lastRun;
-	
-	/**
-	 *
-	 * @var \TYPO3\CMS\Extbase\Object\ObjectManager
-	 * @inject
-	 */
-	protected $objectManager;
 	
 	/**
 	 * @var \NormanSeibert\Ldap\Domain\Model\Configuration\Configuration
