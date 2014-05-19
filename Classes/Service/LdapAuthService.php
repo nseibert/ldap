@@ -73,6 +73,7 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 
 	/**
 	 * @var \NormanSeibert\Ldap\Domain\Model\Configuration\Configuration
+     * @inject
 	 */
 	protected $ldapConfig;
 	
@@ -99,6 +100,7 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
     /**
      *
      * @var \NormanSeibert\Ldap\Service\TypoScriptService
+     * @inject
     */
     protected $typoScriptService;
 
@@ -133,7 +135,7 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 		$this->signalSlotDispatcher = $this->objectManager->get('TYPO3\\CMS\\Extbase\\SignalSlot\\Dispatcher');
 		$this->typoScriptService = $this->objectManager->get('NormanSeibert\\Ldap\\Service\\TypoScriptService');
 		$this->ldapConfig = $this->objectManager->get('NormanSeibert\\Ldap\\Domain\\Model\\Configuration\\Configuration');
-		$this->conf = $this->ldapConfig->getConfiguration();
+        $this->conf = $this->ldapConfig->getConfiguration();
 		$this->logLevel = $this->conf['logLevel'];
 		$this->pObj = $parentObject;
 		$this->loginData = $loginData;
@@ -249,7 +251,6 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 						} else {
 							// Authenticate the user here because only users shall be imported which are authenticated.
 							// Otherwise every user present in the directory would be imported regardless of the entered password.
-							
 							if ($this->conf['enableSSO'] && $this->conf['ssoHeader'] && ($_SERVER[$this->conf['ssoHeader']])) {
                                 /* @var $ldapUser \NormanSeibert\Ldap\Domain\Model\LdapUser\User */
 								$ldapUser = $server->checkUser($this->username);
@@ -257,7 +258,6 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
                                 /* @var $ldapUser \NormanSeibert\Ldap\Domain\Model\LdapUser\User */
 								$ldapUser = $server->authenticateUser($this->username, $this->password);
 							}
-							
 							if (is_object($ldapUser)) {
 								// Credentials are OK
 								if ($server->getConfiguration()->getUserRules($this->authInfo['db_user']['table'])->getAutoImport()) {

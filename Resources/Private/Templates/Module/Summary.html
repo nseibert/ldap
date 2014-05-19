@@ -6,20 +6,20 @@
 	
 	<f:flashMessages renderMode="div" />
 	
-	<table border="0" cellspacing="1" cellpadding="2" style="width:100%;" class="typo3-dblist">
+	<table style="width:100%;" class="typo3-dblist">
 		<tr class="t3-row-header">
-			<td nowrap rowspan="2"><f:translate key="header.uid" /></td>
-			<td nowrap rowspan="2"><f:translate key="header.hostPort" /></td>
-			<td nowrap colspan="3" align="center">FE</td>
-			<td nowrap colspan="3" align="center">BE</td>
+			<td rowspan="2"><f:translate key="header.uid" /></td>
+			<td rowspan="2"><f:translate key="header.hostPort" /></td>
+			<td colspan="3">FE</td>
+			<td colspan="3">BE</td>
 		</tr>
 		<tr class="t3-row-header">
-			<td nowrap><f:translate key="header.baseDn" /></td>
-			<td nowrap><f:translate key="header.filter" /></td>
-			<td nowrap><f:translate key="header.users" /></td>
-			<td nowrap><f:translate key="header.baseDn" /></td>
-			<td nowrap><f:translate key="header.filter" /></td>
-			<td nowrap><f:translate key="header.users" /></td>
+			<td><f:translate key="header.baseDn" /></td>
+			<td><f:translate key="header.filter" /></td>
+			<td><f:translate key="header.users" /></td>
+			<td><f:translate key="header.baseDn" /></td>
+			<td><f:translate key="header.filter" /></td>
+			<td><f:translate key="header.users" /></td>
 		</tr>
 		<f:for each="{ldapServers}" as="serverRecord">
 			<tr class="db_list_normal">

@@ -25,7 +25,7 @@
 		<f:if condition="<f:count subject='{fe_users}' /> > 10">
 			<f:then>
 				<f:widget.paginate objects="{fe_users}" as="paginatedUsers" configuration="{itemsPerPage: 10, insertAbove: 1, insertBelow: 1}">
-					<table border="0" cellpadding="0" cellspacing="0" class="typo3-dblist">
+					<table class="typo3-dblist">
 						<tr class="t3-row-header">
 							<td></td>
 							<td><f:translate key="header.username" /></td>
@@ -50,7 +50,7 @@
 				</f:widget.paginate>
 			</f:then>
 			<f:else>
-				<table border="0" cellpadding="0" cellspacing="0" class="typo3-dblist">
+				<table class="typo3-dblist">
 					<tr class="t3-row-header">
 						<td></td>
 						<td><f:translate key="header.username" /></td>
@@ -84,7 +84,7 @@
 		<f:if condition="<f:count subject='{be_users}' /> > 10">
 			<f:then>
 				<f:widget.paginate objects="{be_users}" as="paginatedUsers" configuration="{itemsPerPage: 10, insertAbove: 1, insertBelow: 1}">
-					<table border="0" cellpadding="0" cellspacing="0" class="typo3-dblist">
+					<table class="typo3-dblist">
 						<tr class="t3-row-header">
 							<td></td>
 							<td><f:translate key="header.username" /></td>
@@ -109,7 +109,7 @@
 				</f:widget.paginate>
 			</f:then>
 			<f:else>
-				<table border="0" cellpadding="0" cellspacing="0" class="typo3-dblist">
+				<table class="typo3-dblist">
 					<tr class="t3-row-header">
 						<td></td>
 						<td><f:translate key="header.username" /></td>
