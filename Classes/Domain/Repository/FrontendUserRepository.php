@@ -99,6 +99,7 @@ class FrontendUserRepository extends \TYPO3\CMS\Extbase\Domain\Repository\Fronte
 	public function findByLastRun($lastRun) {
 		$query = $this->createQuery();
 		$query->getQuerySettings()->setRespectStoragePage(FALSE);
+		$query->getQuerySettings()->setIncludeDeleted(TRUE);
 		\NormanSeibert\Ldap\Utility\Helpers::setRespectEnableFieldsToFalse($query);
 		if (is_array($lastRun)) {
 			if (count($lastRun) == 1) {
@@ -127,6 +128,7 @@ class FrontendUserRepository extends \TYPO3\CMS\Extbase\Domain\Repository\Fronte
 	public function countByLastRun($lastRun) {
 		$query = $this->createQuery();
 		$query->getQuerySettings()->setRespectStoragePage(FALSE);
+		$query->getQuerySettings()->setIncludeDeleted(TRUE);
 		\NormanSeibert\Ldap\Utility\Helpers::setRespectEnableFieldsToFalse($query);
 		if (is_array($lastRun)) {
 			if (count($lastRun) == 1) {
