@@ -514,7 +514,8 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 				}
 			}
 		} else {
-			$usergroup = $this->objectManager->get('TYPO3\CMS\Extbase\Persistence\ObjectStorage');
+            /* @var $usergroup \TYPO3\CMS\Extbase\Persistence\ObjectStorage */
+			$usergroup = $this->objectManager->get('TYPO3\\CMS\\Extbase\\Persistence\\ObjectStorage');
 			$this->user->setUsergroup($usergroup);
 		}
 	}
