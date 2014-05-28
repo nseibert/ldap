@@ -240,10 +240,6 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 				$this->ldapServers = $this->ldapConfig->getLdapServers('', '', $this->authInfo['loginType'], $this->authInfo['db_user']['checkPidList']);
 				if (count($this->ldapServers)) {
 					foreach ($this->ldapServers as $server) {
-                        /* @var $server \NormanSeibert\Ldap\Domain\Model\LdapServer\Server */
-						$server->setScope(strtolower($this->authInfo['loginType']), $pid);
-						$server->loadAllGroups();
-
 						if ($user['authenticated']) {
 							if ($this->logLevel >= 1) {
 								\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('User already authenticated', 'ldap', 0);
@@ -251,6 +247,11 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 						} else {
 							// Authenticate the user here because only users shall be imported which are authenticated.
 							// Otherwise every user present in the directory would be imported regardless of the entered password.
+							
+							/* @var $server \NormanSeibert\Ldap\Domain\Model\LdapServer\Server */
+							$server->setScope(strtolower($this->authInfo['loginType']), $pid);
+							$server->loadAllGroups();
+
 							if ($this->conf['enableSSO'] && $this->conf['ssoHeader'] && ($_SERVER[$this->conf['ssoHeader']])) {
                                 /* @var $ldapUser \NormanSeibert\Ldap\Domain\Model\LdapUser\User */
 								$ldapUser = $server->checkUser($this->username);
@@ -271,6 +272,22 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 										$ldapUser->updateUser();
 									} else {
 										$ldapUser->addUser();
+									}
+									// Necessary to enable fetchUserRecord()
+									$this->persistenceManager = $this->objectManager->get('TYPO3\\CMS\\Extbase\\Persistence\\PersistenceManagerInterface');
+									$this->persistenceManager->persistAll();
+								}
+								if ($server->getConfiguration()->getUserRules($this->authInfo['db_user']['table'])->getAutoEnable()) {
+									$ldapUser->loadUser();
+									$typo3User = $ldapUser->getUser();
+									if (is_object($typo3User)) {
+										if ($typo3User->getIsDisabled()) {
+											// Authenticated users shall be enabled
+											if ($this->logLevel >= 1) {
+												\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('Enable user ' . $this->username, 'ldap', 0);
+											}
+											$ldapUser->enableUser();
+										}
 									}
 									// Necessary to enable fetchUserRecord()
 									$this->persistenceManager = $this->objectManager->get('TYPO3\\CMS\\Extbase\\Persistence\\PersistenceManagerInterface');

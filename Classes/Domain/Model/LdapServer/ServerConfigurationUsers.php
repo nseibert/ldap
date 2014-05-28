@@ -49,6 +49,12 @@ class ServerConfigurationUsers extends \TYPO3\CMS\Extbase\DomainObject\AbstractE
 	
 	/**
 	 *
+	 * @var boolean 
+	 */
+	protected $autoEnable;
+	
+	/**
+	 *
 	 * @var array 
 	 */
 	protected $mapping = array();
@@ -135,6 +141,24 @@ class ServerConfigurationUsers extends \TYPO3\CMS\Extbase\DomainObject\AbstractE
 	 */
 	public function getAutoImport() {
 		return $this->autoImport;
+	}
+	
+	/**
+	 * 
+	 * @param boolean $auto
+	 * @return \NormanSeibert\Ldap\Domain\Model\LdapServer\ServerConfigurationUsers
+	 */
+	public function setAutoEnable($auto) {
+		$this->autoEnable = $auto;
+		return $this;
+	}
+	
+	/**
+	 * 
+	 * @return boolean
+	 */
+	public function getAutoEnable() {
+		return $this->autoEnable;
 	}
 	
 	/**

@@ -547,6 +547,13 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
     }
 
     /**
+     * enables a TYPO3 user
+     */
+    public function enableUser() {
+
+    }
+
+    /**
      * adds a new TYPO3 usergroup
      *
      * @param array $newGroups

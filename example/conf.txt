@@ -38,6 +38,9 @@ ldapServers {
 			
 			# import authenticated users automatically (0/1)
 			autoImport = 1
+
+			# Enable authenticated users automatically (0/1)
+            autoEnable = 1
 		
 			mapping = COA
 			mapping {

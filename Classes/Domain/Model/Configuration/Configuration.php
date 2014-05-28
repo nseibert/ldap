@@ -238,6 +238,7 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 					->setBaseDN($server['fe_users.']['baseDN'])
 					->setFilter($server['fe_users.']['filter'])
 					->setAutoImport($server['fe_users.']['autoImport'])
+					->setAutoEnable($server['fe_users.']['autoEnable'])
 					->setMapping($server['fe_users.']['mapping.'])
 					->setGroupRules($groupRuleFE);
 
@@ -257,6 +258,7 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 					->setBaseDN($server['be_users.']['baseDN'])
 					->setFilter($server['be_users.']['filter'])
 					->setAutoImport($server['be_users.']['autoImport'])
+					->setAutoEnable($server['be_users.']['autoEnable'])
 					->setMapping($server['be_users.']['mapping.'])
 					->setGroupRules($groupRuleBE);
 				

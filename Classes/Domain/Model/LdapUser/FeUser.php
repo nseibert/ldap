@@ -193,6 +193,14 @@ class FeUser extends \NormanSeibert\Ldap\Domain\Model\LdapUser\User {
 			\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::WARNING, $msg, $this->ldapServer->getConfiguration()->getUid());
 		}
 	}
+	
+	/** 
+	 * enables a TYPO3 user
+	 */
+	public function enableUser() {
+		$this->user->setIsDisabled(FALSE);
+		$this->userRepository->update($this->user);
+	}
 
 	/**
 	 * adds TYPO3 usergroups to the user record
