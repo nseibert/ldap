@@ -1,5 +1,5 @@
 <?php
-namespace NormanSeibert\Ldap\Domain\Model;
+namespace NormanSeibert\Ldap\Domain\Model\Typo3User;
 /**
  * This script is part of the TYPO3 project. The TYPO3 project is
  * free software; you can redistribute it and/or modify
@@ -25,38 +25,29 @@ namespace NormanSeibert\Ldap\Domain\Model;
  */
 
 /**
- * Model for TYPO3 backend users
+ * Model for TYPO3 frontend users
  */
-class BackendUser extends \TYPO3\CMS\Extbase\Domain\Model\BackendUser implements \NormanSeibert\Ldap\Domain\Model\UserInterface {
+class FrontendUser extends \TYPO3\CMS\Extbase\Domain\Model\FrontendUser implements \NormanSeibert\Ldap\Domain\Model\Typo3User\UserInterface {
 	
 	/**
-	 *
-	 * @var string 
+	 * @var boolean
 	 */
-	protected $username;
-
+	protected $isDisabled = FALSE;
+	
 	/**
-	 *
 	 * @var string 
 	 */
 	protected $dn;
 	
 	/**
-	 *
 	 * @var \NormanSeibert\Ldap\Domain\Model\LdapServer\Server 
 	 */
 	protected $ldapServer;
 	
 	/**
-	 *
 	 * @var string 
 	 */
 	protected $serverUid;
-
-	/**
-	 * @var string
-	 */
-	protected $password = '';
 	
 	/**
 	 *
@@ -71,22 +62,28 @@ class BackendUser extends \TYPO3\CMS\Extbase\Domain\Model\BackendUser implements
 	protected $ldapConfig;
 	
 	/**
-	 * @var \TYPO3\CMS\Extbase\Persistence\ObjectStorage<\TYPO3\CMS\Extbase\Domain\Model\BackendUserGroup>
+	 * Checks whether this user is disabled.
+	 *
+	 * @return boolean whether this user is disabled
 	 */
-	protected $usergroup;
+	public function getIsDisabled() {
+		return $this->isDisabled;
+	}
 
 	/**
-	 * Constructs a new Backend User
+	 * Sets whether this user is disabled.
 	 *
+	 * @param boolean $isDisabled whether this user is disabled
+	 * @return void
 	 */
-	public function __construct() {
-        $this->usergroup = new \TYPO3\CMS\Extbase\Persistence\ObjectStorage();
+	public function setIsDisabled($isDisabled) {
+		$this->isDisabled = $isDisabled;
 	}
 	
 	/**
 	 * 
 	 * @param string $dn
-	 * @return \NormanSeibert\Ldap\Domain\Model\BackendUser
+	 * @return \NormanSeibert\Ldap\Domain\Model\Typo3User\FrontendUser
 	 */
 	public function setDN($dn) {
 		$this->dn = $dn;
@@ -104,7 +101,7 @@ class BackendUser extends \TYPO3\CMS\Extbase\Domain\Model\BackendUser implements
 	/**
 	 * 
 	 * @param \NormanSeibert\Ldap\Domain\Model\LdapServer\Server $server
-	 * @return \NormanSeibert\Ldap\Domain\Model\BackendUser
+	 * @return \NormanSeibert\Ldap\Domain\Model\Typo3User\FrontendUser
 	 */
 	public function setLdapServer(\NormanSeibert\Ldap\Domain\Model\LdapServer\Server $server) {
 		$this->ldapServer = $server;
@@ -126,7 +123,7 @@ class BackendUser extends \TYPO3\CMS\Extbase\Domain\Model\BackendUser implements
 	/**
 	 * 
 	 * @param string $uid
-	 * @return \NormanSeibert\Ldap\Domain\Model\BackendUser
+	 * @return \NormanSeibert\Ldap\Domain\Model\Typo3User\FrontendUser
 	 */
 	public function setServerUid($uid) {
 		$this->serverUid = $uid;
@@ -155,7 +152,7 @@ class BackendUser extends \TYPO3\CMS\Extbase\Domain\Model\BackendUser implements
 	
 	/**
 	 * 
-	 * @return \NormanSeibert\Ldap\Domain\Model\BackendUser
+	 * @return \NormanSeibert\Ldap\Domain\Model\Typo3User\FrontendUser
 	 */
 	public function generatePassword() {
 		$password = \NormanSeibert\Ldap\Utility\Helpers::generatePassword(10, 2, 2, 2);
@@ -174,7 +171,7 @@ class BackendUser extends \TYPO3\CMS\Extbase\Domain\Model\BackendUser implements
 	/**
 	 * 
 	 * @param string $run
-	 * @return \NormanSeibert\Ldap\Domain\Model\BackendUser
+	 * @return \NormanSeibert\Ldap\Domain\Model\Typo3User\FrontendUser
 	 */
 	public function setLastRun($run) {
 		$this->lastRun = $run;
@@ -187,65 +184,6 @@ class BackendUser extends \TYPO3\CMS\Extbase\Domain\Model\BackendUser implements
 	 */
 	public function getLastRun() {
 		return $this->lastRun;
-	}
-
-	/**
-	 * Gets the user name.
-	 *
-	 * @return string the user name, will not be empty
-	 */
-	public function getUsername() {
-		return $this->userName;
-	}
-
-	/**
-	 * Sets the user name.
-	 *
-	 * @param string $username the user name to set, must not be empty
-	 * @return void
-	 */
-	public function setUsername($username) {
-		$this->userName = $username;
-	}
-	
-	/**
-	 * Adds a usergroup to the backend user
-	 *
-	 * @param \NormanSeibert\Ldap\Domain\Model\BackendUserGroup $usergroup
-	 */
-	public function addUsergroup(\NormanSeibert\Ldap\Domain\Model\BackendUserGroup $usergroup) {
-		$this->usergroup->attach($usergroup);
-	}
-
-	/**
-	 * Removes a usergroup from the backend user
-	 *
-	 * @param \NormanSeibert\Ldap\Domain\Model\BackendUserGroup $usergroup
-	 */
-	public function removeUsergroup(\NormanSeibert\Ldap\Domain\Model\BackendUserGroup $usergroup) {
-		$this->usergroup->detach($usergroup);
-	}
-	
-	/**
-	 * Returns the usergroups. Keep in mind that the property is called "usergroup"
-	 * although it can hold several usergroups.
-	 *
-	 * @return \TYPO3\CMS\Extbase\Persistence\ObjectStorage An object storage containing the usergroup
-	 */
-	public function getUsergroup() {
-		return $this->usergroup;
-	}
-	
-	/**
-	 * Sets the usergroups. Keep in mind that the property is called "usergroup"
-	 * although it can hold several usergroups.
-	 *
-	 * @param \TYPO3\CMS\Extbase\Persistence\ObjectStorage $usergroup
-	 * @return void
-	 * @api
-	 */
-	public function setUsergroup(\TYPO3\CMS\Extbase\Persistence\ObjectStorage $usergroup) {
-		$this->usergroup = $usergroup;
 	}
 }
 ?>

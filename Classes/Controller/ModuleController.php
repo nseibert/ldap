@@ -40,13 +40,13 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 	protected $pageRenderer;
 
 	/**
-	 * @var \NormanSeibert\Ldap\Domain\Repository\FrontendUserRepository
+	 * @var \NormanSeibert\Ldap\Domain\Repository\Typo3User\FrontendUserRepository
 	 * @inject
 	 */
 	protected $feUserRepository;
 
 	/**
-	 * @var \NormanSeibert\Ldap\Domain\Repository\BackendUserRepository
+	 * @var \NormanSeibert\Ldap\Domain\Repository\Typo3User\BackendUserRepository
 	 * @inject
 	 */
 	protected $beUserRepository;

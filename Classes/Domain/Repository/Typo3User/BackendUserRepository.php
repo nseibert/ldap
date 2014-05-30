@@ -1,5 +1,5 @@
 <?php
-namespace NormanSeibert\Ldap\Domain\Repository;
+namespace NormanSeibert\Ldap\Domain\Repository\Typo3User;
 /**
  * This script is part of the TYPO3 project. The TYPO3 project is
  * free software; you can redistribute it and/or modify
@@ -25,58 +25,37 @@ namespace NormanSeibert\Ldap\Domain\Repository;
  */
 
 /**
- * Repository for TYPO3 frontend usergroups
+ * Repository for TYPO3 backend users
  */
-class FrontendUserGroupRepository extends \TYPO3\CMS\Extbase\Domain\Repository\FrontendUserGroupRepository {
+class BackendUserRepository extends \TYPO3\CMS\Extbase\Domain\Repository\BackendUserRepository implements \NormanSeibert\Ldap\Domain\Repository\Typo3User\UserRepositoryInterface {
 	
 	/**
 	 * 
-	 * @return array
+	 * @param string $username
+     * @param int $pid
+	 * @return \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
 	 */
-	public function findAll() {
-		$query = $this->createQuery();
-		$query->getQuerySettings()->setRespectStoragePage(FALSE);
-		\NormanSeibert\Ldap\Utility\Helpers::setRespectEnableFieldsToFalse($query);
-		$groups = $query->execute();
-		return $groups->toArray();
-	}
-	
-	/**
-	 * 
-	 * @param array $uidList
-	 * @return array
-	 */
-	public function findByUids($uidList) {
+	public function findByUsername($username, $pid = NULL) {
+		$user = false;
 		$query = $this->createQuery();
 		$query->getQuerySettings()->setRespectStoragePage(FALSE);
 		\NormanSeibert\Ldap\Utility\Helpers::setRespectEnableFieldsToFalse($query);
 		$query->matching(	
-			$query->in("uid", $uidList)
+			$query->equals("username", $username)
 		);
-		$groups = $query->execute();
-		return $groups->toArray();
-	}
-	
-	/**
-	 * 
-	 * @param int $pid
-	 * @return array
-	 */
-	public function findByPid($pid) {
-		$query = $this->createQuery();
-		$query->getQuerySettings()->setRespectStoragePage(FALSE);
-		\NormanSeibert\Ldap\Utility\Helpers::setRespectEnableFieldsToFalse($query);
-		$query->matching(	
-			$query->equals("pid", $pid)
-		);
-		$groups = $query->execute();
-		return $groups->toArray();
+		$users = $query->execute();
+		$userCount = $users->count();
+		if ($userCount == 1) {
+			$user = $users->getFirst();
+		}
+		
+		return $user;
 	}
 	
 	/**
 	 * 
 	 * @param string $dn
-	 * @param int $pid
+     * @param int $pid
 	 * @return \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
 	 */
 	public function findByDn($dn, $pid = NULL) {
@@ -85,10 +64,7 @@ class FrontendUserGroupRepository extends \TYPO3\CMS\Extbase\Domain\Repository\F
 		$query->getQuerySettings()->setRespectStoragePage(FALSE);
 		\NormanSeibert\Ldap\Utility\Helpers::setRespectEnableFieldsToFalse($query);
 		$query->matching(	
-			$query->logicalAnd(
-				$query->equals("pid", $pid),
-				$query->equals("tx_ldap_dn", $dn)
-			)
+			$query->equals("dn", $dn)
 		);
 		$users = $query->execute();
 		$userCount = $users->count();
@@ -100,18 +76,59 @@ class FrontendUserGroupRepository extends \TYPO3\CMS\Extbase\Domain\Repository\F
 	
 	/**
 	 * 
-	 * @param array $lastRun
+	 * @param mixed $lastRun
 	 * @return \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
 	 */
 	public function findByLastRun($lastRun) {
 		$query = $this->createQuery();
 		$query->getQuerySettings()->setRespectStoragePage(FALSE);
-        \NormanSeibert\Ldap\Utility\Helpers::setRespectEnableFieldsToFalse($query);
-		$query->matching(
-			$query->in("tx_ldap_lastrun", $lastRun)
-		);
+		$query->getQuerySettings()->setIncludeDeleted(TRUE);
+		\NormanSeibert\Ldap\Utility\Helpers::setRespectEnableFieldsToFalse($query);
+		if (is_array($lastRun)) {
+			if (count($lastRun) == 1) {
+				$query->matching(
+					$query->equals("lastRun", $lastRun[0])
+				);
+			} else {
+				$query->matching(
+					$query->in("lastRun", $lastRun)
+				);
+			}
+		} else {
+			$query->matching(
+				$query->equals("lastRun", $lastRun)
+			);
+		}
 		$users = $query->execute();
 		return $users;
+	}
+	
+	/**
+	 * 
+	 * @param mixed $lastRun
+	 * @return integer
+	 */
+	public function countByLastRun($lastRun) {
+		$query = $this->createQuery();
+		$query->getQuerySettings()->setRespectStoragePage(FALSE);
+		$query->getQuerySettings()->setIncludeDeleted(TRUE);
+		\NormanSeibert\Ldap\Utility\Helpers::setRespectEnableFieldsToFalse($query);
+		if (is_array($lastRun)) {
+			if (count($lastRun) == 1) {
+				$query->matching(
+					$query->equals("lastRun", $lastRun[0])
+				);
+			} else {
+				$query->matching(
+					$query->in("lastRun", $lastRun)
+				);
+			}
+		} else {
+			$query->matching(
+				$query->equals("lastRun", $lastRun)
+			);
+		}
+		return $query->execute()->count();
 	}
 	
 	/**
@@ -120,7 +137,6 @@ class FrontendUserGroupRepository extends \TYPO3\CMS\Extbase\Domain\Repository\F
 	 */
 	public function findLdapImported() {
 		$query = $this->createQuery();
-		$query->getQuerySettings()->setRespectStoragePage(FALSE);
 		// \NormanSeibert\Ldap\Utility\Helpers::setRespectEnableFieldsToFalse($query);
 		$query->matching(
 			$query->logicalNot(

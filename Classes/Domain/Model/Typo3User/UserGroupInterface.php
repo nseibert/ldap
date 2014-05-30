@@ -1,5 +1,5 @@
 <?php
-namespace NormanSeibert\Ldap\Domain\Model;
+namespace NormanSeibert\Ldap\Domain\Model\Typo3User;
 /**
  * This script is part of the TYPO3 project. The TYPO3 project is
  * free software; you can redistribute it and/or modify
@@ -28,7 +28,7 @@ interface UserGroupInterface {
     /**
      *
      * @param string $dn
-     * @return \NormanSeibert\Ldap\Domain\Model\FrontendUser
+     * @return \NormanSeibert\Ldap\Domain\Model\Typo3User\FrontendUser
      */
     public function setDN($dn);
 
@@ -41,7 +41,7 @@ interface UserGroupInterface {
     /**
      *
      * @param \NormanSeibert\Ldap\Domain\Model\LdapServer\Server $server
-     * @return \NormanSeibert\Ldap\Domain\Model\FrontendUser
+     * @return \NormanSeibert\Ldap\Domain\Model\Typo3User\UserInterface
      */
     public function setLdapServer(\NormanSeibert\Ldap\Domain\Model\LdapServer\Server $server);
 
@@ -54,7 +54,7 @@ interface UserGroupInterface {
     /**
      *
      * @param string $uid
-     * @return \NormanSeibert\Ldap\Domain\Model\FrontendUser
+     * @return \NormanSeibert\Ldap\Domain\Model\Typo3User\UserInterface
      */
     public function setServerUid($uid);
 
@@ -67,7 +67,7 @@ interface UserGroupInterface {
     /**
      *
      * @param string $run
-     * @return \NormanSeibert\Ldap\Domain\Model\FrontendUser
+     * @return \NormanSeibert\Ldap\Domain\Model\Typo3User\UserInterface
      */
     public function setLastRun($run);
 

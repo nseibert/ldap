@@ -1,5 +1,5 @@
 <?php
-namespace NormanSeibert\Ldap\Domain\Repository;
+namespace NormanSeibert\Ldap\Domain\Repository\Typo3User;
 /**
  * This script is part of the TYPO3 project. The TYPO3 project is
  * free software; you can redistribute it and/or modify
@@ -25,12 +25,12 @@ namespace NormanSeibert\Ldap\Domain\Repository;
  */
 
 /**
- * Repository for TYPO3 backend usergroups
+ * Repository for TYPO3 frontend usergroups
  */
-class BackendUserGroupRepository extends \TYPO3\CMS\Extbase\Domain\Repository\BackendUserGroupRepository {
+class FrontendUserGroupRepository extends \TYPO3\CMS\Extbase\Domain\Repository\FrontendUserGroupRepository {
 	
 	/**
-	 *
+	 * 
 	 * @return array
 	 */
 	public function findAll() {
@@ -59,16 +59,36 @@ class BackendUserGroupRepository extends \TYPO3\CMS\Extbase\Domain\Repository\Ba
 	
 	/**
 	 * 
+	 * @param int $pid
+	 * @return array
+	 */
+	public function findByPid($pid) {
+		$query = $this->createQuery();
+		$query->getQuerySettings()->setRespectStoragePage(FALSE);
+		\NormanSeibert\Ldap\Utility\Helpers::setRespectEnableFieldsToFalse($query);
+		$query->matching(	
+			$query->equals("pid", $pid)
+		);
+		$groups = $query->execute();
+		return $groups->toArray();
+	}
+	
+	/**
+	 * 
 	 * @param string $dn
+	 * @param int $pid
 	 * @return \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
 	 */
-	public function findByDn($dn) {
+	public function findByDn($dn, $pid = NULL) {
 		$user = false;
 		$query = $this->createQuery();
 		$query->getQuerySettings()->setRespectStoragePage(FALSE);
 		\NormanSeibert\Ldap\Utility\Helpers::setRespectEnableFieldsToFalse($query);
 		$query->matching(	
-			$query->equals("tx_ldap_dn", $dn)
+			$query->logicalAnd(
+				$query->equals("pid", $pid),
+				$query->equals("tx_ldap_dn", $dn)
+			)
 		);
 		$users = $query->execute();
 		$userCount = $users->count();
@@ -81,12 +101,12 @@ class BackendUserGroupRepository extends \TYPO3\CMS\Extbase\Domain\Repository\Ba
 	/**
 	 * 
 	 * @param array $lastRun
-	 * @return array
+	 * @return \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
 	 */
 	public function findByLastRun($lastRun) {
 		$query = $this->createQuery();
 		$query->getQuerySettings()->setRespectStoragePage(FALSE);
-		\NormanSeibert\Ldap\Utility\Helpers::setRespectEnableFieldsToFalse($query);
+        \NormanSeibert\Ldap\Utility\Helpers::setRespectEnableFieldsToFalse($query);
 		$query->matching(
 			$query->in("tx_ldap_lastrun", $lastRun)
 		);

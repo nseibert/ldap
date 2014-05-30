@@ -349,7 +349,7 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 			}
 			
 			if (is_array($server['fe_users.']['mapping.'])) {
-				$newObj = $this->objectManager->get('NormanSeibert\\Ldap\\Domain\\Model\\FrontendUser');
+				$newObj = $this->objectManager->get('NormanSeibert\\Ldap\\Domain\\Model\\Typo3User\\FrontendUser');
 				foreach ($server['fe_users.']['mapping.'] as $fld => $mapping) {
 					if (substr($fld, strlen($fld)-1, 1) == '.') {
 						$fld = substr($fld, 0, strlen($fld)-1);
@@ -362,7 +362,7 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 				$newObj = NULL;
 			}
 			if (is_array($server['fe_users.']['usergroups.']['mapping.'])) {				
-				$newObj = $this->objectManager->get('NormanSeibert\\Ldap\\Domain\\Model\\FrontendUserGroup');
+				$newObj = $this->objectManager->get('NormanSeibert\\Ldap\\Domain\\Model\\Typo3User\\FrontendUserGroup');
 				foreach ($server['fe_users.']['usergroups.']['mapping.'] as $fld => $mapping) {
 					if (substr($fld, strlen($fld)-1, 1) == '.') {
 						$fld = substr($fld, 0, strlen($fld)-1);
@@ -395,7 +395,7 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 			}
 			
 			if (is_array($server['be_users.']['mapping.'])) {				
-				$newObj = $this->objectManager->get('NormanSeibert\\Ldap\\Domain\\Model\\BackendUser');
+				$newObj = $this->objectManager->get('NormanSeibert\\Ldap\\Domain\\Model\\Typo3User\\BackendUser');
 				foreach ($server['be_users.']['mapping.'] as $fld => $mapping) {
 					if (substr($fld, strlen($fld)-1, 1) == '.') {
 						$fld = substr($fld, 0, strlen($fld)-1);
@@ -408,7 +408,7 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 				$newObj = NULL;
 			}
 			if (is_array($server['be_users.']['usergroups.']['mapping.'])) {			
-				$newObj = $this->objectManager->get('NormanSeibert\\Ldap\\Domain\\Model\\BackendUserGroup');
+				$newObj = $this->objectManager->get('NormanSeibert\\Ldap\\Domain\\Model\\Typo3User\\BackendUserGroup');
 				foreach ($server['be_users.']['usergroups.']['mapping.'] as $fld => $mapping) {
 					if (substr($fld, strlen($fld)-1, 1) == '.') {
 						$fld = substr($fld, 0, strlen($fld)-1);

@@ -1,5 +1,5 @@
 <?php
-namespace NormanSeibert\Ldap\Domain\Model;
+namespace NormanSeibert\Ldap\Domain\Model\Typo3User;
 /**
  * This script is part of the TYPO3 project. The TYPO3 project is
  * free software; you can redistribute it and/or modify
@@ -27,7 +27,7 @@ namespace NormanSeibert\Ldap\Domain\Model;
 /**
  * Model for TYPO3 frontend users
  */
-class FrontendUserGroup extends \TYPO3\CMS\Extbase\Domain\Model\FrontendUserGroup implements \NormanSeibert\Ldap\Domain\Model\UserGroupInterface {
+class FrontendUserGroup extends \TYPO3\CMS\Extbase\Domain\Model\FrontendUserGroup implements \NormanSeibert\Ldap\Domain\Model\Typo3User\UserGroupInterface {
 	
 	/**
 	 *
@@ -68,7 +68,7 @@ class FrontendUserGroup extends \TYPO3\CMS\Extbase\Domain\Model\FrontendUserGrou
 	/**
 	 * 
 	 * @param string $dn
-	 * @return \NormanSeibert\Ldap\Domain\Model\FrontendUserGroup
+	 * @return \NormanSeibert\Ldap\Domain\Model\Typo3User\FrontendUserGroup
 	 */
 	public function setDN($dn) {
 		$this->dn = $dn;
@@ -86,7 +86,7 @@ class FrontendUserGroup extends \TYPO3\CMS\Extbase\Domain\Model\FrontendUserGrou
 	/**
 	 * 
 	 * @param \NormanSeibert\Ldap\Domain\Model\LdapServer\Server $server
-	 * @return \NormanSeibert\Ldap\Domain\Model\FrontendUserGroup
+	 * @return \NormanSeibert\Ldap\Domain\Model\Typo3User\FrontendUserGroup
 	 */
 	public function setLdapServer(\NormanSeibert\Ldap\Domain\Model\LdapServer\Server $server) {
 		$this->ldapServer = $server;
@@ -108,7 +108,7 @@ class FrontendUserGroup extends \TYPO3\CMS\Extbase\Domain\Model\FrontendUserGrou
 	/**
 	 * 
 	 * @param string $uid
-	 * @return \NormanSeibert\Ldap\Domain\Model\FrontendUserGroup
+	 * @return \NormanSeibert\Ldap\Domain\Model\Typo3User\FrontendUserGroup
 	 */
 	public function setServerUid($uid) {
 		$this->serverUid = $uid;
@@ -138,7 +138,7 @@ class FrontendUserGroup extends \TYPO3\CMS\Extbase\Domain\Model\FrontendUserGrou
 	/**
 	 * 
 	 * @param string $run
-	 * @return \NormanSeibert\Ldap\Domain\Model\FrontendUserGroup
+	 * @return \NormanSeibert\Ldap\Domain\Model\Typo3User\FrontendUserGroup
 	 */
 	public function setLastRun($run) {
 		$this->lastRun = $run;

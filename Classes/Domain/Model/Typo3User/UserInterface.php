@@ -1,5 +1,5 @@
 <?php
-namespace NormanSeibert\Ldap\Domain\Model;
+namespace NormanSeibert\Ldap\Domain\Model\Typo3User;
 /**
  * This script is part of the TYPO3 project. The TYPO3 project is
  * free software; you can redistribute it and/or modify
@@ -43,7 +43,7 @@ interface UserInterface {
     /**
      *
      * @param string $dn
-     * @return \NormanSeibert\Ldap\Domain\Model\FrontendUser
+     * @return object
      */
     public function setDN($dn);
 
@@ -56,7 +56,7 @@ interface UserInterface {
     /**
      *
      * @param \NormanSeibert\Ldap\Domain\Model\LdapServer\Server $server
-     * @return \NormanSeibert\Ldap\Domain\Model\FrontendUser
+     * @return object
      */
     public function setLdapServer(\NormanSeibert\Ldap\Domain\Model\LdapServer\Server $server);
 
@@ -69,7 +69,7 @@ interface UserInterface {
     /**
      *
      * @param string $uid
-     * @return \NormanSeibert\Ldap\Domain\Model\FrontendUser
+     * @return object
      */
     public function setServerUid($uid);
 
@@ -81,20 +81,20 @@ interface UserInterface {
 
     /**
      *
-     * @return \NormanSeibert\Ldap\Domain\Model\LdapUser\User
+     * @return object
      */
     public function getLdapUser();
 
     /**
      *
-     * @return \NormanSeibert\Ldap\Domain\Model\FrontendUser
+     * @return object
      */
     public function generatePassword();
 
     /**
      *
      * @param string $run
-     * @return \NormanSeibert\Ldap\Domain\Model\FrontendUser
+     * @return object
      */
     public function setLastRun($run);
 

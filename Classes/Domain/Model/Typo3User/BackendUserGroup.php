@@ -1,5 +1,5 @@
 <?php
-namespace NormanSeibert\Ldap\Domain\Model;
+namespace NormanSeibert\Ldap\Domain\Model\Typo3User;
 /**
  * This script is part of the TYPO3 project. The TYPO3 project is
  * free software; you can redistribute it and/or modify
@@ -25,65 +25,55 @@ namespace NormanSeibert\Ldap\Domain\Model;
  */
 
 /**
- * Model for TYPO3 frontend users
+ * Model for TYPO3 backend users
  */
-class FrontendUser extends \TYPO3\CMS\Extbase\Domain\Model\FrontendUser implements \NormanSeibert\Ldap\Domain\Model\UserInterface {
+class BackendUserGroup extends \TYPO3\CMS\Extbase\Domain\Model\BackendUserGroup implements \NormanSeibert\Ldap\Domain\Model\Typo3User\UserGroupInterface {
 	
 	/**
-	 * @var boolean
-	 */
-	protected $isDisabled = FALSE;
-	
-	/**
+	 *
 	 * @var string 
 	 */
 	protected $dn;
 	
 	/**
+	 *
 	 * @var \NormanSeibert\Ldap\Domain\Model\LdapServer\Server 
 	 */
 	protected $ldapServer;
 	
 	/**
+	 *
 	 * @var string 
 	 */
 	protected $serverUid;
 	
 	/**
 	 *
-	 * @var string 
+	 * @var string
 	 */
 	protected $lastRun;
+	
+	/**
+	 *
+	 * @var \TYPO3\CMS\Extbase\Object\ObjectManager
+	 */
+	protected $objectManager;
 	
 	/**
 	 * @var \NormanSeibert\Ldap\Domain\Model\Configuration\Configuration
 	 * @inject
 	 */
 	protected $ldapConfig;
-	
-	/**
-	 * Checks whether this user is disabled.
-	 *
-	 * @return boolean whether this user is disabled
-	 */
-	public function getIsDisabled() {
-		return $this->isDisabled;
-	}
 
 	/**
-	 * Sets whether this user is disabled.
-	 *
-	 * @param boolean $isDisabled whether this user is disabled
-	 * @return void
+	 * @var string
 	 */
-	public function setIsDisabled($isDisabled) {
-		$this->isDisabled = $isDisabled;
-	}
+	protected $description = '';
 	
 	/**
 	 * 
 	 * @param string $dn
-	 * @return \NormanSeibert\Ldap\Domain\Model\FrontendUser
+	 * @return \NormanSeibert\Ldap\Domain\Model\Typo3User\BackendUserGroup
 	 */
 	public function setDN($dn) {
 		$this->dn = $dn;
@@ -101,7 +91,7 @@ class FrontendUser extends \TYPO3\CMS\Extbase\Domain\Model\FrontendUser implemen
 	/**
 	 * 
 	 * @param \NormanSeibert\Ldap\Domain\Model\LdapServer\Server $server
-	 * @return \NormanSeibert\Ldap\Domain\Model\FrontendUser
+	 * @return \NormanSeibert\Ldap\Domain\Model\Typo3User\BackendUserGroup
 	 */
 	public function setLdapServer(\NormanSeibert\Ldap\Domain\Model\LdapServer\Server $server) {
 		$this->ldapServer = $server;
@@ -114,8 +104,8 @@ class FrontendUser extends \TYPO3\CMS\Extbase\Domain\Model\FrontendUser implemen
 	 * @return \NormanSeibert\Ldap\Domain\Model\LdapServer\Server
 	 */
 	public function getLdapServer() {
-		if (!is_object($this->ldapServer) && $this->serverUid) {
-			$this->ldapServer = $this->ldapConfig->getLdapServer($this->serverUid.'.');
+		if (!is_object($this->ldapServer)) {
+			$this->ldapServer = $this->ldapConfig->getLdapServer($this->serverUid);
 		}
 		return $this->ldapServer;
 	}
@@ -123,7 +113,7 @@ class FrontendUser extends \TYPO3\CMS\Extbase\Domain\Model\FrontendUser implemen
 	/**
 	 * 
 	 * @param string $uid
-	 * @return \NormanSeibert\Ldap\Domain\Model\FrontendUser
+	 * @return \NormanSeibert\Ldap\Domain\Model\Typo3User\BackendUserGroup
 	 */
 	public function setServerUid($uid) {
 		$this->serverUid = $uid;
@@ -142,36 +132,18 @@ class FrontendUser extends \TYPO3\CMS\Extbase\Domain\Model\FrontendUser implemen
 	 * 
 	 * @return \NormanSeibert\Ldap\Domain\Model\LdapUser\User
 	 */
-	public function getLdapUser() {
-		$user = false;
+	public function getLdapUsergroup() {
+		$group = false;
 		if ($this->dn && $this->ldapServer) {
-			$user = $this->getLdapServer()->getUser($this->dn);
+			$group = $this->getLdapServer()->getUser($this->dn);
 		}
-		return $user;
-	}
-	
-	/**
-	 * 
-	 * @return \NormanSeibert\Ldap\Domain\Model\FrontendUser
-	 */
-	public function generatePassword() {
-		$password = \NormanSeibert\Ldap\Utility\Helpers::generatePassword(10, 2, 2, 2);
-		if (\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::isLoaded('saltedpasswords')) {
-			if (\TYPO3\CMS\Saltedpasswords\Utility\SaltedPasswordsUtility::isUsageEnabled('FE')) {
-				$objSalt = \TYPO3\CMS\Saltedpasswords\Salt\SaltFactory::getSaltingInstance(NULL);
-				if (is_object($objSalt)) {
-					$password = $objSalt->getHashedPassword($password);
-				}
-			}
-		}
-		$this->password = $password;
-		return $this;
+		return $group;
 	}
 	
 	/**
 	 * 
 	 * @param string $run
-	 * @return \NormanSeibert\Ldap\Domain\Model\FrontendUser
+	 * @return \NormanSeibert\Ldap\Domain\Model\Typo3User\BackendUserGroup
 	 */
 	public function setLastRun($run) {
 		$this->lastRun = $run;

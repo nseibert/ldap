@@ -1,7 +1,7 @@
 config.tx_extbase {
 	persistence {
 		classes {
-			NormanSeibert\Ldap\Domain\Model\FrontendUser {
+			NormanSeibert\Ldap\Domain\Model\Typo3User\FrontendUser {
 				mapping {
 					tableName = fe_users
 					recordType =
@@ -13,7 +13,7 @@ config.tx_extbase {
 					}
 				}
 			}
-			NormanSeibert\Ldap\Domain\Model\BackendUser {
+			NormanSeibert\Ldap\Domain\Model\Typo3User\BackendUser {
 				mapping {
 					tableName = be_users
 					columns {
@@ -24,7 +24,7 @@ config.tx_extbase {
 					}
 				}
 			}
-			NormanSeibert\Ldap\Domain\Model\FrontendUserGroup {
+			NormanSeibert\Ldap\Domain\Model\Typo3User\FrontendUserGroup {
 				mapping {
 					tableName = fe_groups
 					columns {
@@ -34,7 +34,7 @@ config.tx_extbase {
 					}
 				}
 			}
-			NormanSeibert\Ldap\Domain\Model\BackendUserGroup {
+			NormanSeibert\Ldap\Domain\Model\Typo3User\BackendUserGroup {
 				mapping {
 					tableName = be_groups
 					columns {
@@ -47,22 +47,22 @@ config.tx_extbase {
 			}
 			TYPO3\CMS\Extbase\Domain\Model\FrontendUser {
 				subclasses {
-					FrontendUser = NormanSeibert\Ldap\Domain\Model\FrontendUser
+					FrontendUser = NormanSeibert\Ldap\Domain\Model\Typo3User\FrontendUser
 				}
 			}
             TYPO3\CMS\Extbase\Domain\Model\FrontendUserGroup {
 				subclasses {
-					FrontendUserGroup = NormanSeibert\Ldap\Domain\Model\FrontendUserGroup
+					FrontendUserGroup = NormanSeibert\Ldap\Domain\Model\Typo3User\FrontendUserGroup
 				}
 			}
 			TYPO3\CMS\Extbase\Domain\Model\BackendUser {
 				subclasses {
-					BackendUser = NormanSeibert\Ldap\Domain\Model\BackendUser
+					BackendUser = NormanSeibert\Ldap\Domain\Model\Typo3User\BackendUser
 				}
 			}
             TYPO3\CMS\Extbase\Domain\Model\BackendUserGroup {
 				subclasses {
-					BackendUserGroup = NormanSeibert\Ldap\Domain\Model\BackendUserGroup
+					BackendUserGroup = NormanSeibert\Ldap\Domain\Model\Typo3User\BackendUserGroup
 				}
 			}
 		}

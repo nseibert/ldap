@@ -1,5 +1,5 @@
 <?php
-namespace NormanSeibert\Ldap\Domain\Repository;
+namespace NormanSeibert\Ldap\Domain\Repository\Typo3User;
 /**
  * This script is part of the TYPO3 project. The TYPO3 project is
  * free software; you can redistribute it and/or modify
@@ -25,46 +25,50 @@ namespace NormanSeibert\Ldap\Domain\Repository;
  */
 
 /**
- * Repository for TYPO3 backend users
+ * Repository for TYPO3 backend usergroups
  */
-class BackendUserRepository extends \TYPO3\CMS\Extbase\Domain\Repository\BackendUserRepository implements \NormanSeibert\Ldap\Domain\Repository\UserRepositoryInterface {
+class BackendUserGroupRepository extends \TYPO3\CMS\Extbase\Domain\Repository\BackendUserGroupRepository {
+	
+	/**
+	 *
+	 * @return array
+	 */
+	public function findAll() {
+		$query = $this->createQuery();
+		$query->getQuerySettings()->setRespectStoragePage(FALSE);
+		\NormanSeibert\Ldap\Utility\Helpers::setRespectEnableFieldsToFalse($query);
+		$groups = $query->execute();
+		return $groups->toArray();
+	}
 	
 	/**
 	 * 
-	 * @param string $username
-     * @param int $pid
-	 * @return \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
+	 * @param array $uidList
+	 * @return array
 	 */
-	public function findByUsername($username, $pid = NULL) {
-		$user = false;
+	public function findByUids($uidList) {
 		$query = $this->createQuery();
 		$query->getQuerySettings()->setRespectStoragePage(FALSE);
 		\NormanSeibert\Ldap\Utility\Helpers::setRespectEnableFieldsToFalse($query);
 		$query->matching(	
-			$query->equals("username", $username)
+			$query->in("uid", $uidList)
 		);
-		$users = $query->execute();
-		$userCount = $users->count();
-		if ($userCount == 1) {
-			$user = $users->getFirst();
-		}
-		
-		return $user;
+		$groups = $query->execute();
+		return $groups->toArray();
 	}
 	
 	/**
 	 * 
 	 * @param string $dn
-     * @param int $pid
 	 * @return \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
 	 */
-	public function findByDn($dn, $pid = NULL) {
+	public function findByDn($dn) {
 		$user = false;
 		$query = $this->createQuery();
 		$query->getQuerySettings()->setRespectStoragePage(FALSE);
 		\NormanSeibert\Ldap\Utility\Helpers::setRespectEnableFieldsToFalse($query);
 		$query->matching(	
-			$query->equals("dn", $dn)
+			$query->equals("tx_ldap_dn", $dn)
 		);
 		$users = $query->execute();
 		$userCount = $users->count();
@@ -76,59 +80,18 @@ class BackendUserRepository extends \TYPO3\CMS\Extbase\Domain\Repository\Backend
 	
 	/**
 	 * 
-	 * @param mixed $lastRun
-	 * @return \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
+	 * @param array $lastRun
+	 * @return array
 	 */
 	public function findByLastRun($lastRun) {
 		$query = $this->createQuery();
 		$query->getQuerySettings()->setRespectStoragePage(FALSE);
-		$query->getQuerySettings()->setIncludeDeleted(TRUE);
 		\NormanSeibert\Ldap\Utility\Helpers::setRespectEnableFieldsToFalse($query);
-		if (is_array($lastRun)) {
-			if (count($lastRun) == 1) {
-				$query->matching(
-					$query->equals("lastRun", $lastRun[0])
-				);
-			} else {
-				$query->matching(
-					$query->in("lastRun", $lastRun)
-				);
-			}
-		} else {
-			$query->matching(
-				$query->equals("lastRun", $lastRun)
-			);
-		}
+		$query->matching(
+			$query->in("tx_ldap_lastrun", $lastRun)
+		);
 		$users = $query->execute();
 		return $users;
-	}
-	
-	/**
-	 * 
-	 * @param mixed $lastRun
-	 * @return integer
-	 */
-	public function countByLastRun($lastRun) {
-		$query = $this->createQuery();
-		$query->getQuerySettings()->setRespectStoragePage(FALSE);
-		$query->getQuerySettings()->setIncludeDeleted(TRUE);
-		\NormanSeibert\Ldap\Utility\Helpers::setRespectEnableFieldsToFalse($query);
-		if (is_array($lastRun)) {
-			if (count($lastRun) == 1) {
-				$query->matching(
-					$query->equals("lastRun", $lastRun[0])
-				);
-			} else {
-				$query->matching(
-					$query->in("lastRun", $lastRun)
-				);
-			}
-		} else {
-			$query->matching(
-				$query->equals("lastRun", $lastRun)
-			);
-		}
-		return $query->execute()->count();
 	}
 	
 	/**
@@ -137,6 +100,7 @@ class BackendUserRepository extends \TYPO3\CMS\Extbase\Domain\Repository\Backend
 	 */
 	public function findLdapImported() {
 		$query = $this->createQuery();
+		$query->getQuerySettings()->setRespectStoragePage(FALSE);
 		// \NormanSeibert\Ldap\Utility\Helpers::setRespectEnableFieldsToFalse($query);
 		$query->matching(
 			$query->logicalNot(

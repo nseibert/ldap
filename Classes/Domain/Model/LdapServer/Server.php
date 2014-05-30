@@ -53,24 +53,24 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 	protected $configuration;
 	
 	/**
-	 * @var \NormanSeibert\Ldap\Domain\Repository\FrontendUserGroupRepository
+	 * @var \NormanSeibert\Ldap\Domain\Repository\Typo3User\FrontendUserGroupRepository
 	 * @inject
 	 */
 	protected $feUsergroupRepository;
 	
 	/**
-	 * @var \NormanSeibert\Ldap\Domain\Repository\BackendUserGroupRepository
+	 * @var \NormanSeibert\Ldap\Domain\Repository\Typo3User\BackendUserGroupRepository
 	 * @inject
 	 */
 	protected $beUsergroupRepository;
 	
 	/**
-	 * @var \NormanSeibert\Ldap\Domain\Model\BackendUserGroup
+	 * @var \NormanSeibert\Ldap\Domain\Model\Typo3User\BackendUserGroup
 	 */
 	protected $allBeGroups;
 	
 	/**
-	 * @var \NormanSeibert\Ldap\Domain\Model\FrontendUserGroup
+	 * @var \NormanSeibert\Ldap\Domain\Model\Typo3User\FrontendUserGroup
 	 */
 	protected $allFeGroups;
 	
@@ -793,9 +793,9 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 	
 	/**
 	 * 
-	 * @param \NormanSeibert\Ldap\Domain\Model\FrontendUserGroup $group
+	 * @param \NormanSeibert\Ldap\Domain\Model\Typo3User\FrontendUserGroup $group
 	 */
-	public function addFeGroup(\NormanSeibert\Ldap\Domain\Model\FrontendUserGroup $group) {
+	public function addFeGroup(\NormanSeibert\Ldap\Domain\Model\Typo3User\FrontendUserGroup $group) {
 		$this->allFeGroups[] = $group;
 	}
 	
@@ -809,9 +809,9 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 	
 	/**
 	 * 
-	 * @param \NormanSeibert\Ldap\Domain\Model\BackendUserGroup $group
+	 * @param \NormanSeibert\Ldap\Domain\Model\Typo3User\BackendUserGroup $group
 	 */
-	public function addBeGroup(\NormanSeibert\Ldap\Domain\Model\BackendUserGroup $group) {
+	public function addBeGroup(\NormanSeibert\Ldap\Domain\Model\Typo3User\BackendUserGroup $group) {
 		$this->allBeGroups[] = $group;
 	}
 	
@@ -821,6 +821,19 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 	 */
 	public function getAllBeGroups() {
 		return $this->allBeGroups;
+	}
+
+	/**
+	 * 
+	 * @param \NormanSeibert\Ldap\Domain\Model\Typo3User\UserGroupInterface $group
+	 * @param string $type
+	 */
+	public function addGroup(\NormanSeibert\Ldap\Domain\Model\Typo3User\UserGroupInterface $group, $type) {
+		if ($type == 'NormanSeibert\\Ldap\\Domain\\Model\\Typo3User\\BackendUserGroup') {
+			$this->addBeGroup($group);
+		} else {
+			$this->addFeGroup($group);
+		}
 	}
 	
 	/**

@@ -1,5 +1,5 @@
 <?php
-namespace NormanSeibert\Ldap\Domain\Repository;
+namespace NormanSeibert\Ldap\Domain\Repository\Typo3User;
 /**
  * This script is part of the TYPO3 project. The TYPO3 project is
  * free software; you can redistribute it and/or modify

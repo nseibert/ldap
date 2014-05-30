@@ -1,5 +1,5 @@
 <?php
-namespace NormanSeibert\Ldap\Domain\Repository;
+namespace NormanSeibert\Ldap\Domain\Repository\Typo3User;
 /**
  * This script is part of the TYPO3 project. The TYPO3 project is
  * free software; you can redistribute it and/or modify
@@ -27,7 +27,7 @@ namespace NormanSeibert\Ldap\Domain\Repository;
 /**
  * Repository for TYPO3 frontend users
  */
-class FrontendUserRepository extends \TYPO3\CMS\Extbase\Domain\Repository\FrontendUserRepository implements \NormanSeibert\Ldap\Domain\Repository\UserRepositoryInterface {
+class FrontendUserRepository extends \TYPO3\CMS\Extbase\Domain\Repository\FrontendUserRepository implements \NormanSeibert\Ldap\Domain\Repository\Typo3User\UserRepositoryInterface {
 	
 	/**
 	 * 

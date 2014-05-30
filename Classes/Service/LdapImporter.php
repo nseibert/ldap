@@ -46,13 +46,13 @@ class LdapImporter {
 	protected $ldapServer;
 	
 	/**
-	 * @var \NormanSeibert\Ldap\Domain\Repository\FrontendUserRepository
+	 * @var \NormanSeibert\Ldap\Domain\Repository\Typo3User\FrontendUserRepository
 	 * @inject
 	 */
 	protected $feUserRepository;
 	
 	/**
-	 * @var \NormanSeibert\Ldap\Domain\Repository\BackendUserRepository
+	 * @var \NormanSeibert\Ldap\Domain\Repository\Typo3User\BackendUserRepository
 	 * @inject
 	 */
 	protected $beUserRepository;
@@ -235,7 +235,7 @@ class LdapImporter {
 		$tmpServer = NULL;
 		$removeUsers = array();
 		foreach ($users as $user) {
-            /* @var $user \NormanSeibert\Ldap\Domain\Model\UserInterface */
+            /* @var $user \NormanSeibert\Ldap\Domain\Model\Typo3User\UserInterface */
 			if (!is_object($user->getLdapServer())) {
 				$user->setLastRun($runIdentifier);
 				if ($hide) {

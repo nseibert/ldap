@@ -30,13 +30,13 @@ namespace NormanSeibert\Ldap\Command;
 class LdapCommandController extends \TYPO3\CMS\Extbase\Mvc\Controller\CommandController {
 
 	/**
-	 * @var \NormanSeibert\Ldap\Domain\Repository\FrontendUserRepository
+	 * @var \NormanSeibert\Ldap\Domain\Repository\Typo3User\FrontendUserRepository
 	 * @inject
 	 */
 	protected $feUserRepository;
 
 	/**
-	 * @var \NormanSeibert\Ldap\Domain\Repository\BackendUserRepository
+	 * @var \NormanSeibert\Ldap\Domain\Repository\Typo3User\BackendUserRepository
 	 * @inject
 	 */
 	protected $beUserRepository;
