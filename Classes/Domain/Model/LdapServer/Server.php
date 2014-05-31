@@ -793,9 +793,9 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 	
 	/**
 	 * 
-	 * @param \NormanSeibert\Ldap\Domain\Model\Typo3User\FrontendUserGroup $group
+	 * @param \NormanSeibert\Ldap\Domain\Model\Typo3User\UserGroupInterface $group
 	 */
-	public function addFeGroup(\NormanSeibert\Ldap\Domain\Model\Typo3User\FrontendUserGroup $group) {
+	public function addFeGroup(\NormanSeibert\Ldap\Domain\Model\Typo3User\UserGroupInterface $group) {
 		$this->allFeGroups[] = $group;
 	}
 	
@@ -809,9 +809,9 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 	
 	/**
 	 * 
-	 * @param \NormanSeibert\Ldap\Domain\Model\Typo3User\BackendUserGroup $group
+	 * @param \NormanSeibert\Ldap\Domain\Model\Typo3User\UserGroupInterface $group
 	 */
-	public function addBeGroup(\NormanSeibert\Ldap\Domain\Model\Typo3User\BackendUserGroup $group) {
+	public function addBeGroup(\NormanSeibert\Ldap\Domain\Model\Typo3User\UserGroupInterface $group) {
 		$this->allBeGroups[] = $group;
 	}
 	

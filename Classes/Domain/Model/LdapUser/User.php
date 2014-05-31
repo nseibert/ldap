@@ -92,6 +92,16 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
     protected $importGroups;
 
     /**
+     * @var string
+     */
+    protected $userObject;
+
+    /**
+     * @var string
+     */
+    protected $groupObject;
+
+    /**
 	 * 
 	 */
 	public function __construct() {
@@ -201,7 +211,7 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 			\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
 		}
 		// search for DN
-        /* @var $user \NormanSeibert\Ldap\Domain\Repository\Typo3User\UserRepositoryInterface */
+        /* @var $user \NormanSeibert\Ldap\Domain\Model\Typo3User\UserInterface */
 		$user = $this->userRepository->findByDn($this->dn, $pid);
 		// search for Username if no record with DN found
 		if (is_object($user)) {

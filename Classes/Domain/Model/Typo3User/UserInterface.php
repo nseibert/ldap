@@ -25,6 +25,13 @@ namespace NormanSeibert\Ldap\Domain\Model\Typo3User;
  */
 
 interface UserInterface {
+
+    /**
+     *
+     * @return int
+     */
+    public function getUid();
+
     /**
      * Checks whether this user is disabled.
      *
@@ -118,4 +125,38 @@ interface UserInterface {
      * @return void
      */
     public function setUsergroup(\TYPO3\CMS\Extbase\Persistence\ObjectStorage $usergroup);
+
+    /**
+     * Sets the username value
+     *
+     * @param string $username
+     * @return void
+     * @api
+     */
+    public function setUsername($username);
+
+    /**
+     * Returns the username value
+     *
+     * @return string
+     * @api
+     */
+    public function getUsername();
+
+    /**
+     * Setter for the pid.
+     *
+     * @param integer|NULL $pid
+     * @return void
+     */
+    public function setPid($pid);
+
+    /**
+     * Reconstitutes a property. Only for internal use.
+     *
+     * @param string $propertyName
+     * @param mixed $propertyValue
+     * @return boolean
+     */
+    public function _setProperty($propertyName, $propertyValue);
 } 

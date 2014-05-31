@@ -27,7 +27,7 @@ namespace NormanSeibert\Ldap\Domain\Repository\Typo3User;
 /**
  * Repository for TYPO3 backend usergroups
  */
-class BackendUserGroupRepository extends \TYPO3\CMS\Extbase\Domain\Repository\BackendUserGroupRepository {
+class BackendUserGroupRepository extends \TYPO3\CMS\Extbase\Domain\Repository\BackendUserGroupRepository implements \NormanSeibert\Ldap\Domain\Repository\Typo3User\UserGroupRepositoryInterface {
 	
 	/**
 	 *

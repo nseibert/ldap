@@ -56,16 +56,6 @@ class FeUser extends \NormanSeibert\Ldap\Domain\Model\LdapUser\User {
 	 */
 	protected $pid;
 
-	/**
-	 * @var string
-	 */
-	protected $userObject;
-
-	/**
-	 * @var string
-	 */
-	protected $groupObject;
-
     /**
 	 * 
 	 */

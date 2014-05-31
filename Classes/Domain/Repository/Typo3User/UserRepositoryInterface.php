@@ -48,4 +48,30 @@ interface UserRepositoryInterface {
      * @return \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
      */
     function findByLastRun($lastRun);
+
+    /**
+     * Adds an object to this repository.
+     *
+     * @param object $object The object to add
+     * @return void
+     * @api
+     */
+    public function add($object);
+
+    /**
+     * Removes an object from this repository.
+     *
+     * @param object $object The object to remove
+     * @return void
+     * @api
+     */
+    public function remove($object);
+
+    /**
+     * Replaces an existing object with the same identifier by the given object
+     *
+     * @param object $modifiedObject The modified object
+     * @api
+     */
+    public function update($modifiedObject);
 } 
