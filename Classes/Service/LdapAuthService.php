@@ -159,6 +159,22 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 		// SSO
 		if (($this->loginData['status'] != 'logout') && empty($this->password) && $this->conf['enableSSO']) {
 			$this->activateSSO();
+		} elseif (strlen($this->password) == 0) {
+			if ($this->pObj->security_level == 'rsa') {
+				if (\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::isLoaded('rsaauth')) {
+					$backend = \TYPO3\CMS\Rsaauth\Backend\BackendFactory::getBackend();
+					$storage = \TYPO3\CMS\Rsaauth\Storage\StorageFactory::getStorage();
+					$key = $storage->get();
+					
+					if ($key != NULL && substr($this->loginData['uident'], 0, 4) == 'rsa:') {
+						$this->password = $backend->decrypt($key, substr($this->loginData['uident'], 4));
+					}
+				} else {
+					\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('You have an error in your TYPO3 configuration. Your security level is set to "rsa" but the  extension "rsaauth" is not loaded.', 'ldap', 3);
+				}
+			} elseif ($this->pObj->security_level == 'superchallenged') {
+				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('LDAP extension does not work with security level "superchallenged". Please install und activate extension "rsaauth".', 'ldap', 3);
+			}
 		}
 	}
 
@@ -229,7 +245,7 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 			if ($this->username) {
 				if ($this->logLevel == 1) {
 					\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('Username: ' . $this->username, 'ldap', 0);
-				} elseif ($this->logLevel == 2) {
+				} elseif ($this->logLevel > 1) {
 					\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('Username / Password: ' . $this->username . ' / ' . $this->password, 'ldap', 0);
 				}
 				if ($this->authInfo['loginType'] == 'BE') {
@@ -340,7 +356,10 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 				if ($this->writeAttemptLog) {
 					$this->writelog(255, 3, 3, 1, "Login-attempt from %s (%s), username '%s', password not accepted!", array($this->info['REMOTE_ADDR'], $this->info['REMOTE_HOST'], $this->username));
 				}
-				if ($this->logLevel >= 1) {
+				if ($this->logLevel == 1) {
+					\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('Password not accepted', 'ldap', 2);
+				}
+				if ($this->logLevel > 1) {
 					\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('Password not accepted: ' . $this->password, 'ldap', 2);
 				}
 			}
