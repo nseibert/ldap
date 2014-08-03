@@ -498,6 +498,7 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		$usergroups = $this->cObj->stdWrap('', $mapping['title.']);
 		
 		if (is_array($usergroups)) {
+			unset($usergroups['count']);
 			foreach ($usergroups as $group) {
 				$tmp = $this->resolveGroup('title', $group, $group);
 				if ($tmp['newGroup']) {
