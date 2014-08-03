@@ -120,6 +120,9 @@ ldapServers {
 				realName.data = field:displayname
 				# Static value, "isAdministrator" is the Extbase property mapped to the field "admin"
 				isAdministrator.value = 1
+                # databaseMounts.value = 1
+                # fileMounts.value = 1
+                # workspacePermission.value = 1
 			}
 			
 			usergroups {
