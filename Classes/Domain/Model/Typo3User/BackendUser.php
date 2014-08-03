@@ -76,6 +76,24 @@ class BackendUser extends \TYPO3\CMS\Extbase\Domain\Model\BackendUser implements
 	protected $usergroup;
 
 	/**
+	 *
+	 * @var string 
+	 */
+	protected $databaseMounts;
+
+	/**
+	 *
+	 * @var string 
+	 */
+	protected $fileMounts;
+
+	/**
+	 *
+	 * @var string 
+	 */
+	protected $fileOperationPermissions;
+
+	/**
 	 * Constructs a new Backend User
 	 *
 	 */
@@ -246,6 +264,60 @@ class BackendUser extends \TYPO3\CMS\Extbase\Domain\Model\BackendUser implements
 	 */
 	public function setUsergroup(\TYPO3\CMS\Extbase\Persistence\ObjectStorage $usergroup) {
 		$this->usergroup = $usergroup;
+	}
+	
+	/**
+	 * 
+	 * @param string $mounts
+	 * @return \NormanSeibert\Ldap\Domain\Model\Typo3User\BackendUser
+	 */
+	public function setDatabaseMounts($mounts) {
+		$this->databaseMounts = $mounts;
+		return $this;
+	}
+	
+	/**
+	 * 
+	 * @return string
+	 */
+	public function getDatabaseMounts() {
+		return $this->databaseMounts;
+	}
+	
+	/**
+	 * 
+	 * @param string $mounts
+	 * @return \NormanSeibert\Ldap\Domain\Model\Typo3User\BackendUser
+	 */
+	public function setFileMounts($mounts) {
+		$this->fileMounts = $mounts;
+		return $this;
+	}
+	
+	/**
+	 * 
+	 * @return string
+	 */
+	public function getFileMounts() {
+		return $this->fileMounts;
+	}
+	
+	/**
+	 * 
+	 * @param string $permissions
+	 * @return \NormanSeibert\Ldap\Domain\Model\Typo3User\BackendUser
+	 */
+	public function setFileOperationPermissions($permissions) {
+		$this->fileOperationPermissions = $permissions;
+		return $this;
+	}
+	
+	/**
+	 * 
+	 * @return string
+	 */
+	public function getFileOperationPermissions() {
+		return $this->fileOperationPermissions;
 	}
 }
 ?>

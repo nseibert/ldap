@@ -21,6 +21,9 @@ config.tx_extbase {
 						tx_ldap_dn.mapOnProperty = dn
 						tx_ldap_serveruid.mapOnProperty = serverUid
 						tx_ldap_lastrun.mapOnProperty = lastRun
+                        db_mountpoints.mapOnProperty = databaseMounts
+                        file_mountpoints.mapOnProperty = fileMounts
+                        file_permissions.mapOnProperty = fileOperationPermissions
 					}
 				}
 			}
