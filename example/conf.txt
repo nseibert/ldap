@@ -107,6 +107,7 @@ ldapServers {
                 # reverseMapping is needed when the usergroups are stored in a separate OU and the groups hold the usernames in an attribute
                 # This is the case for e.g. OpenLDAP
                 reverseMapping = 1
+                reverseMapping {
                 # Base-DN of the OU containing the usergroup records
                 baseDN = 
                 # <search> is replaced by the user record's DN or - if given - the "searchAttribute"
@@ -115,6 +116,7 @@ ldapServers {
                 
                 mapping {
                     title.data = field:commonname
+                    }
                 }
 				
 				# only import users with the following groups (comma separated list of regular expressions, all if empty)
