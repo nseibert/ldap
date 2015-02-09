@@ -73,6 +73,12 @@ class ServerConfigurationGroups extends \TYPO3\CMS\Extbase\DomainObject\Abstract
 	
 	/**
 	 *
+	 * @var string
+	 */
+	protected $searchAttribute;
+	
+	/**
+	 *
 	 * @var array
 	 */
 	protected $mapping = array();
@@ -111,6 +117,24 @@ class ServerConfigurationGroups extends \TYPO3\CMS\Extbase\DomainObject\Abstract
 	 */
 	public function getFilter() {
 		return $this->filter;
+	}
+	
+	/**
+	 * 
+	 * @param string $filter
+	 * @return \NormanSeibert\Ldap\Domain\Model\LdapServer\ServerConfigurationGroups
+	 */
+	public function setSearchAttribute($attribute) {
+		$this->searchAttribute = $attribute;
+		return $this;
+	}
+	
+	/**
+	 * 
+	 * @return string
+	 */
+	public function getSearchAttribute() {
+		return $this->searchAttribute;
 	}
 	
 	/**

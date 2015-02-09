@@ -107,7 +107,7 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 	public function __construct() {
 		$this->objectManager = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\Object\\ObjectManager');
 		$this->cObj = $this->objectManager->get('TYPO3\\CMS\\Frontend\\ContentObject\\ContentObjectRenderer');
-		$this->initializeRequiredTsfeParts();
+		// $this->initializeRequiredTsfeParts();
 		$this->importGroups = 1;
 	}
 
@@ -271,13 +271,20 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 				$this->user->setLastRun($lastRun);
 			}
 			
-			$this->addUsergroupsToUserRecord($lastRun);
-			
-			$this->userRepository->add($this->user);
-			
-			$msg = 'Create user record "' . $username . '" (DN: ' . $this->dn . ')';
-			if ($this->ldapConfig->logLevel == 2) {
-				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
+			$numberOfGroups = $this->addUsergroupsToUserRecord($lastRun);
+
+			if (($numberOfGroups == 0) && ($this->userRules->getOnlyUsersWithGroup())) {
+				$msg = 'User "' . $username . '" (DN: ' . $this->dn . ') not imported due to missing usergroup';
+				if ($this->ldapConfig->logLevel == 2) {
+					\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
+				}
+			} else {
+				$this->userRepository->add($this->user);
+				
+				$msg = 'Create user record "' . $username . '" (DN: ' . $this->dn . ')';
+				if ($this->ldapConfig->logLevel == 2) {
+					\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
+				}
 			}
 		} else {
 			// error condition. There should always be a username
@@ -324,13 +331,20 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 			}
 			
 			$this->removeUsergroupsFromUserRecord();
-			$this->addUsergroupsToUserRecord($lastRun);
-			
-			$this->userRepository->update($this->user);
-			
-			$msg = 'Update user record: ' . $username;
-			if ($this->ldapConfig->logLevel == 2) {
-				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
+			$numberOfGroups = $this->addUsergroupsToUserRecord($lastRun);
+
+			if (($numberOfGroups == 0) && ($this->userRules->getOnlyUsersWithGroup())) {
+				$msg = 'User "' . $username . '" (DN: ' . $this->dn . ') not updated due to missing usergroup';
+				if ($this->ldapConfig->logLevel == 2) {
+					\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
+				}
+			} else {
+				$this->userRepository->update($this->user);
+				
+				$msg = 'Update user record "' . $username;
+				if ($this->ldapConfig->logLevel == 2) {
+					\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
+				}
 			}
 		} else {
 			// error condition. There should always be a username
@@ -400,6 +414,7 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 	 * adds TYPO3 usergroups to the user record
 	 * 
 	 * @param string $lastRun
+	 * @return integer
 	 */
 	protected function addUsergroupsToUserRecord($lastRun = NULL) {
 		if (is_object($this->userRules->getGroupRules())) {
@@ -415,8 +430,14 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 				foreach ($usergroups as $group) {
 					$this->user->addUsergroup($group);
 				}
+			} else {
+				if ($this->ldapConfig->logLevel == 2) {
+					\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('User has no LDAP usergroups: ' . $this->dn, 'ldap', 0);
+				}
 			}
 		}
+
+		return count($usergroups);
 	}
 	
 	/** Assigns TYPO3 usergroups to the current TYPO3 user
@@ -464,8 +485,15 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 	private function reverseAssignGroups() {
 		$ret = array();
 		$mapping = $this->userRules->getGroupRules()->getMapping();
+		$searchAttribute = $this->userRules->getGroupRules()->getSearchAttribute();
 		
-		$groupname = mb_strtolower($this->getAttribute('dn'));
+		if ($searchAttribute) {
+			$groupname = mb_strtolower($this->getAttribute('dn'));
+		} else {
+			$searchAttribute = 'dn';
+		}
+
+		$groupname = mb_strtolower($this->getAttribute($searchAttribute));
 		
 		$ldapGroups = $this->ldapServer->getGroups($groupname);
 		
@@ -698,6 +726,9 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 	 * @return array
 	 */
 	public function addNewGroups($newGroups, $existingGroups, $lastRun) {
+		if (!is_array($existingGroups)) {
+			$existingGroups = array();
+		}
 		$assignedGroups = $existingGroups;
 		$addnewgroups = $this->userRules->getGroupRules()->getImportGroups();
 		if ((is_array($newGroups)) && ($addnewgroups)) {

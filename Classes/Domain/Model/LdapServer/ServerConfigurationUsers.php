@@ -55,6 +55,12 @@ class ServerConfigurationUsers extends \TYPO3\CMS\Extbase\DomainObject\AbstractE
 	
 	/**
 	 *
+	 * @var boolean 
+	 */
+	protected $onlyUsersWithGroup;
+	
+	/**
+	 *
 	 * @var array 
 	 */
 	protected $mapping = array();
@@ -159,6 +165,24 @@ class ServerConfigurationUsers extends \TYPO3\CMS\Extbase\DomainObject\AbstractE
 	 */
 	public function getAutoEnable() {
 		return $this->autoEnable;
+	}
+	
+	/**
+	 * 
+	 * @param boolean $auto
+	 * @return \NormanSeibert\Ldap\Domain\Model\LdapServer\ServerConfigurationUsers
+	 */
+	public function setOnlyUsersWithGroup($restrict) {
+		$this->onlyUsersWithGroup = $restrict;
+		return $this;
+	}
+	
+	/**
+	 * 
+	 * @return boolean
+	 */
+	public function getOnlyUsersWithGroup() {
+		return $this->onlyUsersWithGroup;
 	}
 	
 	/**

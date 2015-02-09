@@ -228,6 +228,7 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 					->setReverseMapping($server['fe_users.']['usergroups.']['reverseMapping'])
 					->setBaseDN($server['fe_users.']['usergroups.']['baseDN'])
 					->setFilter($server['fe_users.']['usergroups.']['filter'])
+					->setSearchAttribute($server['fe_users.']['usergroups.']['searchAttribute'])
 					->setAddToGroups($server['fe_users.']['usergroups.']['addToGroups'])
 					->setRestrictToGroups($server['fe_users.']['usergroups.']['restrictToGroups'])
 					->setPreserveNonLdapGroups($server['fe_users.']['usergroups.']['preserveNonLdapGroups']);
@@ -239,6 +240,7 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 					->setFilter($server['fe_users.']['filter'])
 					->setAutoImport($server['fe_users.']['autoImport'])
 					->setAutoEnable($server['fe_users.']['autoEnable'])
+					->setOnlyUsersWithGroup($server['fe_users.']['onlyUsersWithGroup'])
 					->setMapping($server['fe_users.']['mapping.'])
 					->setGroupRules($groupRuleFE);
 
@@ -249,6 +251,7 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 					->setReverseMapping($server['be_users.']['usergroups.']['reverseMapping'])
 					->setBaseDN($server['be_users.']['usergroups.']['baseDN'])
 					->setFilter($server['be_users.']['usergroups.']['filter'])
+					->setSearchAttribute($server['be_users.']['usergroups.']['searchAttribute'])
 					->setAddToGroups($server['be_users.']['usergroups.']['addToGroups'])
 					->setRestrictToGroups($server['be_users.']['usergroups.']['restrictToGroups'])
 					->setPreserveNonLdapGroups($server['be_users.']['usergroups.']['preserveNonLdapGroups']);
@@ -259,6 +262,7 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 					->setFilter($server['be_users.']['filter'])
 					->setAutoImport($server['be_users.']['autoImport'])
 					->setAutoEnable($server['be_users.']['autoEnable'])
+					->setOnlyUsersWithGroup($server['be_users.']['onlyUsersWithGroup'])
 					->setMapping($server['be_users.']['mapping.'])
 					->setGroupRules($groupRuleBE);
 				
