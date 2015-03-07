@@ -162,14 +162,26 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 					if ($pid && $server['pid']) {
 						if (!\TYPO3\CMS\Core\Utility\GeneralUtility::inList($pid, $server['pid'])) {
 							$load = 0;
-							$msg = 'LDAP server "'. $server['title'] .'" ignored: does not match list of page uids ('. implode(', ', $pid) .').';
+							$pidList = '';
+							if (is_array($pid)) {
+								$pidList = implode(', ', $pid);
+							} else {
+								$pidList = $pid;
+							}
+							$msg = 'LDAP server "'. $server['title'] .'" ignored: does not match list of page uids ('. $pidList .').';
 							\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
 						}
 					}
 					if ($userPid && $server['fe_users.']['pid']) {
 						if (!\TYPO3\CMS\Core\Utility\GeneralUtility::inList($userPid, $server['fe_users.']['pid'])) {
 							$load = 0;
-							$msg = 'LDAP server "'. $server['title'] .'" ignored: does not match list of page uids ('. implode(', ', $userPid) .').';
+							$pidList = '';
+							if (is_array($userPid)) {
+								$pidList = implode(', ', $userPid);
+							} else {
+								$pidList = $userPid;
+							}
+							$msg = 'LDAP server "'. $server['title'] .'" ignored: does not match list of page uids ('. $pidList .').';
 							\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
 						}
 					}
