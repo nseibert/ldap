@@ -108,14 +108,14 @@ ldapServers {
                 # This is the case for e.g. OpenLDAP
                 reverseMapping = 1
                 reverseMapping {
-                # Base-DN of the OU containing the usergroup records
-                baseDN = 
-                # <search> is replaced by the user record's DN or - if given - the "searchAttribute"
-                filter = (memberUid=<search>)
-                searchAttribute = uid
-                
-                mapping {
-                    title.data = field:commonname
+                    # Base-DN of the OU containing the usergroup records
+                    baseDN = 
+                    # <search> is replaced by the user record's DN or - if given - the "searchAttribute"
+                    filter = (memberUid=<search>)
+                    searchAttribute = uid
+                    
+                    mapping {
+                        title.data = field:commonname
                     }
                 }
 				
