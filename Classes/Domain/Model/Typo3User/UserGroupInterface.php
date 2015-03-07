@@ -28,7 +28,7 @@ interface UserGroupInterface {
     /**
      *
      * @param string $dn
-     * @return \NormanSeibert\Ldap\Domain\Model\Typo3User\FrontendUser
+     * @return \NormanSeibert\Ldap\Domain\Model\Typo3User\UserInterface
      */
     public function setDN($dn);
 
