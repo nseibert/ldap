@@ -328,7 +328,9 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 			}
 		}
 		
-		$this->typoScriptService->restoreTypoScriptBackup();
+		if (isset($GLOBALS['TSFE'])) {
+			$this->typoScriptService->restoreTypoScriptBackup();
+		}
 		
 		return $user;
 	}
@@ -414,17 +416,19 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 	 * @return void
 	 */
 	protected function initializeRequiredTsfeParts() {
-		if (!isset($GLOBALS['TSFE']) || empty($GLOBALS['TSFE']->sys_page)) {
-			$GLOBALS['TSFE']->sys_page = $this->objectManager->get('TYPO3\\CMS\\Frontend\\Page\\PageRepository');
+		if (isset($GLOBALS['TSFE'])) {
+			if (empty($GLOBALS['TSFE']->sys_page)) {
+				$GLOBALS['TSFE']->sys_page = $this->objectManager->get('TYPO3\\CMS\\Frontend\\Page\\PageRepository');
+			}
+			if (empty($GLOBALS['TSFE']->tmpl)) {
+				$GLOBALS['TSFE']->tmpl = $this->objectManager->get('TYPO3\\CMS\\Core\\TypoScript\\ExtendedTemplateService');
+			}
+			/*
+			if (empty($GLOBALS['TSFE']->csConvObj)))	{
+				$GLOBALS['TSFE']->csConvObj = $this->objectManager->get('TYPO3\\CMS\\Core\\Charset\\CharsetConverter');
+			}
+			*/
 		}
-		if (!isset($GLOBALS['TSFE']) || empty($GLOBALS['TSFE']->tmpl)) {
-			$GLOBALS['TSFE']->tmpl = $this->objectManager->get('TYPO3\\CMS\\Core\\TypoScript\\ExtendedTemplateService');
-		}
-		/*
-		if (!isset($GLOBALS['TSFE']) || (empty($GLOBALS['TSFE']->csConvObj)))	{
-			$GLOBALS['TSFE']->csConvObj = $this->objectManager->get('TYPO3\\CMS\\Core\\Charset\\CharsetConverter');
-		}
-		*/
 	}
 	
 	/**
@@ -439,12 +443,24 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 		$contentObject = $this->objectManager->get('TYPO3\\CMS\\Frontend\\ContentObject\\ContentObjectRenderer');
 		$this->configurationManager->setContentObject($contentObject);
 
-		$this->typoScriptService->makeTypoScriptBackup();
+		if (isset($GLOBALS['TSFE'])) {
+			$this->typoScriptService->makeTypoScriptBackup();
+		}
 		// load extbase typoscript
-		\NormanSeibert\Ldap\Service\TypoScriptService::loadTypoScriptFromFile('EXT:extbase/ext_typoscript_setup.txt');
+		$typoScriptArray1 = \NormanSeibert\Ldap\Service\TypoScriptService::loadTypoScriptFromFile('EXT:extbase/ext_typoscript_setup.txt');
 		// load this extensions typoscript (database column => model property map etc)
-		\NormanSeibert\Ldap\Service\TypoScriptService::loadTypoScriptFromFile('EXT:ldap/Configuration/TypoScript/setup.txt');
-		$this->configurationManager->setConfiguration($GLOBALS['TSFE']->tmpl->setup);
+		$typoScriptArray2 = \NormanSeibert\Ldap\Service\TypoScriptService::loadTypoScriptFromFile('EXT:ldap/Configuration/TypoScript/setup.txt');
+		if (is_array($typoScriptArray1) && !empty($typoScriptArray1) && is_array($typoScriptArray2) && !empty($typoScriptArray2)) {
+			$typoScriptArray = \TYPO3\CMS\Core\Utility\GeneralUtility::array_merge_recursive_overrule($typoScriptArray1, $typoScriptArray2);
+		}
+		if (is_array($typoScriptArray) && !empty($typoScriptArray) && isset($GLOBALS['TSFE'])) {
+			$GLOBALS['TSFE']->tmpl->setup = \TYPO3\CMS\Core\Utility\GeneralUtility::array_merge_recursive_overrule($typoScriptArray, $GLOBALS['TSFE']->tmpl->setup);
+		}
+		if (isset($GLOBALS['TSFE'])) {
+			$this->configurationManager->setConfiguration($GLOBALS['TSFE']->tmpl->setup);
+		} else {
+			$this->configurationManager->setConfiguration($typoScriptArray);
+		}
 		$this->configureObjectManager();
 
 		// initialize reflection
