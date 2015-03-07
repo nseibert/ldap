@@ -36,6 +36,7 @@ class TypoScriptService {
 	 * @return void
 	 */
 	static function loadTypoScriptFromFile($filePath) {
+		$typoScriptArray = Array();
         $filePath = \TYPO3\CMS\Core\Utility\GeneralUtility::getFileAbsFileName($filePath);
 		if ($filePath) {
             /* @var $objectManager \TYPO3\CMS\Extbase\Object\ObjectManager */
@@ -46,11 +47,9 @@ class TypoScriptService {
 			if ($typoScript) {
 				$typoScriptParser->parse($typoScript);
 				$typoScriptArray = $typoScriptParser->setup;
-				if (is_array($typoScriptArray) && !empty($typoScriptArray)) {
-					$GLOBALS['TSFE']->tmpl->setup = \TYPO3\CMS\Core\Utility\GeneralUtility::array_merge_recursive_overrule($typoScriptArray, $GLOBALS['TSFE']->tmpl->setup);
-				}
 			}
 		}
+		return $typoScriptArray;
 	}
 
 	/**

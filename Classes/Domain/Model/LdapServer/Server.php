@@ -528,9 +528,9 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		try {
 			ldap_set_option($conn, LDAP_OPT_NETWORK_TIMEOUT, 2);
 			if ($user && $pass) {
-				$bind = ldap_bind($conn, $user, $pass);
+				$bind = @ldap_bind($conn, $user, $pass);
 			} else {
-				$bind = ldap_bind($conn);
+				$bind = @ldap_bind($conn);
 			}
 		} catch (Exception $e) {
 			if ($this->ldapConfig->logLevel == 2) {
@@ -595,7 +595,7 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		switch ($scope) {
 			case 'base':
 				try {
-					$search = ldap_read($ds, $baseDN, $filter, $attributes, 0, $sizeLimit, 0);
+					$search = @ldap_read($ds, $baseDN, $filter, $attributes, 0, $sizeLimit, 0);
 				} catch (Exception $e) {
 					$msg = '"ldap_read" failed';
 					if ($this->ldapConfig->logLevel) {
@@ -605,7 +605,7 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 				break;
 			case 'one':
 				try {
-					$search = ldap_list($ds, $baseDN, $filter, $attributes, 0, $sizeLimit);
+					$search = @ldap_list($ds, $baseDN, $filter, $attributes, 0, $sizeLimit);
 				} catch (Exception $e) {
 					$msg = '"ldap_list" failed';
 					if ($this->ldapConfig->logLevel) {
@@ -616,7 +616,7 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 			case 'sub':
 			default:
 				try {
-					$search = ldap_search($ds, $baseDN, $filter, $attributes, 0, $sizeLimit);
+					$search = @ldap_search($ds, $baseDN, $filter, $attributes, 0, $sizeLimit);
 				} catch (Exception $e) {
 					$msg = '"ldap_search" failed';
 					if ($this->ldapConfig->logLevel) {

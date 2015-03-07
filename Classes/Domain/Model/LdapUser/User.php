@@ -432,7 +432,7 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 				}
 			} else {
 				if ($this->ldapConfig->logLevel == 2) {
-					\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('User has no LDAP usergroups: ' . $this->dn, 'ldap', 0);
+					\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('User has no LDAP usergroups: ' . $this->user->getUsername(), 'ldap', 0);
 				}
 			}
 		}
@@ -696,17 +696,10 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 	protected function removeUsergroupsFromUserRecord() {
 		$preserveNonLdapGroups = $this->userRules->getGroupRules()->getPreserveNonLdapGroups();
 		if ($preserveNonLdapGroups) {
-			$usergroups = $this->user->getUsergroup();
-			$removeGroups = array();
-			if (is_array($usergroups)) {
-				// iterate two times because "remove" shortens the iterator otherwise
-				foreach ($usergroups as $group) {
-                    /* @var $group \NormanSeibert\Ldap\Domain\Model\Typo3User\UserGroupInterface */
-					if ($group->getServerUid()) {
-						$removeGroups[] = $group;
-					}
-				}
-				foreach ($removeGroups as $group) {
+			$usergroups = $this->user->getUsergroup()->toArray();
+			foreach ($usergroups as $group) {
+				$extendedGroup = $this->usergroupRepository->findByUid($group->getUid());
+				if ($extendedGroup->getServerUid()) {
 					$this->user->removeUsergroup($group);
 				}
 			}
