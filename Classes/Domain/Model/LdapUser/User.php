@@ -367,6 +367,7 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		if ($mappingType == 'group') {
 			$mapping = $this->userRules->getGroupRules()->getMapping();
 			$attributes = $useAttributes;
+			// print_r ($mapping); die;
 		} else {
 			$mapping = $this->userRules->getMapping();
 			$attributes = $this->attributes;
@@ -523,7 +524,25 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		$mapping = $this->userRules->getGroupRules()->getMapping();
 		
 		$this->cObj->alternativeData = $this->attributes;
-		$usergroups = $this->cObj->stdWrap('', $mapping['title.']);
+		$result = $this->cObj->stdWrap('', $mapping['title.']);
+		if (substr($key, strlen($key) - 1, 1) == '.') {
+			$key = substr($key, 0, strlen($key) - 1);
+		}
+		if (is_array($result)) {
+			unset($result['count']);
+			$attr = array();
+			foreach ($result as $v) {
+				$attr[] = $this->cObj->stdWrap($v, $stdWrap);
+			}
+			$result = implode(', ', $attr);
+		} else {
+			$result = $this->cObj->stdWrap($result, $stdWrap);
+		}
+		$usergroups = $result;
+
+		\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('Usergroups', 'ldap', 3, $usergroups);
+
+		// print_r($usergroups); die;
 		
 		if (is_array($usergroups)) {
 			unset($usergroups['count']);

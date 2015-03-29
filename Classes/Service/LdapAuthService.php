@@ -224,7 +224,7 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 			if ($this->logLevel >= 1) {
 				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('TYPO3 user found: ' . $this->username, 'ldap', -1);
 			}
-			$user['authenticated'] = FALSE;
+			unset($user['ldap_authenticated']);
 		}
 		return $user;
 	}
@@ -235,8 +235,7 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 	 * @return mixed User array or FALSE
 	 */
 	function getUser() {
-		$user = array();
-		$user['authenticated'] = FALSE;
+		$user = FALSE;
 		
 		if ($this->logLevel > 0) {
 			\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('getUser() called, loginType: ' . $this->authInfo['loginType'], 'ldap', 0);
@@ -256,7 +255,7 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 				$this->ldapServers = $this->ldapConfig->getLdapServers('', '', $this->authInfo['loginType'], $this->authInfo['db_user']['checkPidList']);
 				if (count($this->ldapServers)) {
 					foreach ($this->ldapServers as $server) {
-						if ($user['authenticated']) {
+						if ($user) {
 							if ($this->logLevel >= 1) {
 								\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('User already authenticated', 'ldap', 0);
 							}
@@ -310,7 +309,7 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 									$this->persistenceManager->persistAll();
 								}
 								$user = $this->getTypo3User();
-								$user['authenticated'] = TRUE;
+								$user['ldap_authenticated'] = TRUE;
 							} else {
 								$user = $this->getTypo3User();
 								if ($this->logLevel >= 1) {
@@ -347,7 +346,7 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 		if (($this->username) && (count($this->ldapServers) > 0)) {
 			$ok = 0;
 			// User has already been authenticated during getUser()
-			if ($user['authenticated']) {
+			if (isset($user['ldap_authenticated'])) {
 				if ($this->logLevel >= 1) {
 					\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('Login successful', 'ldap', -1);
 				}
