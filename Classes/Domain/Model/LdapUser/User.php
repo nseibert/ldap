@@ -488,15 +488,13 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		$mapping = $this->userRules->getGroupRules()->getMapping();
 		$searchAttribute = $this->userRules->getGroupRules()->getSearchAttribute();
 		
-		if ($searchAttribute) {
-			$groupname = mb_strtolower($this->getAttribute('dn'));
-		} else {
+		if (!$searchAttribute) {
 			$searchAttribute = 'dn';
 		}
 
-		$groupname = mb_strtolower($this->getAttribute($searchAttribute));
+		$username = mb_strtolower($this->getAttribute($searchAttribute));
 		
-		$ldapGroups = $this->ldapServer->getGroups($groupname);
+		$ldapGroups = $this->ldapServer->getGroups($username);
 		
 		foreach ($ldapGroups as $group) {
 			$this->cObj->alternativeData = $group;
