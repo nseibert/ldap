@@ -247,6 +247,8 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 
 		$username = $this->getAttribute($ldapUsername);
 
+		$createUser = FALSE;
+
 		if ($username) {
 			$this->user = $this->objectManager->get($this->userObject);
 			$this->user->setLdapServer($this->ldapServer);
@@ -271,20 +273,29 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 				$this->user->setLastRun($lastRun);
 			}
 			
-			$numberOfGroups = $this->addUsergroupsToUserRecord($lastRun);
+			$usergroups = $this->addUsergroupsToUserRecord($lastRun);
+			$numberOfGroups = count($usergroups);
 
 			if (($numberOfGroups == 0) && ($this->userRules->getOnlyUsersWithGroup())) {
 				$msg = 'User "' . $username . '" (DN: ' . $this->dn . ') not imported due to missing usergroup';
 				if ($this->ldapConfig->logLevel == 2) {
 					\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
 				}
-			} else {
-				$this->userRepository->add($this->user);
-				
-				$msg = 'Create user record "' . $username . '" (DN: ' . $this->dn . ')';
-				if ($this->ldapConfig->logLevel == 2) {
-					\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
+			} elseif ($this->userRules->getGroupRules()->getRestrictToGroups()) {
+				$groupFound = FALSE;
+				while ((list(, $group) = each($usergroups)) && !($groupFound)) {
+					$groupFound = $this->checkGroupMembership($group->getTitle());
 				}
+				if ($groupFound) {
+					$createUser = TRUE;
+				} else {
+					$msg = 'User "' . $username . '" (DN: ' . $this->dn . ') not imported due to missing usergroup';
+					if ($this->ldapConfig->logLevel == 2) {
+						\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
+					}
+				}
+			} else {
+				$createUser = TRUE;
 			}
 		} else {
 			// error condition. There should always be a username
@@ -293,6 +304,14 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 2);
 			}
 			\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::WARNING, $msg, $this->ldapServer->getConfiguration()->getUid());
+		}
+
+		if ($createUser) {
+			$this->userRepository->add($this->user);
+			$msg = 'Create user record "' . $username . '" (DN: ' . $this->dn . ')';
+			if ($this->ldapConfig->logLevel == 2) {
+				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
+			}
 		}
 	}
 	
@@ -307,6 +326,8 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		$ldapUsername = str_replace('field:', '', $rawLdapUsername);
 
 		$username = $this->getAttribute($ldapUsername);
+
+		$updateUser = FALSE;
 
 		if ($username) {
 			$this->user->setPid($this->pid);
@@ -331,20 +352,29 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 			}
 			
 			$this->removeUsergroupsFromUserRecord();
-			$numberOfGroups = $this->addUsergroupsToUserRecord($lastRun);
+			$usergroups = $this->addUsergroupsToUserRecord($lastRun);
+			$numberOfGroups = count($usergroups);
 
 			if (($numberOfGroups == 0) && ($this->userRules->getOnlyUsersWithGroup())) {
 				$msg = 'User "' . $username . '" (DN: ' . $this->dn . ') not updated due to missing usergroup';
 				if ($this->ldapConfig->logLevel == 2) {
 					\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
 				}
-			} else {
-				$this->userRepository->update($this->user);
-				
-				$msg = 'Update user record "' . $username;
-				if ($this->ldapConfig->logLevel == 2) {
-					\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
+			} elseif ($this->userRules->getGroupRules()->getRestrictToGroups()) {
+				$groupFound = FALSE;
+				while ((list(, $group) = each($usergroups)) && !($groupFound)) {
+					$groupFound = $this->checkGroupMembership($group->getTitle());
 				}
+				if ($groupFound) {
+					$updateUser = TRUE;
+				} else {
+					$msg = 'User "' . $username . '" (DN: ' . $this->dn . ') not updated due to missing usergroup';
+					if ($this->ldapConfig->logLevel == 2) {
+						\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
+					}
+				}
+			} else {
+				$updateUser = TRUE;
 			}
 		} else {
 			// error condition. There should always be a username
@@ -353,6 +383,14 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 2);
 			}
 			\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::WARNING, $msg, $this->ldapServer->getConfiguration()->getUid());
+		}
+
+		if ($updateUser) {
+			$this->userRepository->update($this->user);
+			$msg = 'Update user record "' . $username . '" (DN: ' . $this->dn . ')';
+			if ($this->ldapConfig->logLevel == 2) {
+				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
+			}
 		}
 	}
 	
@@ -415,7 +453,7 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 	 * adds TYPO3 usergroups to the user record
 	 * 
 	 * @param string $lastRun
-	 * @return integer
+	 * @return array
 	 */
 	protected function addUsergroupsToUserRecord($lastRun = NULL) {
 		if (is_object($this->userRules->getGroupRules())) {
@@ -438,7 +476,7 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 			}
 		}
 
-		return count($usergroups);
+		return $usergroups;
 	}
 	
 	/** Assigns TYPO3 usergroups to the current TYPO3 user
@@ -643,7 +681,7 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 	 * 
 	 * @param string $attribute
 	 * @param string $selector
-	 * @param array $usergroup
+	 * @param string $usergroup
 	 * @param string $dn
 	 * @param object $obj
 	 * @return array
