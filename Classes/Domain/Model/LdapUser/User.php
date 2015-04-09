@@ -283,6 +283,7 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 				}
 			} elseif ($this->userRules->getGroupRules()->getRestrictToGroups()) {
 				$groupFound = FALSE;
+				reset($usergroups);
 				while ((list(, $group) = each($usergroups)) && !($groupFound)) {
 					$groupFound = $this->checkGroupMembership($group->getTitle());
 				}
@@ -362,6 +363,7 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 				}
 			} elseif ($this->userRules->getGroupRules()->getRestrictToGroups()) {
 				$groupFound = FALSE;
+				reset($usergroups);
 				while ((list(, $group) = each($usergroups)) && !($groupFound)) {
 					$groupFound = $this->checkGroupMembership($group->getTitle());
 				}
@@ -424,6 +426,16 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 						$key = substr($key, 0, strlen($key) - 1);
 					}
 					if (is_array($result)) {
+						unset($result['count']);
+						$attr = array();
+						foreach ($result as $v) {
+							$attr[] = $this->cObj->stdWrap($v, $stdWrap);
+						}
+						$result = implode(', ', $attr);
+					} elseif ($result == 'Array') {
+						$tmp = explode(':', $mapping[$key . '.']['data']);
+						$attrname = $tmp[1];
+						$result = $this->attributes[$attrname];
 						unset($result['count']);
 						$attr = array();
 						foreach ($result as $v) {
@@ -561,24 +573,28 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		
 		$this->cObj->alternativeData = $this->attributes;
 		$result = $this->cObj->stdWrap('', $mapping['title.']);
-		if (substr($key, strlen($key) - 1, 1) == '.') {
-			$key = substr($key, 0, strlen($key) - 1);
-		}
+		
 		if (is_array($result)) {
 			unset($result['count']);
 			$attr = array();
 			foreach ($result as $v) {
 				$attr[] = $this->cObj->stdWrap($v, $stdWrap);
 			}
-			$result = implode(', ', $attr);
+			$result = $attr;
+		} elseif ($result == 'Array') {
+			$tmp = explode(':', $mapping['title.']['data']);
+			$attrname = $tmp[1];
+			$result = $this->attributes[$attrname];
+			unset($result['count']);
+			$attr = array();
+			foreach ($result as $v) {
+				$attr[] = $this->cObj->stdWrap($v, $stdWrap);
+			}
+			$result = $attr;
 		} else {
 			$result = $this->cObj->stdWrap($result, $stdWrap);
 		}
 		$usergroups = $result;
-
-		\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('Usergroups', 'ldap', 3, $usergroups);
-
-		// print_r($usergroups); die;
 		
 		if (is_array($usergroups)) {
 			unset($usergroups['count']);
@@ -751,12 +767,17 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 	protected function removeUsergroupsFromUserRecord() {
 		$preserveNonLdapGroups = $this->userRules->getGroupRules()->getPreserveNonLdapGroups();
 		if ($preserveNonLdapGroups) {
-			$usergroups = $this->user->getUsergroup()->toArray();
-			foreach ($usergroups as $group) {
-				$extendedGroup = $this->usergroupRepository->findByUid($group->getUid());
-				if ($extendedGroup->getServerUid()) {
-					$this->user->removeUsergroup($group);
+			if (is_array($usergroups)) {
+				foreach ($usergroups as $group) {
+					$extendedGroup = $this->usergroupRepository->findByUid($group->getUid());
+					if ($extendedGroup->getServerUid()) {
+						$this->user->removeUsergroup($group);
+					}
 				}
+			} else {
+				/* @var $usergroup \TYPO3\CMS\Extbase\Persistence\ObjectStorage */
+				$usergroup = $this->objectManager->get('TYPO3\\CMS\\Extbase\\Persistence\\ObjectStorage');
+				$this->user->setUsergroup($usergroup);
 			}
 		} else {
             /* @var $usergroup \TYPO3\CMS\Extbase\Persistence\ObjectStorage */
