@@ -427,21 +427,15 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 					}
 					if (is_array($result)) {
 						unset($result['count']);
-						$attr = array();
-						foreach ($result as $v) {
-							$attr[] = $this->cObj->stdWrap($v, $stdWrap);
-						}
-						$result = implode(', ', $attr);
+						$result = implode(',', $result);
+						$result = $this->cObj->stdWrap($result, $stdWrap);
 					} elseif ($result == 'Array') {
 						$tmp = explode(':', $mapping[$key . '.']['data']);
 						$attrname = $tmp[1];
 						$result = $this->attributes[$attrname];
 						unset($result['count']);
-						$attr = array();
-						foreach ($result as $v) {
-							$attr[] = $this->cObj->stdWrap($v, $stdWrap);
-						}
-						$result = implode(', ', $attr);
+						$result = implode(',', $result);
+						$result = $this->cObj->stdWrap($result, $stdWrap);
 					} else {
 						$result = $this->cObj->stdWrap($result, $stdWrap);
 					}
