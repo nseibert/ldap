@@ -94,6 +94,12 @@ class BackendUser extends \TYPO3\CMS\Extbase\Domain\Model\BackendUser implements
 	protected $fileOperationPermissions;
 
 	/**
+	 *
+	 * @var int 
+	 */
+	protected $options;
+
+	/**
 	 * Constructs a new Backend User
 	 *
 	 */
@@ -238,9 +244,9 @@ class BackendUser extends \TYPO3\CMS\Extbase\Domain\Model\BackendUser implements
 	/**
 	 * Removes a usergroup from the backend user
 	 *
-	 * @param \NormanSeibert\Ldap\Domain\Model\Typo3User\BackendUserGroup $usergroup
+	 * @param \TYPO3\CMS\Extbase\Domain\Model\BackendUserGroup $usergroup
 	 */
-	public function removeUsergroup(\NormanSeibert\Ldap\Domain\Model\Typo3User\BackendUserGroup $usergroup) {
+	public function removeUsergroup(\TYPO3\CMS\Extbase\Domain\Model\BackendUserGroup $usergroup) {
 		$this->usergroup->detach($usergroup);
 	}
 	
@@ -318,6 +324,24 @@ class BackendUser extends \TYPO3\CMS\Extbase\Domain\Model\BackendUser implements
 	 */
 	public function getFileOperationPermissions() {
 		return $this->fileOperationPermissions;
+	}
+	
+	/**
+	 * 
+	 * @param string $mounts
+	 * @return \NormanSeibert\Ldap\Domain\Model\Typo3User\BackendUser
+	 */
+	public function setOptions($options) {
+		$this->options = $options;
+		return $this;
+	}
+	
+	/**
+	 * 
+	 * @return int
+	 */
+	public function getOptions() {
+		return $this->options;
 	}
 }
 ?>

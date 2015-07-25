@@ -24,6 +24,7 @@ config.tx_extbase {
                         db_mountpoints.mapOnProperty = databaseMounts
                         file_mountpoints.mapOnProperty = fileMounts
                         file_permissions.mapOnProperty = fileOperationPermissions
+                        options.mapOnProperty = options
 					}
 				}
 			}
