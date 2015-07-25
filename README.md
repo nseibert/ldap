@@ -11,5 +11,5 @@ This extension allows TYPO3 to connect to LDAP directories and to fetch user rec
 
 # Compatibility
 
-Version 3.x of eu_ldap is not compatible with LDAP server records created with 2.x, instead you have to redefine your server records in the configuration file.
-**Version 3.1 supports TYPO3 6.0 and higher**.
+Version 3.x is not compatible with LDAP server records created with eu_ldap 2.x, instead you have to redefine your server records in the configuration file.
+**Version 3.2 supports TYPO3 7.0 and higher**.
