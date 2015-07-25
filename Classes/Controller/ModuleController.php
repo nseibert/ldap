@@ -116,7 +116,8 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 	 */
 	public function checkAction() {
 		$this->ldapConfig->getLdapServers();
-		$flashMessages = \TYPO3\CMS\Core\Messaging\FlashMessageQueue::getAllMessages();
+		$messageQueue = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Messaging\\FlashMessageQueue', 'ldap');
+		$flashMessages = $messageQueue->getAllMessages();
 		$this->view->assign('errorCount', count($flashMessages));
 	}
 

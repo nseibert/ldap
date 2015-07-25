@@ -34,14 +34,13 @@ fieldset {
 
 .f3-widget-paginator { display: block; float: left; margin: 0 0 10px; }
 
-	.f3-widget-paginator li { font-weight: bold; display: block; float: left; width: 30px; text-align: center; margin: 0 2px 2px; }
+.f3-widget-paginator li { display: block; float: left; }
 
-	.f3-widget-paginator li.current { border: 1px solid black; padding: 2px; }
+.f3-widget-paginator li.current { font-weight: bold; }
 
-	.f3-widget-paginator li.next,
-	.f3-widget-paginator li.previous { width: auto; }
+.f3-widget-paginator li a { text-decoration: none !important; padding-left: 7px; padding-right: 7px; }
 
-	.f3-widget-paginator a { font-weight: normal; display: block; border: 1px solid black; padding: 2px; }
+.f3-widget-paginator li.disabled { padding-left: 13px; padding-right: 13px; }
 
 /**
  * @end

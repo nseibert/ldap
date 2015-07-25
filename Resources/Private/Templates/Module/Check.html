@@ -21,7 +21,9 @@
 			<p>
 				<h3>Check your LDAP connections next:</h3>
 				<f:form action="summary" controller="Module">
-					<f:form.submit value="{f:translate(key: 'form.summary')}" />
+					<div class="btn-group">
+						<f:form.submit value="{f:translate(key: 'form.summary')}" class="btn btn-default" />
+					</div>
 				</f:form>
 			</p>
 		</f:else>
