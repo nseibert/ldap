@@ -551,8 +551,6 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 				$ret['existingGroups'][] = $tmp['existingGroup'];
 			}
 		}
-		
-		// $assignedGroups = $this->addNewGroups($ret['newGroups'], $ret['existingGroups'], $lastRun);
 
 		return $ret;
 	}
@@ -761,6 +759,7 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 	protected function removeUsergroupsFromUserRecord() {
 		$preserveNonLdapGroups = $this->userRules->getGroupRules()->getPreserveNonLdapGroups();
 		if ($preserveNonLdapGroups) {
+			$usergroups = $this->user->getUsergroup()->toArray();
 			if (is_array($usergroups)) {
 				foreach ($usergroups as $group) {
 					$extendedGroup = $this->usergroupRepository->findByUid($group->getUid());
