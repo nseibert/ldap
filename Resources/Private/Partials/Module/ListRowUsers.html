@@ -1,6 +1,6 @@
 {namespace ldap = NormanSeibert\Ldap\ViewHelpers}
 
-<tr class="db_list_normal">
+<tr>
 	<td class="col-icon">
 		<a href="#" onClick="showClickmenu('fe_users', '{user.uid}', '1', '', '', ''); return false;" title="id={user.uid}">
 			<ldap:spriteIconForRecord table="fe_users" object="{user}" />
@@ -10,7 +10,12 @@
 		<b>{user.username}</b>
 	</td>
 	<td>
-		{user.name}
+		<f:if condition="{formSettings.authenticateFe}">
+			{user.name}
+		</f:if>
+		<f:if condition="{formSettings.authenticateBe}">
+			{user.realName}
+		</f:if>
 	</td>
 	<td>
 		{user.email}

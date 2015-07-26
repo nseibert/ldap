@@ -28,6 +28,13 @@ fieldset {
  * @end
  */
 
+ .userlist {
+ 	display: block;
+ 	clear: both;
+ 	overflow: auto;
+ 	margin-bottom: 1em;
+ }
+
 /**
  * @group: Paginate
  */
