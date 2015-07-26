@@ -109,6 +109,11 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 		}
 	}
 
+	private function flushMessages() {
+		$messageQueue = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Messaging\\FlashMessageQueue', 'ldap');
+		$messageQueue->getAllMessagesAndFlush();
+	}
+
 	/**
 	 * Checks LDAP configuration.
 	 *
@@ -119,6 +124,7 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 		$messageQueue = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Messaging\\FlashMessageQueue', 'ldap');
 		$flashMessages = $messageQueue->getAllMessages();
 		$this->view->assign('errorCount', count($flashMessages));
+		$this->flushMessages();
 	}
 
 	/**
@@ -143,6 +149,7 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 			);
 		}
 		$this->view->assign('ldapServers', $servers);
+		$this->flushMessages();
 	}
 
 	/**
@@ -216,6 +223,7 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 
 		$this->view->assign('be_users', $beUsers);
 		$this->view->assign('fe_users', $feUsers);
+		$this->flushMessages();
 	}
 
     /**
@@ -278,6 +286,7 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 
 		$this->view->assign('be_users', $beUsers);
 		$this->view->assign('fe_users', $feUsers);
+		$this->flushMessages();
 	}
 
     /**
@@ -340,6 +349,7 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 
 		$this->view->assign('be_users', $beUsers);
 		$this->view->assign('fe_users', $feUsers);
+		$this->flushMessages();
 	}
 
     /**
@@ -393,6 +403,7 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 
 		$this->view->assign('be_users', $beUsers);
 		$this->view->assign('fe_users', $feUsers);
+		$this->flushMessages();
 	}
 
     /**
@@ -444,6 +455,7 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 		$this->view->assign('ldapServers', $serverConfigurations);
 		$this->view->assign('returnUrl', 'mod.php?M=tools_LdapM1');
 		$this->view->assign('user', $user);
+		$this->flushMessages();
 	}
 
     /**
