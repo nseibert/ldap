@@ -759,13 +759,20 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 	protected function removeUsergroupsFromUserRecord() {
 		$preserveNonLdapGroups = $this->userRules->getGroupRules()->getPreserveNonLdapGroups();
 		if ($preserveNonLdapGroups) {
-			$usergroups = $this->user->getUsergroup()->toArray();
-			if (is_array($usergroups)) {
-				foreach ($usergroups as $group) {
-					$extendedGroup = $this->usergroupRepository->findByUid($group->getUid());
-					if ($extendedGroup->getServerUid()) {
-						$this->user->removeUsergroup($group);
+			$usergroup = $this->user->getUsergroup();
+			if (is_object($usergroup)) {
+				$usergroups = $usergroup->toArray();
+				if (is_array($usergroups)) {
+					foreach ($usergroups as $group) {
+						$extendedGroup = $this->usergroupRepository->findByUid($group->getUid());
+						if ($extendedGroup->getServerUid()) {
+							$this->user->removeUsergroup($group);
+						}
 					}
+				} else {
+					/* @var $usergroup \TYPO3\CMS\Extbase\Persistence\ObjectStorage */
+					$usergroup = $this->objectManager->get('TYPO3\\CMS\\Extbase\\Persistence\\ObjectStorage');
+					$this->user->setUsergroup($usergroup);
 				}
 			} else {
 				/* @var $usergroup \TYPO3\CMS\Extbase\Persistence\ObjectStorage */
