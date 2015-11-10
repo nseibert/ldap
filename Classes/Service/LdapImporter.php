@@ -137,44 +137,43 @@ class LdapImporter {
 	}
 
 	/**
-	 * retrieves user records from LDAP
-	 *
-	 * @param string $runIdentifier
-	 * @param string $command
-	 */
-	private function getUsers($runIdentifier, $command) {
-		$ldapUsers = $this->ldapServer->getUsers('*', false);
-		if (is_array($ldapUsers)) {
-			switch ($command) {
-				case 'import':
-					$this->storeNewUsers($runIdentifier, $ldapUsers);
-					break;
-				case 'update':
-					$this->updateUsers($runIdentifier, $ldapUsers);
-					break;
-				case 'importOrUpdate':
-					$this->storeUsers($runIdentifier, $ldapUsers);
-					break;
-			}
-		} else {
-			// recursive search
-			if ($this->ldapConfig->logLevel) {
-				$msg = 'LDAP query limit exceeded';
-				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
-			}			
-			$searchCharacters = \NormanSeibert\Ldap\Utility\Helpers::getSearchCharacterRange();
-			foreach ($searchCharacters as $thisCharacter) {
-				$ldapUsers = $this->ldapServer->getUsers('*' . $thisCharacter, false);					
-				$msg = 'Query server: ' . $this->ldapServer->getConfiguration()->getUid() . ' with getUsers("*' . $thisCharacter . '") returned ' . count($ldapUsers) . ' results.';
-				if ($this->ldapConfig->logLevel > 1) {
-					\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
-				}
-				if (is_array($ldapUsers)) {
-					$this->storeNewUsers($runIdentifier, $ldapUsers);
-				}
-			}
-		}
-	}
+     * retrieves user records from LDAP
+     *
+     * @param string $runIdentifier
+     * @param string $command
+     * @param string $search
+     */
+    private function getUsers($runIdentifier, $command, $search = '*') {
+        $ldapUsers = $this->ldapServer->getUsers( $search, false );
+        if (is_array($ldapUsers)) {
+            switch ($command) {
+                case 'import':
+                    $this->storeNewUsers($runIdentifier, $ldapUsers);
+                    break;
+                case 'update':
+                    $this->updateUsers($runIdentifier, $ldapUsers);
+                    break;
+                case 'importOrUpdate':
+                    $this->storeUsers($runIdentifier, $ldapUsers);
+                    break;
+            }
+        } else {
+            // recursive search
+            if ($this->ldapConfig->logLevel) {
+                $msg = 'LDAP query limit exceeded';
+                \TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
+            }
+            $searchCharacters = \NormanSeibert\Ldap\Utility\Helpers::getSearchCharacterRange();
+            foreach ($searchCharacters as $thisCharacter) {
+                $newSearch = substr_replace($search, $thisCharacter, 1, 0);
+                $msg = 'Query server: ' . $this->ldapServer->getConfiguration()->getUid() . ' with getUsers("' . $newSearch . '")';
+                if ($this->ldapConfig->logLevel > 1) {
+                    \TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
+                }
+                $this->getUsers($runIdentifier, $command, $newSearch);
+            }
+        }
+    }
 	
 	/**
 	 * imports users from LDAP to TYPO3 DB
