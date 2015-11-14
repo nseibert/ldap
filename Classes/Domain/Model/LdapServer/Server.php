@@ -222,9 +222,10 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 	 * finds a single user by its DN
 	 * 
 	 * @param string $dn
+	 * @param boolean $doSanitize
 	 * @return \NormanSeibert\Ldap\Domain\Model\LdapUser\User
 	 */
-	public function getUser($dn) {
+	public function getUser($dn, $doSanitize = false) {
 		$bind = NULL;
 		$connect = NULL;
 		$user = NULL;
@@ -243,7 +244,11 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 			}
 		}
 		if ($bind) {
-			$distinguishedName = \NormanSeibert\Ldap\Utility\Helpers::sanitizeQuery($dn);
+			if ($doSanitize) {
+				$distinguishedName = \NormanSeibert\Ldap\Utility\Helpers::sanitizeQuery($dn);
+			} else {
+				$distinguishedName = $dn;
+			}
 			$attrs = $this->getUsedAttributes();
 			$info = $this->search($connect, $distinguishedName, '(objectClass=*)', $attrs, 'base', false, LDAP_DEREF_NEVER, 1, 0);
 		}
