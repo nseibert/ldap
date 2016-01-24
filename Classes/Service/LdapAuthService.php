@@ -448,20 +448,20 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 			$this->typoScriptService->makeTypoScriptBackup();
 		}
 		// load extbase typoscript
-		$typoScriptArray1 = \NormanSeibert\Ldap\Service\TypoScriptService::loadTypoScriptFromFile('EXT:extbase/ext_typoscript_setup.txt');
+		$typoScriptArray = \NormanSeibert\Ldap\Service\TypoScriptService::loadTypoScriptFromFile('EXT:extbase/ext_typoscript_setup.txt');
 		// load this extensions typoscript (database column => model property map etc)
 		$typoScriptArray2 = \NormanSeibert\Ldap\Service\TypoScriptService::loadTypoScriptFromFile('EXT:ldap/Configuration/TypoScript/setup.txt');
-		if (is_array($typoScriptArray1) && !empty($typoScriptArray1) && is_array($typoScriptArray2) && !empty($typoScriptArray2)) {
-			$typoScriptArray = \TYPO3\CMS\Core\Utility\ArrayUtility::mergeRecursiveWithOverrule($typoScriptArray1, $typoScriptArray2);
+		if (is_array($typoScriptArray) && !empty($typoScriptArray) && is_array($typoScriptArray2) && !empty($typoScriptArray2)) {
+			\TYPO3\CMS\Core\Utility\ArrayUtility::mergeRecursiveWithOverrule($typoScriptArray, $typoScriptArray2);
 		}
+
 		if (is_array($typoScriptArray) && !empty($typoScriptArray) && isset($GLOBALS['TSFE'])) {
-			$GLOBALS['TSFE']->tmpl->setup = \TYPO3\CMS\Core\Utility\ArrayUtility::mergeRecursiveWithOverrule($typoScriptArray, $GLOBALS['TSFE']->tmpl->setup);
-		}
-		if (isset($GLOBALS['TSFE'])) {
+			\TYPO3\CMS\Core\Utility\ArrayUtility::mergeRecursiveWithOverrule($GLOBALS['TSFE']->tmpl->setup, $typoScriptArray);
 			$this->configurationManager->setConfiguration($GLOBALS['TSFE']->tmpl->setup);
 		} elseif (is_array($typoScriptArray) && !empty($typoScriptArray)) {
 			$this->configurationManager->setConfiguration($typoScriptArray);
 		}
+
 		$this->configureObjectManager();
 
 		// initialize reflection
