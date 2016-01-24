@@ -445,9 +445,6 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 	 * @return void
 	 */
 	protected function initializeExtbaseFramework() {
-		// initialize cache manager
-		$this->cacheManager = $GLOBALS['typo3CacheManager'];
-
 		// inject content object into the configuration manager
 		$this->configurationManager = $this->objectManager->get('TYPO3\\CMS\\Extbase\\Configuration\\ConfigurationManagerInterface');
 		$contentObject = $this->objectManager->get('TYPO3\\CMS\\Frontend\\ContentObject\\ContentObjectRenderer');
@@ -457,25 +454,25 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 			$this->typoScriptService->makeTypoScriptBackup();
 		}
 		// load extbase typoscript
-		$typoScriptArray1 = \NormanSeibert\Ldap\Service\TypoScriptService::loadTypoScriptFromFile('EXT:extbase/ext_typoscript_setup.txt');
+		$typoScriptArray = \NormanSeibert\Ldap\Service\TypoScriptService::loadTypoScriptFromFile('EXT:extbase/ext_typoscript_setup.txt');
 		// load this extensions typoscript (database column => model property map etc)
 		$typoScriptArray2 = \NormanSeibert\Ldap\Service\TypoScriptService::loadTypoScriptFromFile('EXT:ldap/Configuration/TypoScript/setup.txt');
-		if (is_array($typoScriptArray1) && !empty($typoScriptArray1) && is_array($typoScriptArray2) && !empty($typoScriptArray2)) {
-			$typoScriptArray = \TYPO3\CMS\Core\Utility\GeneralUtility::array_merge_recursive_overrule($typoScriptArray1, $typoScriptArray2);
+		if (is_array($typoScriptArray) && !empty($typoScriptArray) && is_array($typoScriptArray2) && !empty($typoScriptArray2)) {
+			\TYPO3\CMS\Core\Utility\ArrayUtility::mergeRecursiveWithOverrule($typoScriptArray, $typoScriptArray2);
 		}
+
 		if (is_array($typoScriptArray) && !empty($typoScriptArray) && isset($GLOBALS['TSFE'])) {
-			$GLOBALS['TSFE']->tmpl->setup = \TYPO3\CMS\Core\Utility\GeneralUtility::array_merge_recursive_overrule($typoScriptArray, $GLOBALS['TSFE']->tmpl->setup);
-		}
-		if (isset($GLOBALS['TSFE'])) {
+			\TYPO3\CMS\Core\Utility\ArrayUtility::mergeRecursiveWithOverrule($GLOBALS['TSFE']->tmpl->setup, $typoScriptArray);
 			$this->configurationManager->setConfiguration($GLOBALS['TSFE']->tmpl->setup);
-		} else {
+		} elseif (is_array($typoScriptArray) && !empty($typoScriptArray)) {
 			$this->configurationManager->setConfiguration($typoScriptArray);
 		}
+
 		$this->configureObjectManager();
 
 		// initialize reflection
 		$this->reflectionService = $this->objectManager->get('TYPO3\\CMS\\Extbase\\Reflection\\ReflectionService');
-		$this->reflectionService->setDataCache($this->cacheManager->getCache('extbase_reflection'));
+		$this->reflectionService->setDataCache(\TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Cache\\CacheManager')->getCache('extbase_reflection'));
 		if (!$this->reflectionService->isInitialized()) {
 			$this->reflectionService->initialize();
 		}
