@@ -50,9 +50,7 @@ class Helpers {
 			$server,
 			$severity
 		);
-		$messageQueue = $objectManager->get(
-			'TYPO3\\CMS\\Core\\Messaging\\FlashMessageQueue', 'ldap');
-		$messageQueue->addMessage($message);
+		\TYPO3\CMS\Core\Messaging\FlashMessageQueue::addMessage($message);
 	}
 	
 	/**
