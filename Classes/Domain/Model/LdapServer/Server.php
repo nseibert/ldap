@@ -230,6 +230,8 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		$connect = NULL;
 		$user = NULL;
         $distinguishedName = NULL;
+        $filter = NULL;
+        $parsedFilter = NULL;
 		
 		//TODO: findet die User ggf. auch ueber andere Server als den, ueber den urspruenglich importiert wurde.
 		$info = array();
@@ -249,8 +251,10 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 			} else {
 				$distinguishedName = $dn;
 			}
+			$filter = $this->getConfiguration()->getUserRules($this->table)->getFilter();
+			$parsedFilter = str_replace('<search>', '*', $filter);
 			$attrs = $this->getUsedAttributes();
-			$info = $this->search($connect, $distinguishedName, '(objectClass=*)', $attrs, 'base', false, LDAP_DEREF_NEVER, 1, 0);
+			$info = $this->search($connect, $distinguishedName, $parsedFilter, $attrs, 'base', false, LDAP_DEREF_NEVER, 1, 0);
 		}
 
 		$parameters = array(
