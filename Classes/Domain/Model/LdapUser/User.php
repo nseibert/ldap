@@ -800,11 +800,17 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		}
 		$assignedGroups = $existingGroups;
 		$addnewgroups = $this->userRules->getGroupRules()->getImportGroups();
+
+		$pid = $this->userRules->getGroupRules()->getPid();
+		if (empty($pid)) {
+			$pid = $this->userRules->getPid();
+		}
+
 		if ((is_array($newGroups)) && ($addnewgroups)) {
 			foreach ($newGroups as $group) {
                 /* @var $newGroup \NormanSeibert\Ldap\Domain\Model\Typo3User\UserGroupInterface */
 				$newGroup = $this->objectManager->get($this->groupObject);
-				$newGroup->setPid($this->pid);
+				$newGroup->setPid($pid);
 				$newGroup->setTitle($group['title']);
 				$newGroup->setDN($group['dn']);
 				$newGroup->setLdapServer($this->ldapServer);

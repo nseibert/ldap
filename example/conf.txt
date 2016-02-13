@@ -1,108 +1,112 @@
 ldapServers {
-	localhost {
-		# disable server record (0/1)
-		disable = 0
-		
-		# server's name
-		title = lokaler LDAP-Server
-		
-		# host (mandatory)
-		host = 127.0.0.1
-		
-		# port (mandatory, int+)
-		port = 10389
-		
-		# use TLS even on port 389 (0/1)
-		forceTLS = 0
-		
-		# LDAP protocol version (empty/1/2/3)
-		version = 3
-		
-		# use server to authenticate users in the BE, FE, both (BE/FE/both)
-		authenticate = FE
-		
-		# user with read access to the directory
-		user =
-		password =
-		
-		# import settings for FE users
-		fe_users {
-			# page ID for user storage (only FE, int+)
-			pid = 0
-			
-			# baseDN (mandatory)
-			baseDN = 
-		
-			# search filter for users (mandatory)
-			filter = (&(mail=*)(objectClass=user)(objectCategory=person)(sAMAccountName=<search>))
-			
-			# import authenticated users automatically (0/1)
-			autoImport = 1
+    localhost {
+        # disable server record (0/1)
+        disable = 0
 
-			# Enable authenticated users automatically (0/1)
+        # server's name
+        title = lokaler LDAP-Server
+        
+        # host (mandatory)
+        host = 127.0.0.1
+        
+        # port (mandatory, int+)
+        port = 10389
+        
+        # use TLS even on port 389 (0/1)
+        forceTLS = 0
+        
+        # LDAP protocol version (empty/1/2/3)
+        version = 3
+        
+        # use server to authenticate users in the BE, FE, both (BE/FE/both)
+        authenticate = FE
+        
+        # user with read access to the directory
+        user =
+        password =
+        
+        # import settings for FE users
+        fe_users {
+            # page ID for user storage (only FE, int+)
+            pid = 0
+            
+            # baseDN (mandatory)
+            baseDN = 
+        
+            # search filter for users (mandatory)
+            filter = (&(mail=*)(objectClass=user)(objectCategory=person)(sAMAccountName=<search>))
+            
+            # import authenticated users automatically (0/1)
+            autoImport = 1
+            
+            # Enable authenticated users automatically (0/1)
             autoEnable = 1
-
+            
             # Import users with groups only (0/1)
             # Only groups imported from LDAP are taken into account!
             # Makes sense for FE users because these cannot login without at least one usergroup
             onlyUsersWithGroup = 1
-		
-			mapping = COA
-			mapping {
-				# TYPO3 table field = LDAP attribute
-				# If an LDAP attribute is used multiple times (multivalue) the resulting array will be imploded into a comma-separated list
-				name {
-					data = field:displayname
-					# normal stdWrap functions can be used
-					# if an LDAP attribute is multivalue, use stdWrap.wrap instead of .wrap (for all stdWrap-functions beside .data)
-					wrap = * | *
-				}
-				# username is mandatory!
-				username.data = field:samaccountname
-				address.data = field:streetaddress
-				zip.data = field:postalcode
-				city.data = field:l
-				country.data = field:countrycode
-				fax.data = field:facsimiletelephonenumber
-				mail.data = field:mail
-				phone.data = field:telephonenumber
-				www.data = field:wwwhomepage
-				timestamp.data = field:logintime
-			}
-			
-			usergroups {
-				# import groups (0/1, false/true)
-				importGroups = 1
-				
-				mapping {
-					# TEXT means that an attribute ("st" in this case) will be used
-					field = TEXT
-					title.data = field:st
-					# Use stdWrap. because the LDAP attribute may contain multiple values
-					title.stdWrap.noTrimWrap = || (TEXT)
-				}
-
-				/*
-				mapping {
-					# PARENT means that the parent record will be used for "title.data"
-					field = PARENT
-					title.data = field:ou
-					title.stdWrap.noTrimWrap = || (PARENT)
-				}
-				*/
-
-				/*
-				mapping {
-					# DN means that the used field ("memberof" in this case) contains a DN
-					# This DN will be used for "title.data"
-					# This configuration is valid e.g. for an Active Directory
-					field = DN
-					field.data = field:memberof
-					title.data = field:name
-					title.stdWrap.noTrimWrap = || (DN)
-				}
-				*/
-
+            
+            mapping = COA
+            mapping {
+                # TYPO3 table field = LDAP attribute
+                # If an LDAP attribute is used multiple times (multivalue) the resulting array will be imploded into a comma-separated list
+                name {
+                    data = field:displayname
+                    # normal stdWrap functions can be used
+                    # if an LDAP attribute is multivalue, use stdWrap.wrap instead of .wrap (for all stdWrap-functions beside .data)
+                    wrap = * | *
+                }
+                # username is mandatory!
+                username.data = field:samaccountname
+                address.data = field:streetaddress
+                zip.data = field:postalcode
+                city.data = field:l
+                country.data = field:countrycode
+                fax.data = field:facsimiletelephonenumber
+                mail.data = field:mail
+                phone.data = field:telephonenumber
+                www.data = field:wwwhomepage
+                timestamp.data = field:logintime
+            }
+            
+            usergroups {
+                # import groups (0/1, false/true)
+                importGroups = 1
+                
+                # store usergroups in a separate page (only FE, int+)
+                # if empty the usergroups will be stored in the same page as the users
+                # pid = 0
+                
+                mapping {
+                    # TEXT means that an attribute ("st" in this case) will be used
+                    field = TEXT
+                    title.data = field:st
+                    # Use stdWrap. because the LDAP attribute may contain multiple values
+                    title.stdWrap.noTrimWrap = || (TEXT)
+                }
+                
+                /*
+                mapping {
+                    # PARENT means that the parent record will be used for "title.data"
+                    field = PARENT
+                    title.data = field:ou
+                    title.stdWrap.noTrimWrap = || (PARENT)
+                }
+                */
+                
+                /*
+                mapping {
+                    # DN means that the used field ("memberof" in this case) contains a DN
+                    # This DN will be used for "title.data"
+                    # This configuration is valid e.g. for an Active Directory
+                    field = DN
+                    field.data = field:memberof
+                    title.data = field:name
+                    title.stdWrap.noTrimWrap = || (DN)
+                }
+                */
+                
                 /*
                 # reverseMapping is needed when the usergroups are stored in a separate OU and the groups hold the usernames in an attribute
                 # This is the case for e.g. OpenLDAP
@@ -118,37 +122,37 @@ ldapServers {
                         title.data = field:commonname
                     }
                 }
-				
-				# only import users with the following groups (comma separated list of regular expressions, all if empty)
-				restrictToGroups = /^typo3.*/i
-							
-				# always add these groups (comma separated list of uids)
-				addToGroups = 
-			}
-		}
-		
-		# import settings for BE users
-		be_users {
-			baseDN = 
-		
-			filter = (&(mail=*)(objectClass=user)(objectCategory=person)(samaccountname=<search>))   #mandatory
-			
-			autoImport = 1
-			
-			mapping = COA
-			mapping {
-				username.data = field:samaccountname
-				realName.data = field:displayname
-				# Static value, "isAdministrator" is the Extbase property mapped to the field "admin"
-				isAdministrator.value = 1
+                
+                # only import users with the following groups (comma separated list of regular expressions, all if empty)
+                restrictToGroups = /^typo3.*/i
+                            
+                # always add these groups (comma separated list of uids)
+                addToGroups = 
+            }
+        }
+        
+        # import settings for BE users
+        be_users {
+            baseDN = 
+        
+            filter = (&(mail=*)(objectClass=user)(objectCategory=person)(samaccountname=<search>))   #mandatory
+            
+            autoImport = 1
+            
+            mapping = COA
+            mapping {
+                username.data = field:samaccountname
+                realName.data = field:displayname
+                # Static value, "isAdministrator" is the Extbase property mapped to the field "admin"
+                isAdministrator.value = 1
                 # databaseMounts.value = 1
                 # fileMounts.value = 1
                 # workspacePermission.value = 1
-			}
-			
-			usergroups {
-				// see fe_users
-			}
-		}
-	}	
+            }
+            
+            usergroups {
+                // see fe_users
+            }
+        }
+    }   
 }
