@@ -51,12 +51,18 @@ class FrontendUserRepository extends \TYPO3\CMS\Extbase\Domain\Repository\Fronte
 		$query = $this->createQuery();
 		$query->getQuerySettings()->setRespectStoragePage(FALSE);
 		\NormanSeibert\Ldap\Utility\Helpers::setRespectEnableFieldsToFalse($query);
-		$query->matching(	
-			$query->logicalAnd(
-				$query->equals("pid", $pid),
+		if ($pid) {
+			$query->matching(	
+				$query->logicalAnd(
+					$query->equals("pid", $pid),
+					$query->equals("username", $username)
+				)
+			);
+		} else {
+			$query->matching(	
 				$query->equals("username", $username)
-			)
-		);
+			);
+		}
 		$users = $query->execute();
 		$userCount = $users->count();
 		if ($userCount == 1) {
@@ -77,12 +83,18 @@ class FrontendUserRepository extends \TYPO3\CMS\Extbase\Domain\Repository\Fronte
 		$query = $this->createQuery();
 		$query->getQuerySettings()->setRespectStoragePage(FALSE);
 		\NormanSeibert\Ldap\Utility\Helpers::setRespectEnableFieldsToFalse($query);
-		$query->matching(	
-			$query->logicalAnd(
-				$query->equals("pid", $pid),
+		if ($pid) {
+			$query->matching(	
+				$query->logicalAnd(
+					$query->equals("pid", $pid),
+					$query->equals("dn", $dn)
+				)
+			);
+		} else {
+			$query->matching(	
 				$query->equals("dn", $dn)
-			)
-		);
+			);
+		}
 		$users = $query->execute();
 		$userCount = $users->count();
 		if ($userCount == 1) {
