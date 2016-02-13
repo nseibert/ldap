@@ -11,5 +11,11 @@ This extension allows TYPO3 to connect to LDAP directories and to fetch user rec
 
 # Compatibility
 
-Version 3.x of eu_ldap is not compatible with LDAP server records created with 2.x, instead you have to redefine your server records in the configuration file.
-**Version 3.1 supports TYPO3 6.0 and higher**.
+Version 3.x is not compatible with LDAP server records created with eu_ldap 2.x, instead you have to redefine your server records in the configuration file.
+
+_Version 3.1 supports TYPO3 6.x._
+_Version 3.2 supports TYPO3 7.6 and higher._
+
+**TYPO3 7.6 currently has a bug which prevents the extension to import LDAP attributes with multiple values. This scenario often arises in MS Active Directory environments when using the "memberOf" attribute for group membership.**
+
+See https://forge.typo3.org/issues/73155 for more information.

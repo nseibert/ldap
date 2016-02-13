@@ -791,7 +791,10 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		if ($this->table == 'be_users') {
 			$this->allBeGroups = $this->beUsergroupRepository->findAll();
 		} else {
-			$pid = $this->getConfiguration()->getUserRules($this->table)->getPid();
+			$pid = $this->getConfiguration()->getUserRules('fe_users')->getGroupRules()->getPid();
+			if (empty($pid)) {
+				$pid = $this->getConfiguration()->getUserRules('fe_users')->getPid();
+			}
 			if ($pid) {
 				$this->allFeGroups = $this->feUsergroupRepository->findByPid($pid);
 			} else {

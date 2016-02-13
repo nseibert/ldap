@@ -235,6 +235,7 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 			if (count($errors) == 0) {
 				$groupRuleFE = $this->objectManager->get('NormanSeibert\\Ldap\\Domain\\Model\\LdapServer\\ServerConfigurationGroups');
 				$groupRuleFE
+					->setPid($server['fe_users.']['usergroups.']['pid'])
 					->setImportGroups($server['fe_users.']['usergroups.']['importGroups'])
 					->setMapping($server['fe_users.']['usergroups.']['mapping.'])
 					->setReverseMapping($server['fe_users.']['usergroups.']['reverseMapping'])
@@ -377,6 +378,12 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 				}
 				$newObj = NULL;
 			}
+
+			$res = \NormanSeibert\Ldap\Utility\Helpers::checkValue($server['fe_users.']['usergroups.']['pid'], 'int');
+			if ($res['error']) {
+				$errors[] = 'Attribute "fe_users.usergroups.pid": '.$res['error'];
+			}
+
 			if (is_array($server['fe_users.']['usergroups.']['mapping.'])) {				
 				$newObj = $this->objectManager->get('NormanSeibert\\Ldap\\Domain\\Model\\Typo3User\\FrontendUserGroup');
 				foreach ($server['fe_users.']['usergroups.']['mapping.'] as $fld => $mapping) {

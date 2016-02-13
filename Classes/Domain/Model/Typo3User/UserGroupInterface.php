@@ -82,6 +82,13 @@ interface UserGroupInterface {
      * @return string
      */
     public function getTitle();
+    /**
+     * Setter for the pid.
+     *
+     * @param integer|NULL $pid
+     * @return void
+     */
+    public function setPid($pid);
 
     /**
      *

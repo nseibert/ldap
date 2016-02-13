@@ -84,6 +84,12 @@ class ServerConfigurationGroups extends \TYPO3\CMS\Extbase\DomainObject\Abstract
 	protected $mapping = array();
 	
 	/**
+	 *
+	 * @var int 
+	 */
+	protected $pid;
+	
+	/**
 	 * 
 	 * @param string $baseDN
 	 * @return \NormanSeibert\Ldap\Domain\Model\LdapServer\ServerConfigurationGroups
@@ -243,6 +249,24 @@ class ServerConfigurationGroups extends \TYPO3\CMS\Extbase\DomainObject\Abstract
 	 */
 	public function getRestrictToGroups() {
 		return $this->restrictToGroups;
+	}
+	
+	/**
+	 * 
+	 * @param int $pid
+	 * @return \NormanSeibert\Ldap\Domain\Model\LdapServer\ServerConfigurationGroups
+	 */
+	public function setPid($pid) {
+		$this->pid = $pid;
+		return $this;
+	}
+	
+	/**
+	 * 
+	 * @return int
+	 */
+	public function getPid() {
+		return $this->pid;
 	}
 }
 ?>
