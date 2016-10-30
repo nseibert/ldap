@@ -395,6 +395,46 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 			}
 		}
 	}
+
+	protected function mapAttribute($mapping, $key, $data) {
+		
+		print_r('Mapping:<br>');
+		print_r($mapping);
+		print_r('<p>');
+		print_r('Key: ' . $key . '<br>');
+		print_r('Data:<br>');
+		print_r($data);
+		print_r('<p>');
+		
+
+		// stdWrap does no longer handle arrays, therefore we have to check and map manually
+		$tmp = explode(':', $mapping[$key . '.']['data']);
+		$attrname = $tmp[1];
+		$ldapData = $data[$attrname];
+
+		
+		print_r('ldapData:<br>');
+		print_r($ldapData);
+		print_r('<p>');
+		
+
+		$stdWrap = $mapping[$key . '.']['stdWrap.'];
+		if (is_array($value['stdWrap.'])) {
+			unset($value['stdWrap.']);
+		}
+
+		if (is_array($ldapData)) {
+			unset($ldapData['count']);
+			$ldapDataList = implode(',', $ldapData);
+			$result = $this->cObj->stdWrap($ldapDataList, $stdWrap);
+		} else {
+			$result = $this->cObj->stdWrap($ldapData, $stdWrap);
+		}
+
+		print_r('Result: ' . $result . '<p>');
+
+		return $result;
+	}
 	
 	/** Maps attributes from LDAP record to TYPO3 DB fields
 	 * 
@@ -407,42 +447,26 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		if ($mappingType == 'group') {
 			$mapping = $this->userRules->getGroupRules()->getMapping();
 			$attributes = $useAttributes;
-			// print_r ($mapping); die;
 		} else {
 			$mapping = $this->userRules->getMapping();
 			$attributes = $this->attributes;
 		}
-
 		if (is_array($mapping)) {
 			foreach ($mapping as $key => $value) {
 				if ($key != 'username.') {
-					$stdWrap = $value['stdWrap.'];
-					if (is_array($value['stdWrap.'])) {
-						unset($value['stdWrap.']);
-					}
-					$this->cObj->alternativeData = $attributes;
-					$result = $this->cObj->stdWrap($value['value'], $value);
 					if (substr($key, strlen($key) - 1, 1) == '.') {
 						$key = substr($key, 0, strlen($key) - 1);
 					}
-					if (is_array($result)) {
-						unset($result['count']);
-						$result = implode(',', $result);
-						$result = $this->cObj->stdWrap($result, $stdWrap);
-					} elseif ($result == 'Array') {
-						$tmp = explode(':', $mapping[$key . '.']['data']);
-						$attrname = $tmp[1];
-						$result = $this->attributes[$attrname];
-						unset($result['count']);
-						$result = implode(',', $result);
-						$result = $this->cObj->stdWrap($result, $stdWrap);
-					} else {
-						$result = $this->cObj->stdWrap($result, $stdWrap);
-					}
+					$result = $this->mapAttribute($mapping, $key, $attributes);
 					$insertArray[$key] = $result;
 				}
 			}
 		}
+
+		print_r('insertArray:<br>');
+		print_r($insertArray);
+		print_r('<p>');
+		// die;
 		
 		return $insertArray;
 	}
@@ -537,12 +561,23 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		}
 
 		$username = mb_strtolower($this->getAttribute($searchAttribute));
+
+		print_r('$this->attributes:<br>');
+		print_r($this->attributes);
+		print_r('<p>');
 		
+		print_r('username: ' . $username . '<p>');
+
 		$ldapGroups = $this->ldapServer->getGroups($username);
+
+		print_r('ldapGroups:<br>');
+		print_r($ldapGroups);
+		print_r('<p>');
 		
 		foreach ($ldapGroups as $group) {
-			$this->cObj->alternativeData = $group;
-			$usergroup = $this->cObj->stdWrap('', $mapping['title.']);
+			// $this->cObj->alternativeData = $group;
+			// $usergroup = $this->cObj->stdWrap('', $mapping['title.']);
+			$usergroup = $this->mapAttribute($mapping, 'title', $group);
 			$tmp = $this->resolveGroup('title', $usergroup, $usergroup, $group['dn']);
 			if ($tmp['newGroup']) {
 				$ret['newGroups'][] = $tmp['newGroup'];
@@ -563,8 +598,9 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		$ret = array();
 		$mapping = $this->userRules->getGroupRules()->getMapping();
 		
-		$this->cObj->alternativeData = $this->attributes;
-		$result = $this->cObj->stdWrap('', $mapping['title.']);
+		// $this->cObj->alternativeData = $this->attributes;
+		// $result = $this->cObj->stdWrap('', $mapping['title.']);
+		$result = $this->mapAttribute($mapping, 'title', $attributes);
 		
 		if (is_array($result)) {
 			unset($result['count']);
@@ -626,8 +662,9 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		$parentDN = implode(',', $path);
 		$ldapGroup = $this->ldapServer->getGroup($parentDN);
 		
-		$this->cObj->alternativeData = $ldapGroup;
-		$usergroup = $this->cObj->stdWrap('', $mapping['title.']);
+		// $this->cObj->alternativeData = $ldapGroup;
+		// $usergroup = $this->cObj->stdWrap('', $mapping['title.']);
+		$usergroup = $this->mapAttribute($mapping, 'title', $ldapGroup);
 		
 		if ($usergroup) {
 			$tmp = $this->resolveGroup('title', $usergroup, $usergroup, $ldapGroup['dn']);
@@ -650,16 +687,18 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		$ret = array();
 		$mapping = $this->userRules->getGroupRules()->getMapping();
 		
-		$this->cObj->alternativeData = $this->attributes;
-		$groupDNs = $this->cObj->stdWrap('', $mapping['field.']);
+		// $this->cObj->alternativeData = $this->attributes;
+		// $groupDNs = $this->cObj->stdWrap('', $mapping['field.']);
+		$groupDNs = $this->mapAttribute($mapping, 'title', $attributes);
 		
 		if (is_array($groupDNs)) {
 			unset($groupDNs['count']);
 			foreach ($groupDNs as $groupDN) {
 				$ldapGroup = $this->ldapServer->getGroup($groupDN);
 				if (is_array($ldapGroup)) {
-					$this->cObj->alternativeData = $ldapGroup;
-					$usergroup = $this->cObj->stdWrap('', $mapping['title.']);
+					// $this->cObj->alternativeData = $ldapGroup;
+					// $usergroup = $this->cObj->stdWrap('', $mapping['title.']);
+					$usergroup = $this->mapAttribute($mapping, 'title', $ldapGroup);
 					$tmp = $this->resolveGroup('dn', $groupDN, $usergroup, $groupDN);
 					if ($tmp['newGroup']) {
 						$ret['newGroups'][] = $tmp['newGroup'];
@@ -671,8 +710,9 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 			}
 		} elseif ($groupDNs) {
 			$ldapGroup = $this->ldapServer->getGroup($groupDNs);
-			$this->cObj->alternativeData = $ldapGroup;
-			$usergroup = $this->cObj->stdWrap('', $mapping['title.']);
+			// $this->cObj->alternativeData = $ldapGroup;
+			// $usergroup = $this->cObj->stdWrap('', $mapping['title.']);
+			$usergroup = $this->mapAttribute($mapping, 'title', $ldapGroup);
 			$tmp = $this->resolveGroup('dn', $groupDNs, $usergroup, $groupDNs);
 			if ($tmp['newGroup']) {
 				$ret['newGroups'][] = $tmp['newGroup'];
@@ -805,6 +845,9 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		if (empty($pid)) {
 			$pid = $this->userRules->getPid();
 		}
+
+		print_r($newGroups);
+		// die;
 
 		if ((is_array($newGroups)) && ($addnewgroups)) {
 			foreach ($newGroups as $group) {
