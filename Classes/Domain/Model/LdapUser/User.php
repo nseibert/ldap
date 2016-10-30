@@ -397,26 +397,10 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 	}
 
 	protected function mapAttribute($mapping, $key, $data) {
-		
-		print_r('Mapping:<br>');
-		print_r($mapping);
-		print_r('<p>');
-		print_r('Key: ' . $key . '<br>');
-		print_r('Data:<br>');
-		print_r($data);
-		print_r('<p>');
-		
-
 		// stdWrap does no longer handle arrays, therefore we have to check and map manually
 		$tmp = explode(':', $mapping[$key . '.']['data']);
 		$attrname = $tmp[1];
 		$ldapData = $data[$attrname];
-
-		
-		print_r('ldapData:<br>');
-		print_r($ldapData);
-		print_r('<p>');
-		
 
 		$stdWrap = $mapping[$key . '.']['stdWrap.'];
 		if (is_array($value['stdWrap.'])) {
@@ -430,8 +414,6 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		} else {
 			$result = $this->cObj->stdWrap($ldapData, $stdWrap);
 		}
-
-		print_r('Result: ' . $result . '<p>');
 
 		return $result;
 	}
@@ -462,11 +444,6 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 				}
 			}
 		}
-
-		print_r('insertArray:<br>');
-		print_r($insertArray);
-		print_r('<p>');
-		// die;
 		
 		return $insertArray;
 	}
@@ -561,18 +538,7 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		}
 
 		$username = mb_strtolower($this->getAttribute($searchAttribute));
-
-		print_r('$this->attributes:<br>');
-		print_r($this->attributes);
-		print_r('<p>');
-		
-		print_r('username: ' . $username . '<p>');
-
 		$ldapGroups = $this->ldapServer->getGroups($username);
-
-		print_r('ldapGroups:<br>');
-		print_r($ldapGroups);
-		print_r('<p>');
 		
 		foreach ($ldapGroups as $group) {
 			// $this->cObj->alternativeData = $group;
@@ -845,9 +811,6 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		if (empty($pid)) {
 			$pid = $this->userRules->getPid();
 		}
-
-		print_r($newGroups);
-		// die;
 
 		if ((is_array($newGroups)) && ($addnewgroups)) {
 			foreach ($newGroups as $group) {
