@@ -1,7 +1,7 @@
 # cat=basic/enable; type=string; label=Path to configuration file: If set the complete LDAP server configurations will be retrieved from this file (see example directory in extension folder). Specify a file name related to web site root directory.
 configFile = typo3conf/ldap_conf.txt
 
-# cat=basic/enable; type=int+; label=Logging level (0 = none, 1 = normal, 2 = extensive).
+# cat=basic/enable; type=int+; label=Logging level (0 = none, 1 = normal, 2 = debug, 3 = trace).
 logLevel = 1
 
 # cat=login/enable; type=boolean; label=Frontend: Enable LDAP authentification for the frontend.

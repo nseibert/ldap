@@ -176,8 +176,8 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 				
 		if ($bind) {
 			$parsedFilter = str_replace('<search>', $findname, $filter);
-			$msg = 'Query server: ' . $this->getConfiguration()->getUid() . ' with filter: ' . $parsedFilter;
-			if ($this->ldapConfig->logLevel) {
+			$msg = 'Query server "' . $this->getConfiguration()->getUid() . '" with filter: ' . $parsedFilter;
+			if ($this->ldapConfig->logLevel == 3) {
 				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
 			}
 			$attrs = $this->getUsedAttributes();
@@ -211,7 +211,7 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		}
 		
 		$msg = 'Found ' . $info['count'] . ' records';
-		if ($this->ldapConfig->logLevel == 2) {
+		if ($this->ldapConfig->logLevel == 3) {
 			\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
 		}
 		
@@ -281,13 +281,13 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 				->setLdapServer($this);
 			
 			$msg = 'Found record: ' . $distinguishedName;
-			if ($this->ldapConfig->logLevel == 2) {
-				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
+			if ($this->ldapConfig->logLevel >= 2) {
+				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', -1);
 			}
 		} else {
 			$msg = 'Did not find a unique record for the user DN='.$dn.', but found '.$info['count'].' records instead.';
-			if ($this->ldapConfig->logLevel == 2) {
-				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
+			if ($this->ldapConfig->logLevel >= 2) {
+				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 1);
 			}
 		}
 
@@ -342,7 +342,7 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 				$filter = str_replace('<search>', $findname, $filter);
 
 				$msg = 'Query server: ' . $this->getConfiguration()->getUid() . ' with filter: ' . $filter;
-				if ($this->ldapConfig->logLevel) {
+				if ($this->ldapConfig->logLevel == 3) {
 					\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
 				}
 
@@ -719,13 +719,13 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 			if ($bind) {
 				$user = $ldapUser;
 				if ($this->ldapConfig->logLevel == 2) {
-					$msg = 'User ' . $username . ' loaded from LDAP directory (Server: ' . $serverUid . ')';
-					\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
+					$msg = 'User ' . $username . ' retrieved from LDAP directory (Server: ' . $serverUid . ')';
+					\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', -1);
 				}
 			} else {
 				$msg = 'LDAP server denies authentication (Server: ' . $serverUid . ', User: ' . $username . ')';
-				if ($this->ldapConfig->logLevel > 0) {
-					\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 2);
+				if ($this->ldapConfig->logLevel >= 1) {
+					\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 1);
 				}
 				\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::WARNING, $msg, $serverUid);
 			}
@@ -749,14 +749,14 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 
 		if (count($ldapUsers) < 1) {
 			$msg = 'No user found (Server: ' . $serverUid . ', User: ' . $loginname . ')';
-			if ($this->ldapConfig->logLevel > 0) {
-				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
+			if ($this->ldapConfig->logLevel >= 1) {
+				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 1);
 			}
 			\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::INFO, $msg, $serverUid);
 		} elseif (count($ldapUsers) > 1) {
 			$msg = 'Found ' . count($ldapUsers) . ' instead of one (Server: ' . $serverUid . ', User: ' . $loginname . ')';
-			if ($this->ldapConfig->logLevel > 0) {
-				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
+			if ($this->ldapConfig->logLevel >= 1) {
+				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 1);
 			}
 			\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::INFO, $msg, $serverUid);
 		} else {

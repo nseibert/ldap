@@ -207,7 +207,7 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 	public function loadUser() {
 		$pid = $this->userRules->getPid();
 		$msg = 'Search for user record with DN = ' . $this->dn . ' in page ' . $pid;
-		if ($this->ldapConfig->logLevel == 2) {
+		if ($this->ldapConfig->logLevel >= 2) {
 			\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
 		}
 		// search for DN
@@ -216,7 +216,7 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		// search for Username if no record with DN found
 		if (is_object($user)) {
 			$msg = 'User record already existing: ' . $user->getUid();
-			if ($this->ldapConfig->logLevel == 2) {
+			if ($this->ldapConfig->logLevel == 3) {
 				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
 			}
 		} else {
@@ -227,7 +227,7 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 			$user = $this->userRepository->findByUsername($username, $pid);
 			if (is_object($user)) {
 				$msg = 'User record already existing: ' . $user->getUid();
-				if ($this->ldapConfig->logLevel == 2) {
+				if ($this->ldapConfig->logLevel == 3) {
 					\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
 				}
 			}
@@ -263,8 +263,8 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 				$ret = $this->user->_setProperty($field, $value);
 				if (!$ret) {
 					$msg = 'Property "' . $field . '" is unknown to Extbase.';
-					if ($this->ldapConfig->logLevel == 2) {
-						\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
+					if ($this->ldapConfig->logLevel >= 1) {
+						\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 2);
 					}
 				}
 			}
@@ -278,8 +278,8 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 
 			if (($numberOfGroups == 0) && ($this->userRules->getOnlyUsersWithGroup())) {
 				$msg = 'User "' . $username . '" (DN: ' . $this->dn . ') not imported due to missing usergroup';
-				if ($this->ldapConfig->logLevel == 2) {
-					\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
+				if ($this->ldapConfig->logLevel >= 1) {
+					\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 1);
 				}
 			} elseif ($this->userRules->getGroupRules()->getRestrictToGroups()) {
 				$groupFound = FALSE;
@@ -291,8 +291,8 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 					$createUser = TRUE;
 				} else {
 					$msg = 'User "' . $username . '" (DN: ' . $this->dn . ') not imported due to missing usergroup';
-					if ($this->ldapConfig->logLevel == 2) {
-						\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
+					if ($this->ldapConfig->logLevel >= 1) {
+						\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 1);
 					}
 				}
 			} else {
@@ -301,8 +301,8 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		} else {
 			// error condition. There should always be a username
 			$msg = 'No username (Server: ' . $this->ldapServer->getConfiguration()->getUid() . ', DN: ' . $this->dn . ')';
-			if ($this->ldapConfig->logLevel == 2) {
-				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 2);
+			if ($this->ldapConfig->logLevel >= 1) {
+				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 1);
 			}
 			\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::WARNING, $msg, $this->ldapServer->getConfiguration()->getUid());
 		}
@@ -310,8 +310,8 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		if ($createUser) {
 			$this->userRepository->add($this->user);
 			$msg = 'Create user record "' . $username . '" (DN: ' . $this->dn . ')';
-			if ($this->ldapConfig->logLevel == 2) {
-				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
+			if ($this->ldapConfig->logLevel >= 1) {
+				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', -1);
 			}
 		}
 	}
@@ -342,8 +342,8 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 				$ret = $this->user->_setProperty($field, $value);
 				if (!$ret) {
 					$msg = 'Property "' . $field . '" is unknown to Extbase.';
-					if ($this->ldapConfig->logLevel == 2) {
-						\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
+					if ($this->ldapConfig->logLevel >= 1) {
+						\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 2);
 					}
 				}
 			}
@@ -358,8 +358,8 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 
 			if (($numberOfGroups == 0) && ($this->userRules->getOnlyUsersWithGroup())) {
 				$msg = 'User "' . $username . '" (DN: ' . $this->dn . ') not updated due to missing usergroup';
-				if ($this->ldapConfig->logLevel == 2) {
-					\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
+				if ($this->ldapConfig->logLevel >= 1) {
+					\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 1);
 				}
 			} elseif ($this->userRules->getGroupRules()->getRestrictToGroups()) {
 				$groupFound = FALSE;
@@ -371,8 +371,8 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 					$updateUser = TRUE;
 				} else {
 					$msg = 'User "' . $username . '" (DN: ' . $this->dn . ') not updated due to missing usergroup';
-					if ($this->ldapConfig->logLevel == 2) {
-						\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
+					if ($this->ldapConfig->logLevel >= 1) {
+						\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 1);
 					}
 				}
 			} else {
@@ -381,7 +381,7 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		} else {
 			// error condition. There should always be a username
 			$msg = 'No username (Server: ' . $this->ldapServer->getConfiguration()->getUid() . ', DN: ' . $this->dn . ')';
-			if ($this->ldapConfig->logLevel == 2) {
+			if ($this->ldapConfig->logLevel >= 1) {
 				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 2);
 			}
 			\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::WARNING, $msg, $this->ldapServer->getConfiguration()->getUid());
@@ -390,8 +390,8 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		if ($updateUser) {
 			$this->userRepository->update($this->user);
 			$msg = 'Update user record "' . $username . '" (DN: ' . $this->dn . ')';
-			if ($this->ldapConfig->logLevel == 2) {
-				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
+			if ($this->ldapConfig->logLevel >= 2) {
+				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', -1);
 			}
 		}
 	}
@@ -415,6 +415,15 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 			$result = $this->cObj->stdWrap($ldapData, $stdWrap);
 		}
 
+		$msg = 'Mapping for attribute "' . $key . '"';
+		$logArray = array(
+			'LDAP attribute value' => $ldapData,
+			'Mapping result' => $result
+		);
+		if ($this->ldapConfig->logLevel == 3) {
+			\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0, $logArray);
+		}
+
 		return $result;
 	}
 	
@@ -426,6 +435,7 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 	 */
 	protected function mapAttributes($mappingType = 'user', $useAttributes = array()) {
 		$insertArray = array();
+
 		if ($mappingType == 'group') {
 			$mapping = $this->userRules->getGroupRules()->getMapping();
 			$attributes = $useAttributes;
@@ -434,6 +444,16 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 			$attributes = $this->attributes;
 		}
 		if (is_array($mapping)) {
+			$msg = 'Mapping attributes';
+			$logArray = array(
+				'Type' => $mappingType,
+				'Rules' => $mapping,
+				'Data' => $attributes
+			);
+			if ($this->ldapConfig->logLevel == 3) {
+				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0, $logArray);
+			}
+
 			foreach ($mapping as $key => $value) {
 				if ($key != 'username.') {
 					if (substr($key, strlen($key) - 1, 1) == '.') {
@@ -443,6 +463,16 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 					$insertArray[$key] = $result;
 				}
 			}
+		} else {
+			$msg = 'No mapping rules found for type "' . $mappingType . '"';
+			if ($this->ldapConfig->logLevel >= 2) {
+				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 1);
+			}
+		}
+
+		$msg = 'Mapped values to insert into or update to DB';
+		if ($this->ldapConfig->logLevel == 3) {
+			\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0, $insertArray);
 		}
 		
 		return $insertArray;
@@ -477,7 +507,7 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 					$this->user->addUsergroup($group);
 				}
 			} else {
-				if ($this->ldapConfig->logLevel == 2) {
+				if ($this->ldapConfig->logLevel == 3) {
 					\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('User has no LDAP usergroups: ' . $this->user->getUsername(), 'ldap', 0);
 				}
 			}
@@ -517,6 +547,11 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 				'newGroups' => array(),
 				'existingGroups' => array()
 			);
+
+			$msg = 'No mapping for usergroups found';
+			if ($this->ldapConfig->logLevel >= 2) {
+				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 1);
+			}
 		}
 		
 		$assignedGroups = $this->addNewGroups($ret['newGroups'], $ret['existingGroups'], $lastRun);
@@ -529,6 +564,11 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 	 * @return array
 	 */
 	private function reverseAssignGroups() {
+		$msg = 'Use reverse mapping for usergroups';
+		if ($this->ldapConfig->logLevel == 3) {
+			\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
+		}
+
 		$ret = array();
 		$mapping = $this->userRules->getGroupRules()->getMapping();
 		$searchAttribute = $this->userRules->getGroupRules()->getSearchAttribute();
@@ -538,18 +578,51 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		}
 
 		$username = mb_strtolower($this->getAttribute($searchAttribute));
+
 		$ldapGroups = $this->ldapServer->getGroups($username);
-		
-		foreach ($ldapGroups as $group) {
-			// $this->cObj->alternativeData = $group;
-			// $usergroup = $this->cObj->stdWrap('', $mapping['title.']);
-			$usergroup = $this->mapAttribute($mapping, 'title', $group);
-			$tmp = $this->resolveGroup('title', $usergroup, $usergroup, $group['dn']);
-			if ($tmp['newGroup']) {
-				$ret['newGroups'][] = $tmp['newGroup'];
+
+		if (is_array($ldapGroups)) {
+			unset($ldapGroups['count']);
+			if (count($ldapGroups) == 0) {
+				$msg = 'No usergroups found for reverse mapping';
+				if ($this->ldapConfig->logLevel >= 2) {
+					\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 1);
+				}
+			} else {
+				$msg = 'Usergroups found for reverse mapping';
+				if ($this->ldapConfig->logLevel >= 2) {
+					\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', -1);
+				}
+				$msg = 'Usergroups for reverse mapping';
+				if ($this->ldapConfig->logLevel == 3) {
+					\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0, $ldapGroups);
+				}
+				foreach ($ldapGroups as $group) {
+
+					// $this->cObj->alternativeData = $group;
+					// $usergroup = $this->cObj->stdWrap('', $mapping['title.']);
+					$usergroup = $this->mapAttribute($mapping, 'title', $group);
+
+					if ($usergroup) {
+						$tmp = $this->resolveGroup('title', $usergroup, $usergroup, $group['dn']);
+						if ($tmp['newGroup']) {
+							$ret['newGroups'][] = $tmp['newGroup'];
+						}
+						if ($tmp['existingGroup']) {
+							$ret['existingGroups'][] = $tmp['existingGroup'];
+						}
+					} else {
+						$msg = 'Usergroup mapping did not deliver a title';
+						if ($this->ldapConfig->logLevel >= 1) {
+							\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 2);
+						}
+					}
+				}
 			}
-			if ($tmp['existingGroup']) {
-				$ret['existingGroups'][] = $tmp['existingGroup'];
+		} else {
+			$msg = 'No usergroups found for reverse mapping';
+			if ($this->ldapConfig->logLevel >= 2) {
+				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 1);
 			}
 		}
 
@@ -561,6 +634,10 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 	 * @return array
 	 */
 	private function assignGroupsText() {
+		$msg = 'Use text based mapping for usergroups';
+		if ($this->ldapConfig->logLevel == 3) {
+			\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
+		}
 		$ret = array();
 		$mapping = $this->userRules->getGroupRules()->getMapping();
 		
@@ -620,6 +697,10 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
      * @return array
      */
 	private function assignGroupsParent() {
+		$msg = 'Use parent node for usergroup';
+		if ($this->ldapConfig->logLevel == 3) {
+			\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
+		}
 		$ret = array();
 		$mapping = $this->userRules->getGroupRules()->getMapping();
 		
@@ -645,11 +726,15 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		return $ret;
 	}
 	
-	/** Determines usergroups based on the user record's DN
+	/** Determines usergroups based on DNs in an attribute of the user's record
 	 * 
 	 * @return array
 	 */
 	private function assignGroupsDN() {
+		$msg = 'Finde usergroup DNs in user attribute for mapping';
+		if ($this->ldapConfig->logLevel == 3) {
+			\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
+		}
 		$ret = array();
 		$mapping = $this->userRules->getGroupRules()->getMapping();
 		
@@ -751,7 +836,7 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 					if (preg_match(trim($value), $groupname)) $ret = TRUE;
 				}
 			}
-			if ((!$ret) && ($this->ldapConfig->logLevel == 2)) {
+			if ((!$ret) && ($this->ldapConfig->logLevel == 3)) {
 				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('Filtered out: ' . $groupname, 'ldap', 0);
 			}
 		}
@@ -833,8 +918,8 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 						$ret = $newGroup->_setProperty($field, $value);
 						if (!$ret) {
 							$msg = 'Property "' . $field . '" is unknown to Extbase.';
-							if ($this->ldapConfig->logLevel == 2) {
-								\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
+							if ($this->ldapConfig->logLevel >= 2) {
+								\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 2);
 							}
 						}
 					}

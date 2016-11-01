@@ -159,16 +159,16 @@ class LdapImporter {
             }
         } else {
             // recursive search
-            if ($this->ldapConfig->logLevel) {
+            if ($this->ldapConfig->logLevel >= 1) {
                 $msg = 'LDAP query limit exceeded';
-                \TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
+                \TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 1);
             }
             $searchCharacters = \NormanSeibert\Ldap\Utility\Helpers::getSearchCharacterRange();
             foreach ($searchCharacters as $thisCharacter) {
                 $newSearch = substr_replace($search, $thisCharacter, 1, 0);
                 $msg = 'Query server: ' . $this->ldapServer->getConfiguration()->getUid() . ' with getUsers("' . $newSearch . '")';
-                if ($this->ldapConfig->logLevel > 1) {
-                    \TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
+                if ($this->ldapConfig->logLevel == 3) {
+                    \TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', -1);
                 }
                 $this->getUsers($runIdentifier, $command, $newSearch);
             }
