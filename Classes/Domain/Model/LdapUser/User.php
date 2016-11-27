@@ -290,7 +290,7 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 				if ($groupFound) {
 					$createUser = TRUE;
 				} else {
-					$msg = 'User "' . $username . '" (DN: ' . $this->dn . ') not imported due to missing usergroup';
+					$msg = 'User "' . $username . '" (DN: ' . $this->dn . ') because no usergroup matches "' . $this->userRules->getGroupRules()->getRestrictToGroups() . '"';
 					if ($this->ldapConfig->logLevel >= 1) {
 						\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 1);
 					}
@@ -370,7 +370,7 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 				if ($groupFound) {
 					$updateUser = TRUE;
 				} else {
-					$msg = 'User "' . $username . '" (DN: ' . $this->dn . ') not updated due to missing usergroup';
+					$msg = 'User "' . $username . '" (DN: ' . $this->dn . ') because no usergroup matches "' . $this->userRules->getGroupRules()->getRestrictToGroups() . '"';
 					if ($this->ldapConfig->logLevel >= 1) {
 						\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 1);
 					}
@@ -398,30 +398,42 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 
 	protected function mapAttribute($mapping, $key, $data) {
 		// stdWrap does no longer handle arrays, therefore we have to check and map manually
+		// values derived from LDAP attribues
 		$tmp = explode(':', $mapping[$key . '.']['data']);
-		$attrname = $tmp[1];
-		$ldapData = $data[$attrname];
+		if (is_array($tmp)) {
+			$attrName = $tmp[1];
+			$ldapData = $data[$attrName];
 
-		$stdWrap = $mapping[$key . '.']['stdWrap.'];
-		if (is_array($value['stdWrap.'])) {
-			unset($value['stdWrap.']);
+			$stdWrap = $mapping[$key . '.']['stdWrap.'];
+			if (is_array($value['stdWrap.'])) {
+				unset($value['stdWrap.']);
+			}
+
+			if (is_array($ldapData)) {
+				unset($ldapData['count']);
+				$ldapDataList = implode(',', $ldapData);
+				$result = $this->cObj->stdWrap($ldapDataList, $stdWrap);
+			} else {
+				$result = $this->cObj->stdWrap($ldapData, $stdWrap);
+			}
+
+			$msg = 'Mapping for attribute "' . $key . '"';
+			$logArray = array(
+				'LDAP attribute value' => $ldapData,
+				'Mapping result' => $result
+			);
+			if ($this->ldapConfig->logLevel == 3) {
+				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0, $logArray);
+			}
 		}
-
-		if (is_array($ldapData)) {
-			unset($ldapData['count']);
-			$ldapDataList = implode(',', $ldapData);
-			$result = $this->cObj->stdWrap($ldapDataList, $stdWrap);
-		} else {
-			$result = $this->cObj->stdWrap($ldapData, $stdWrap);
-		}
-
-		$msg = 'Mapping for attribute "' . $key . '"';
-		$logArray = array(
-			'LDAP attribute value' => $ldapData,
-			'Mapping result' => $result
-		);
-		if ($this->ldapConfig->logLevel == 3) {
-			\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0, $logArray);
+		// static values, overwrite those from LDAP if set
+		$tmp = $mapping[$key . '.']['value'];
+		if ($tmp) {
+			$result = $tmp;
+			$msg = 'Setting attribute "' . $key . '" to: ' . $result;
+			if ($this->ldapConfig->logLevel == 3) {
+				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
+			}
 		}
 
 		return $result;
