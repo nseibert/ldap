@@ -610,10 +610,14 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 					\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0, $ldapGroups);
 				}
 				foreach ($ldapGroups as $group) {
-
 					// $this->cObj->alternativeData = $group;
 					// $usergroup = $this->cObj->stdWrap('', $mapping['title.']);
 					$usergroup = $this->mapAttribute($mapping, 'title', $group);
+
+					$msg = 'Try to add usergroup "' . $usergroup . '" to user';
+					if ($this->ldapConfig->logLevel == 3) {
+						\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
+					}
 
 					if ($usergroup) {
 						$tmp = $this->resolveGroup('title', $usergroup, $usergroup, $group['dn']);
@@ -636,6 +640,11 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 			if ($this->ldapConfig->logLevel >= 2) {
 				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 1);
 			}
+		}
+
+		$msg = 'Resulting usergroups to add or update';
+		if ($this->ldapConfig->logLevel == 3) {
+			\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0, $ret);
 		}
 
 		return $ret;
@@ -743,7 +752,7 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 	 * @return array
 	 */
 	private function assignGroupsDN() {
-		$msg = 'Finde usergroup DNs in user attribute for mapping';
+		$msg = 'Find usergroup DNs in user attribute for mapping';
 		if ($this->ldapConfig->logLevel == 3) {
 			\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0);
 		}
@@ -803,6 +812,7 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		$newGroup = FALSE;
 
 		$allGroups = $this->ldapServer->getAllGroups();
+
 		foreach ($allGroups as $group) {
             /* @var $group \NormanSeibert\Ldap\Domain\Model\Typo3User\UserGroupInterface */
 			$attrValue = $group->_getProperty($attribute);
@@ -810,6 +820,7 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 				$groupFound = $group;
 			}
 		}
+
 		if (is_object($groupFound)) {
 			if ($this->checkGroupMembership($groupFound->getTitle())) {
 				$resolvedGroup = $groupFound;
@@ -907,6 +918,9 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		$pid = $this->userRules->getGroupRules()->getPid();
 		if (empty($pid)) {
 			$pid = $this->userRules->getPid();
+		}
+		if (empty($pid)) {
+			$pid = 0;
 		}
 
 		if ((is_array($newGroups)) && ($addnewgroups)) {

@@ -857,6 +857,7 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		} else {
 			$groups = $this->allFeGroups;
 		}
+
 		return $groups;
 	}
 }
