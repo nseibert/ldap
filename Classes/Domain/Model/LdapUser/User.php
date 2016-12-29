@@ -517,6 +517,9 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 			if (count($usergroups) > 0) {
 				foreach ($usergroups as $group) {
 					$this->user->addUsergroup($group);
+					if ($this->ldapConfig->logLevel == 3) {
+						\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('Add usergroup to user record "' . $this->user->getUsername() . '": ' . $group->getTitle(), 'ldap', 0);
+					}
 				}
 			} else {
 				if ($this->ldapConfig->logLevel == 3) {
