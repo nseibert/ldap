@@ -396,7 +396,14 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		}
 	}
 
-	protected function mapAttribute($mapping, $key, $data) {
+
+	/** Retrieves a single attribute from LDAP record
+	 * 
+	 * @param string $mappingType
+	 * @param array $useAttributes
+	 * @return array
+	 */
+	protected function getAttributeMapping($mapping, $key, $data) {
 		// stdWrap does no longer handle arrays, therefore we have to check and map manually
 		// values derived from LDAP attribues
 		$tmp = explode(':', $mapping[$key . '.']['data']);
@@ -404,27 +411,50 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 			$attrName = $tmp[1];
 			$ldapData = $data[$attrName];
 
-			$stdWrap = $mapping[$key . '.']['stdWrap.'];
-			if (is_array($value['stdWrap.'])) {
-				unset($value['stdWrap.']);
-			}
-
-			if (is_array($ldapData)) {
-				unset($ldapData['count']);
-				$ldapDataList = implode(',', $ldapData);
-				$result = $this->cObj->stdWrap($ldapDataList, $stdWrap);
-			} else {
-				$result = $this->cObj->stdWrap($ldapData, $stdWrap);
-			}
-
-			$msg = 'Mapping for attribute "' . $key . '"';
+			$msg = 'Mapping attributes';
 			$logArray = array(
-				'LDAP attribute value' => $ldapData,
-				'Mapping result' => $result
+				'Key' => $key,
+				'Rules' => $mapping,
+				'Data' => $data
 			);
 			if ($this->ldapConfig->logLevel == 3) {
 				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0, $logArray);
 			}
+		}
+
+		return $ldapData;
+	}
+
+	
+	/** Maps a single attribute from LDAP record to TYPO3 DB fields
+	 * 
+	 * @param string $mappingType
+	 * @param array $useAttributes
+	 * @return string
+	 */
+	protected function mapAttribute($mapping, $key, $data) {
+		$ldapData = $this->getAttributeMapping($mapping, $key, $data);
+
+		$stdWrap = $mapping[$key . '.']['stdWrap.'];
+		if (is_array($value['stdWrap.'])) {
+			unset($value['stdWrap.']);
+		}
+
+		if (is_array($ldapData)) {
+			unset($ldapData['count']);
+			$ldapDataList = implode(',', $ldapData);
+			$result = $this->cObj->stdWrap($ldapDataList, $stdWrap);
+		} else {
+			$result = $this->cObj->stdWrap($ldapData, $stdWrap);
+		}
+
+		$msg = 'Mapping for attribute "' . $key . '"';
+		$logArray = array(
+			'LDAP attribute value' => $ldapData,
+			'Mapping result' => $result
+		);
+		if ($this->ldapConfig->logLevel == 3) {
+			\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0, $logArray);
 		}
 		// static values, overwrite those from LDAP if set
 		$tmp = $mapping[$key . '.']['value'];
@@ -489,6 +519,8 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		
 		return $insertArray;
 	}
+
+
 	
 	/** 
 	 * enables a TYPO3 user
@@ -615,7 +647,7 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 				foreach ($ldapGroups as $group) {
 					// $this->cObj->alternativeData = $group;
 					// $usergroup = $this->cObj->stdWrap('', $mapping['title.']);
-					$usergroup = $this->mapAttribute($mapping, 'title', $group);
+					$usergroup = $this->getAttributeMapping($mapping, 'title', $group);
 
 					$msg = 'Try to add usergroup "' . $usergroup . '" to user';
 					if ($this->ldapConfig->logLevel == 3) {
@@ -667,7 +699,7 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		
 		// $this->cObj->alternativeData = $this->attributes;
 		// $result = $this->cObj->stdWrap('', $mapping['title.']);
-		$result = $this->mapAttribute($mapping, 'title', $attributes);
+		$result = $this->getAttributeMapping($mapping, 'title', $attributes);
 		
 		if (is_array($result)) {
 			unset($result['count']);
@@ -735,7 +767,7 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		
 		// $this->cObj->alternativeData = $ldapGroup;
 		// $usergroup = $this->cObj->stdWrap('', $mapping['title.']);
-		$usergroup = $this->mapAttribute($mapping, 'title', $ldapGroup);
+		$usergroup = $this->getAttributeMapping($mapping, 'title', $ldapGroup);
 		
 		if ($usergroup) {
 			$tmp = $this->resolveGroup('title', $usergroup, $usergroup, $ldapGroup['dn']);
@@ -764,7 +796,7 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		
 		// $this->cObj->alternativeData = $this->attributes;
 		// $groupDNs = $this->cObj->stdWrap('', $mapping['field.']);
-		$groupDNs = $this->mapAttribute($mapping, 'title', $attributes);
+		$groupDNs = $this->getAttributeMapping($mapping, 'field', $this->attributes);
 		
 		if (is_array($groupDNs)) {
 			unset($groupDNs['count']);
@@ -773,7 +805,7 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 				if (is_array($ldapGroup)) {
 					// $this->cObj->alternativeData = $ldapGroup;
 					// $usergroup = $this->cObj->stdWrap('', $mapping['title.']);
-					$usergroup = $this->mapAttribute($mapping, 'title', $ldapGroup);
+					$usergroup = $this->getAttributeMapping($mapping, 'title', $ldapGroup);
 					$tmp = $this->resolveGroup('dn', $groupDN, $usergroup, $groupDN);
 					if ($tmp['newGroup']) {
 						$ret['newGroups'][] = $tmp['newGroup'];
@@ -787,7 +819,7 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 			$ldapGroup = $this->ldapServer->getGroup($groupDNs);
 			// $this->cObj->alternativeData = $ldapGroup;
 			// $usergroup = $this->cObj->stdWrap('', $mapping['title.']);
-			$usergroup = $this->mapAttribute($mapping, 'title', $ldapGroup);
+			$usergroup = $this->getAttributeMapping($mapping, 'title', $ldapGroup);
 			$tmp = $this->resolveGroup('dn', $groupDNs, $usergroup, $groupDNs);
 			if ($tmp['newGroup']) {
 				$ret['newGroups'][] = $tmp['newGroup'];
@@ -941,7 +973,7 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 				if ($group['groupObject']) {
                     /* @var $groupObject \NormanSeibert\Ldap\Domain\Model\LdapUser\User */
                     $groupObject = $group['groupObject'];
-                    $insertArray = $this->mapAttributes('group', $groupObject->getAttributes());
+                    $insertArray = $this->getAttributes('group', $groupObject->getAttributes());
 					unset($insertArray['field']);
 					foreach ($insertArray as $field => $value) {
 						$ret = $newGroup->_setProperty($field, $value);

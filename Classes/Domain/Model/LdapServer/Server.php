@@ -649,8 +649,13 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
             $i = -1;
         } elseif (ldap_errno($ds)) {
 			$msg = 'LDAP error: ' . ldap_errno($ds) . ', ' . ldap_error($ds);
+			$logArray = array(
+				'DS' => $ds,
+				'BaseDN' => $baseDN,
+				'Filter' => $filter
+			);
 			if ($this->ldapConfig->logLevel) {
-				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 3);
+				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 3, $logArray);
 			}
 		} else {
 			// Get the first entry identifier
