@@ -200,8 +200,8 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 	 * configures the import and display the result list
 	 */
 	public function importUsersAction() {
-        $beUsers = NULL;
-        $feUsers = NULL;
+        $beUsers = array();
+        $feUsers = array();
 		$settings = $this->initializeFormSettings();
 
 		$ldapServers = $this->ldapConfig->getLdapServers();
@@ -240,7 +240,7 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 		$runs = array();
 		foreach ($ldapServers as $server) {
             /* @var $server \NormanSeibert\Ldap\Domain\Model\LdapServer\Server */
-			if (\TYPO3\CMS\Core\Utility\GeneralUtility::inArray($settings->getUseServers(), $server->getConfiguration()->getUid())) {
+			if (\TYPO3\CMS\Core\Utility\ArrayUtility::inArray($settings->getUseServers(), $server->getConfiguration()->getUid())) {
 				if ($settings->getAuthenticateFe()) {
 					$importer->init($server, 'fe');
 					$runs[] = $importer->doImport();
@@ -263,8 +263,8 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 	 * configures the update and display the result list
 	 */
 	public function updateUsersAction() {
-        $beUsers = NULL;
-        $feUsers = NULL;
+        $beUsers = array();
+        $feUsers = array();
 		$settings = $this->initializeFormSettings();
 
 		$ldapServers = $this->ldapConfig->getLdapServers();
@@ -303,7 +303,7 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 		$runs = array();
 		foreach ($ldapServers as $server) {
             /* @var $server \NormanSeibert\Ldap\Domain\Model\LdapServer\Server */
-			if (\TYPO3\CMS\Core\Utility\GeneralUtility::inArray($settings->getUseServers(), $server->getConfiguration()->getUid())) {
+			if (\TYPO3\CMS\Core\Utility\ArrayUtility::inArray($settings->getUseServers(), $server->getConfiguration()->getUid())) {
 				if ($settings->getAuthenticateFe()) {
 					$importer->init($server, 'fe');
 					$runs[] = $importer->doUpdate();
@@ -326,8 +326,8 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 	 * configures the import/update and display the result list
 	 */
 	public function importAndUpdateUsersAction() {
-        $beUsers = NULL;
-        $feUsers = NULL;
+        $beUsers = array();
+        $feUsers = array();
 		$settings = $this->initializeFormSettings();
 
 		$ldapServers = $this->ldapConfig->getLdapServers();
@@ -365,7 +365,7 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 		$importer = $this->objectManager->get('NormanSeibert\\Ldap\\Service\\LdapImporter');
 		$runs = array();
 		foreach ($ldapServers as $server) {
-			if (\TYPO3\CMS\Core\Utility\GeneralUtility::inArray($settings->getUseServers(), $server->getConfiguration()->getUid())) {
+			if (\TYPO3\CMS\Core\Utility\ArrayUtility::inArray($settings->getUseServers(), $server->getConfiguration()->getUid())) {
 				if ($settings->getAuthenticateFe()) {
 					$importer->init($server, 'fe');
 					$runs[] = $importer->doImportOrUpdate();
