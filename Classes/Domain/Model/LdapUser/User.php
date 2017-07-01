@@ -647,7 +647,7 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 				foreach ($ldapGroups as $group) {
 					// $this->cObj->alternativeData = $group;
 					// $usergroup = $this->cObj->stdWrap('', $mapping['title.']);
-					$usergroup = $this->getAttributeMapping($mapping, 'title', $group);
+					$usergroup = $this->mapAttribute($mapping, 'title', $group);
 
 					$msg = 'Try to add usergroup "' . $usergroup . '" to user';
 					if ($this->ldapConfig->logLevel == 3) {
@@ -767,7 +767,7 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		
 		// $this->cObj->alternativeData = $ldapGroup;
 		// $usergroup = $this->cObj->stdWrap('', $mapping['title.']);
-		$usergroup = $this->getAttributeMapping($mapping, 'title', $ldapGroup);
+		$usergroup = $this->mapAttribute($mapping, 'title', $ldapGroup);
 		
 		if ($usergroup) {
 			$tmp = $this->resolveGroup('title', $usergroup, $usergroup, $ldapGroup['dn']);
