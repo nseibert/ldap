@@ -1,15 +1,15 @@
 {
-  "name": "wiko/ldap",
+  "name": "nseibert/ldap",
   "type": "typo3-cms-extension",
-  "description": "Wiko LDAP",
+  "description": "TYPO3 LDAP extension",
   "keywords": [
     "TYPO3",
     "wiko",
     "ldap"
   ],
-  "homepage": "https://gitlab.wiko-berlin.de/wiko/ldap",
+  "homepage": "https://github.com/nseibert/ldap",
   "support": {
-    "issues": "https://gitlab.wiko-berlin.de/wiko/ldap/issues"
+    "issues": "https://github.com/nseibert/ldap/issues"
   },
   "authors": [
     {
