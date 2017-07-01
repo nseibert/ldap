@@ -33,12 +33,7 @@
 				<td>
 					<f:for each="{serverRecord.feUsers}" as="user">
 						<p>
-							<b>{user.dn}</b>
-							<ul>
-								<f:for each="{user.attributes}" as="value" key="attribute">
-									<li>{attribute}: {value}</li>
-								</f:for>
-							</ul>
+							{user.dn}
 						</p>
 					</f:for>
 				</td>
@@ -47,12 +42,7 @@
 				<td>
 					<f:for each="{serverRecord.beUsers}" as="user">
 						<p>
-							<b>{user.dn}</b>
-							<ul>
-								<f:for each="{user.attributes}" as="value" key="attribute">
-									<li>{attribute}: {value}</li>
-								</f:for>
-							</ul>
+							{user.dn}
 						</p>
 					</f:for>
 				</td>
