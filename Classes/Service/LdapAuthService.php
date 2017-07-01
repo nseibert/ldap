@@ -136,9 +136,9 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 		$this->authInfo = $authenticationInformation;
 		
 		// Initialize TSFE and Extbase
-		if (version_compare(TYPO3_branch, '6.0', '>')) {
-			\TYPO3\CMS\Core\Core\Bootstrap::getInstance()->loadCachedTca();
-		}
+//		if (version_compare(TYPO3_branch, '6.0', '>')) {
+//			\TYPO3\CMS\Core\Core\Bootstrap::getInstance()->loadCachedTca();
+//		}
 		$this->initializeRequiredTsfeParts();
 		$this->initializeExtbaseFramework();
 

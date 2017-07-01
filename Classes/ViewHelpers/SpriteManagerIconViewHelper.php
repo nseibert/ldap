@@ -25,6 +25,8 @@ namespace NormanSeibert\Ldap\ViewHelpers;
  *
  *  This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
+use TYPO3\CMS\Core\Imaging\IconFactory;
+
 /**
  * Displays sprite icon identified by iconName key
  *
@@ -32,6 +34,7 @@ namespace NormanSeibert\Ldap\ViewHelpers;
  */
 class SpriteManagerIconViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\Be\AbstractBackendViewHelper {
 
+    protected $escapeOutput = false;
 	/**
 	 * Prints sprite icon html for $iconName key
 	 *
@@ -40,7 +43,8 @@ class SpriteManagerIconViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\Be\Abstra
 	 * @return string
 	 */
 	public function render($iconName, $options = array()) {
-		return \TYPO3\CMS\Backend\Utility\IconUtility::getSpriteIcon($iconName, $options);
+        $iconFactory = $this->objectManager->get(IconFactory::class);
+        return $iconFactory->getIcon($iconName, $options);
 	}
 
 }

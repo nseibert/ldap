@@ -25,12 +25,16 @@ namespace NormanSeibert\Ldap\ViewHelpers;
  *
  *  This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
+use TYPO3\CMS\Core\Imaging\IconFactory;
+
 /**
  * Views sprite icon for a record (object)
  *
  * @author Felix Kopp <felix-source@phorax.com>
  */
 class SpriteIconForRecordViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\Be\AbstractBackendViewHelper {
+
+    protected $escapeOutput = false;
 
 	/**
 	 * Displays spriteIcon for database table and object
@@ -61,7 +65,8 @@ class SpriteIconForRecordViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\Be\Abst
 		if (method_exists($object, 'getEndDateAndTime')) {
 			$row['endTime'] = $object->getEndDateAndTime();
 		}
-		return \TYPO3\CMS\Backend\Utility\IconUtility::getSpriteIconForRecord($table, $row);
+		$iconFactory = $this->objectManager->get(IconFactory::class);
+		return $iconFactory->getIconForRecord($table, $row);
 	}
 
 }
