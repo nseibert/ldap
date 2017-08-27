@@ -892,12 +892,15 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		} else {
 			$onlygrouparray = explode(",", $onlygroup);
 			if (is_array($onlygrouparray)) {
+				$logArray = array();
 				while ((list(, $value) = each($onlygrouparray)) && !($ret)) {
-					if (preg_match(trim($value), $groupname)) $ret = TRUE;
+					$regExResult = preg_match(trim($value), $groupname);
+					if ($regExResult) $ret = TRUE;
+					$logArray[$groupname] = $regExResult;
 				}
 			}
 			if ((!$ret) && ($this->ldapConfig->logLevel == 3)) {
-				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('Filtered out: ' . $groupname, 'ldap', 0);
+				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('Filtered out: ' . $groupname, 'ldap', 0, $logArray);
 			}
 		}
 
