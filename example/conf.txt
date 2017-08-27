@@ -53,9 +53,6 @@ ldapServers {
                 # If an LDAP attribute is used multiple times (multivalue) the resulting array will be imploded into a comma-separated list
                 name {
                     data = field:displayname
-                    # normal stdWrap functions can be used
-                    # if an LDAP attribute is multivalue, use stdWrap.wrap instead of .wrap (for all stdWrap-functions beside .data)
-                    wrap = * | *
                 }
                 # username is mandatory!
                 username.data = field:samaccountname
@@ -82,8 +79,6 @@ ldapServers {
                     # TEXT means that an attribute ("st" in this case) will be used
                     field = TEXT
                     title.data = field:st
-                    # Use stdWrap. because the LDAP attribute may contain multiple values
-                    title.stdWrap.noTrimWrap = || (TEXT)
                 }
                 
                 /*
@@ -91,7 +86,6 @@ ldapServers {
                     # PARENT means that the parent record will be used for "title.data"
                     field = PARENT
                     title.data = field:ou
-                    title.stdWrap.noTrimWrap = || (PARENT)
                 }
                 */
                 
@@ -103,7 +97,6 @@ ldapServers {
                     field = DN
                     field.data = field:memberof
                     title.data = field:name
-                    title.stdWrap.noTrimWrap = || (DN)
                 }
                 */
                 
