@@ -399,8 +399,9 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 
 	/** Retrieves a single attribute from LDAP record
 	 * 
-	 * @param string $mappingType
-	 * @param array $useAttributes
+	 * @param array $mapping
+	 * @param string $key
+	 * @param array $data
 	 * @return array
 	 */
 	protected function getAttributeMapping($mapping, $key, $data) {
@@ -428,8 +429,9 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 	
 	/** Maps a single attribute from LDAP record to TYPO3 DB fields
 	 * 
-	 * @param string $mappingType
-	 * @param array $useAttributes
+	 * @param array $mapping
+	 * @param string $key
+	 * @param array $data
 	 * @return string
 	 */
 	protected function mapAttribute($mapping, $key, $data) {
@@ -699,7 +701,7 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		
 		// $this->cObj->alternativeData = $this->attributes;
 		// $result = $this->cObj->stdWrap('', $mapping['title.']);
-		$result = $this->getAttributeMapping($mapping, 'title', $attributes);
+		$result = $this->getAttributeMapping($mapping, 'title', $this->attributes);
 		
 		if (is_array($result)) {
 			unset($result['count']);
