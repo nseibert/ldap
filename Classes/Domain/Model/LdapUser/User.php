@@ -310,7 +310,11 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		if ($createUser) {
 			$this->userRepository->add($this->user);
 			$msg = 'Create user record "' . $username . '" (DN: ' . $this->dn . ')';
-			if ($this->ldapConfig->logLevel >= 1) {
+			if ($this->ldapConfig->logLevel >= 3) {
+				$debugData = \TYPO3\CMS\Extbase\Utility\DebuggerUtility::var_dump($this->user, 'User Record', 8, true, false, true, null, ['ldapServer', 'ldapConfig']);
+				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', -1, $debugData);
+			}
+			elseif ($this->ldapConfig->logLevel == 2) {
 				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', -1);
 			}
 		}
@@ -390,7 +394,11 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 		if ($updateUser) {
 			$this->userRepository->update($this->user);
 			$msg = 'Update user record "' . $username . '" (DN: ' . $this->dn . ')';
-			if ($this->ldapConfig->logLevel >= 2) {
+			if ($this->ldapConfig->logLevel >= 3) {
+				$debugData = \TYPO3\CMS\Extbase\Utility\DebuggerUtility::var_dump($this->user, 'User Record', 8, true, false, true, null, ['ldapServer', 'ldapConfig']);
+				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', -1, $debugData);
+			}
+			elseif ($this->ldapConfig->logLevel == 2) {
 				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', -1);
 			}
 		}
@@ -991,6 +999,14 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 					}
 				}
 				$this->usergroupRepository->add($newGroup);
+				$msg = 'Insert user group "' . $group['title'] . ')';
+				if ($this->ldapConfig->logLevel >= 3) {
+					$debugData = \TYPO3\CMS\Extbase\Utility\DebuggerUtility::var_dump($newGroup, 'Group Record', 8, true, false, true, null, ['ldapServer', 'ldapConfig']);
+					\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', -1, $debugData);
+				}
+				elseif ($this->ldapConfig->logLevel == 2) {
+					\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', -1);
+				}
 				$assignedGroups[] = $newGroup;
 				$this->ldapServer->addGroup($newGroup, $this->groupObject);
 			}
