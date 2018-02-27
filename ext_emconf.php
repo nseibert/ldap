@@ -15,7 +15,7 @@ $EM_CONF[$_EXTKEY] = array(
 	'description' => 'LDAP Integration',
 	'category' => 'module',
 	'shy' => 0,
-	'version' => '3.2.11',
+	'version' => '3.2.12',
 	'dependencies' => 'extbase,fluid',
 	'modify_tables' => 'fe_users,fe_groups,be_users,be_groups',
 	'conflicts' => '',
@@ -35,7 +35,7 @@ $EM_CONF[$_EXTKEY] = array(
 	'constraints' => array(
 		'depends' => array(
 			'php' => '5.3.0-0.0.0',
-			'typo3' => '7.0.0-7.6.99',
+			'typo3' => '7.0.0-8.9.99',
 		),
 		'conflicts' => array(
 		),
