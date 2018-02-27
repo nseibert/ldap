@@ -58,7 +58,7 @@ class LdapCommandController extends \TYPO3\CMS\Extbase\Mvc\Controller\CommandCon
 		$serverUids = \TYPO3\CMS\Core\Utility\GeneralUtility::trimExplode(',', $servers, TRUE);
 		foreach ($ldapServers as $server) {
             /* @var $server \NormanSeibert\Ldap\Domain\Model\LdapServer\Server */
-			if (\TYPO3\CMS\Core\Utility\GeneralUtility::inArray($serverUids, $server->getConfiguration()->getUid())) {
+			if (in_array($server->getConfiguration()->getUid(), $serverUids)) {
 				$this->outputLine('Importing from server: ' . $server->getConfiguration()->getUid());
 				$importer = $this->objectManager->get('NormanSeibert\\Ldap\\Service\\LdapImporter');
 				$runs = array();
@@ -89,7 +89,7 @@ class LdapCommandController extends \TYPO3\CMS\Extbase\Mvc\Controller\CommandCon
 		$serverUids = \TYPO3\CMS\Core\Utility\GeneralUtility::trimExplode(',', $servers, TRUE);
 		foreach ($ldapServers as $server) {
             /* @var $server \NormanSeibert\Ldap\Domain\Model\LdapServer\Server */
-			if (\TYPO3\CMS\Core\Utility\GeneralUtility::inArray($serverUids, $server->getConfiguration()->getUid())) {
+			if (in_array($server->getConfiguration()->getUid(), $serverUids)) {
 				$this->outputLine('Updating from server: ' . $server->getConfiguration()->getUid());
 				$importer = $this->objectManager->get('NormanSeibert\\Ldap\\Service\\LdapImporter');
 				$runs = array();
@@ -120,7 +120,7 @@ class LdapCommandController extends \TYPO3\CMS\Extbase\Mvc\Controller\CommandCon
 		$serverUids = \TYPO3\CMS\Core\Utility\GeneralUtility::trimExplode(',', $servers, TRUE);
 		foreach ($ldapServers as $server) {
             /* @var $server \NormanSeibert\Ldap\Domain\Model\LdapServer\Server */
-			if (\TYPO3\CMS\Core\Utility\GeneralUtility::inArray($serverUids, $server->getConfiguration()->getUid())) {
+			if (in_array($server->getConfiguration()->getUid(), $serverUids)) {
 				$this->outputLine('Importing/updating from server: ' . $server->getConfiguration()->getUid());
 				$importer = $this->objectManager->get('NormanSeibert\\Ldap\\Service\\LdapImporter');
 				$runs = array();

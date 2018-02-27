@@ -240,7 +240,7 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 		$runs = array();
 		foreach ($ldapServers as $server) {
             /* @var $server \NormanSeibert\Ldap\Domain\Model\LdapServer\Server */
-			if (\TYPO3\CMS\Core\Utility\ArrayUtility::inArray($settings->getUseServers(), $server->getConfiguration()->getUid())) {
+			if (in_array($server->getConfiguration()->getUid(), $settings->getUseServers())) {
 				if ($settings->getAuthenticateFe()) {
 					$importer->init($server, 'fe');
 					$runs[] = $importer->doImport();
@@ -303,7 +303,7 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 		$runs = array();
 		foreach ($ldapServers as $server) {
             /* @var $server \NormanSeibert\Ldap\Domain\Model\LdapServer\Server */
-			if (\TYPO3\CMS\Core\Utility\ArrayUtility::inArray($settings->getUseServers(), $server->getConfiguration()->getUid())) {
+			if (in_array($server->getConfiguration()->getUid(), $settings->getUseServers())) {
 				if ($settings->getAuthenticateFe()) {
 					$importer->init($server, 'fe');
 					$runs[] = $importer->doUpdate();
@@ -365,7 +365,7 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 		$importer = $this->objectManager->get('NormanSeibert\\Ldap\\Service\\LdapImporter');
 		$runs = array();
 		foreach ($ldapServers as $server) {
-			if (\TYPO3\CMS\Core\Utility\ArrayUtility::inArray($settings->getUseServers(), $server->getConfiguration()->getUid())) {
+			if (in_array($server->getConfiguration()->getUid(), $settings->getUseServers())) {
 				if ($settings->getAuthenticateFe()) {
 					$importer->init($server, 'fe');
 					$runs[] = $importer->doImportOrUpdate();
@@ -475,7 +475,7 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 		foreach ($ldapServers as $server) {
             /* @var $server \NormanSeibert\Ldap\Domain\Model\LdapServer\Server */
 			if (!$user['found']) {
-				if (\TYPO3\CMS\Core\Utility\GeneralUtility::inArray($settings->getUseServers(), $server->getConfiguration()->getUid())) {
+				if (in_array($server->getConfiguration()->getUid(), $settings->getUseServers())) {
 					$server->setScope($settings->getLoginType());
 					$loginname = \NormanSeibert\Ldap\Utility\Helpers::sanitizeCredentials($settings->getLoginname());
 					$password = \NormanSeibert\Ldap\Utility\Helpers::sanitizeCredentials($settings->getPassword());
