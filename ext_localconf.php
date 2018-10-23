@@ -3,7 +3,7 @@ if (!defined("TYPO3_MODE")) {
 	exit("Access denied.");
 }
 
-$config = unserialize($TYPO3_CONF_VARS['EXT']['extConf']['ldap']);
+$config = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Configuration\\ExtensionConfiguration')->get('ldap');
 
 if ($config['enableFE'] && !$config['enableBE']) {
 	$subTypes = 'getUserFE,authUserFE';

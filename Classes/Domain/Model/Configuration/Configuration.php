@@ -38,7 +38,7 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 	/**
 	 *
 	 * @var \TYPO3\CMS\Extbase\Object\ObjectManager
-	 * @inject
+	 * @TYPO3\CMS\Extbase\Annotation\Inject
 	 */
 	protected $objectManager;
 	
@@ -71,8 +71,7 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 	 * @return array
 	 */
 	private function loadConfiguration() {
-		global $TYPO3_CONF_VARS;
-		$conf = unserialize($TYPO3_CONF_VARS['EXT']['extConf']['ldap']);
+		$conf = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Configuration\\ExtensionConfiguration')->get('ldap');
 		$this->logLevel = $conf['logLevel'];
 		
 		$ok = FALSE;

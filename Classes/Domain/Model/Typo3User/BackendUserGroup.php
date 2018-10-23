@@ -61,7 +61,7 @@ class BackendUserGroup extends \TYPO3\CMS\Extbase\Domain\Model\BackendUserGroup 
 	
 	/**
 	 * @var \NormanSeibert\Ldap\Domain\Model\Configuration\Configuration
-	 * @inject
+	 * @TYPO3\CMS\Extbase\Annotation\Inject
 	 */
 	protected $ldapConfig;
 
