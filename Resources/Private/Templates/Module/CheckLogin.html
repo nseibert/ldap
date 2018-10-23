@@ -61,11 +61,9 @@
 						<f:if condition="{user.submitted}">
 							<f:if condition="{user.found}">
 								<f:then>
-									<ldap:SpriteManagerIcon iconName="status-dialog-ok" />
 									{user.serverUid}: {user.dn}
 								</f:then>
 								<f:else>
-									<ldap:SpriteManagerIcon iconName="status-dialog-error" />
 									<f:translate key="form.noUserFound" />
 								</f:else>
 							</f:if>
@@ -86,11 +84,9 @@
 						<f:if condition="{user.submitted}">
 							<f:if condition="{user.authenticated}">
 								<f:then>
-									<ldap:SpriteManagerIcon iconName="status-dialog-ok" />
 									<f:translate key="form.authenticationSuccess" />
 								</f:then>
 								<f:else>
-									<ldap:SpriteManagerIcon iconName="status-dialog-error" />
 									<f:translate key="form.authenticationFail" />
 								</f:else>
 							</f:if>
