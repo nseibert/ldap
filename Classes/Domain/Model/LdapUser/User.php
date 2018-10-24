@@ -284,8 +284,11 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 			} elseif ($this->userRules->getGroupRules()->getRestrictToGroups()) {
 				$groupFound = FALSE;
 				reset($usergroups);
-				while ((list(, $group) = each($usergroups)) && !($groupFound)) {
+				foreach ($usergroups as $group) {
 					$groupFound = $this->checkGroupMembership($group->getTitle());
+					if ($groupFound) {
+						break;
+					}
 				}
 				if ($groupFound) {
 					$createUser = TRUE;
@@ -368,8 +371,11 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 			} elseif ($this->userRules->getGroupRules()->getRestrictToGroups()) {
 				$groupFound = FALSE;
 				reset($usergroups);
-				while ((list(, $group) = each($usergroups)) && !($groupFound)) {
+				foreach ($usergroups as $group) {
 					$groupFound = $this->checkGroupMembership($group->getTitle());
+					if ($groupFound) {
+						break;
+					}
 				}
 				if ($groupFound) {
 					$updateUser = TRUE;
@@ -901,10 +907,13 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity {
 			$onlygrouparray = explode(",", $onlygroup);
 			if (is_array($onlygrouparray)) {
 				$logArray = array();
-				while ((list(, $value) = each($onlygrouparray)) && !($ret)) {
+				foreach ($onlygrouparray as $value) {
 					$regExResult = preg_match(trim($value), $groupname);
 					if ($regExResult) $ret = TRUE;
 					$logArray[$groupname] = $regExResult;
+					if ($ret) {
+						break;
+					}
 				}
 			}
 			if ((!$ret) && ($this->ldapConfig->logLevel == 3)) {
