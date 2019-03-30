@@ -147,24 +147,6 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService implements \Ps
 		// SSO
 		if (($this->loginData['status'] != 'logout') && empty($this->password) && $this->conf['enableSSO']) {
 			$this->activateSSO();
-		} elseif (strlen($this->password) == 0) {
-			if ($this->pObj->security_level == 'rsa') {
-				if (\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::isLoaded('rsaauth')) {
-					$backend = \TYPO3\CMS\Rsaauth\Backend\BackendFactory::getBackend();
-					$storage = \TYPO3\CMS\Rsaauth\Storage\StorageFactory::getStorage();
-					$key = $storage->get();
-					
-					if ($key != NULL && substr($this->loginData['uident'], 0, 4) == 'rsa:') {
-						$this->password = $backend->decrypt($key, substr($this->loginData['uident'], 4));
-					}
-				} else {
-					$msg = 'You have an error in your TYPO3 configuration. Your security level is set to "rsa" but the  extension "rsaauth" is not loaded.';
-					$this->logger->error($msg);
-				}
-			} elseif ($this->pObj->security_level == 'superchallenged') {
-				$msg = 'LDAP extension does not work with security level "superchallenged". Please install und activate extension "rsaauth".';
-				$this->logger->error($msg);
-			}
 		}
 	}
 
