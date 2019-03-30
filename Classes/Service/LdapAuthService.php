@@ -346,10 +346,6 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService implements \Ps
 			}
 		}
 		
-		if (isset($GLOBALS['TSFE'])) {
-			$this->typoScriptService->restoreTypoScriptBackup();
-		}
-		
 		return $user;
 	}
 	
@@ -409,8 +405,6 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService implements \Ps
 			$msg = 'function "authUser" returns: ' . $ok;
 			$this->logger->debug($msg);
 		}
-		
-		$this->typoScriptService->restoreTypoScriptBackup();
 			
 		return $ok;
 	}
@@ -444,9 +438,6 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService implements \Ps
 		$contentObject = $this->objectManager->get('TYPO3\\CMS\\Frontend\\ContentObject\\ContentObjectRenderer');
 		$this->configurationManager->setContentObject($contentObject);
 
-		if (isset($GLOBALS['TSFE'])) {
-			$this->typoScriptService->makeTypoScriptBackup();
-		}
 		// load extbase typoscript
 		$typoScriptArray = \NormanSeibert\Ldap\Service\TypoScriptService::loadTypoScriptFromFile('EXT:extbase/ext_typoscript_setup.typoscript');
 		// load this extensions typoscript (database column => model property map etc)
@@ -455,7 +446,7 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService implements \Ps
 			\TYPO3\CMS\Core\Utility\ArrayUtility::mergeRecursiveWithOverrule($typoScriptArray, $typoScriptArray2);
 		}
 
-		if (is_array($typoScriptArray) && !empty($typoScriptArray) && isset($GLOBALS['TSFE'])) {
+		if (is_array($typoScriptArray) && !empty($typoScriptArray) && isset($GLOBALS['TSFE']->tmpl->setup)) {
 			\TYPO3\CMS\Core\Utility\ArrayUtility::mergeRecursiveWithOverrule($GLOBALS['TSFE']->tmpl->setup, $typoScriptArray);
 			$this->configurationManager->setConfiguration($GLOBALS['TSFE']->tmpl->setup);
 		} elseif (is_array($typoScriptArray) && !empty($typoScriptArray)) {

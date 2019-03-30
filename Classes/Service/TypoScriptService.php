@@ -27,11 +27,6 @@ namespace NormanSeibert\Ldap\Service;
 class TypoScriptService {
 
 	/**
-	 * @var array
-	 */
-	protected $typoScriptBackup;
-
-	/**
 	 * @param string $filePath
 	 * @return void
 	 */
@@ -51,31 +46,4 @@ class TypoScriptService {
 		}
 		return $typoScriptArray;
 	}
-
-	/**
-	 * @return void
-	 */
-	public function makeTypoScriptBackup() {
-		$this->typoScriptBackup = array();
-		foreach ($GLOBALS['TSFE']->tmpl->setup as $key => $value) {
-			$this->typoScriptBackup[$key] = $value;
-		}
-	}
-
-	/**
-	 * @return void
-	 */
-	public function restoreTypoScriptBackup() {
-		if ($this->hasTypoScriptBackup()) {
-			$GLOBALS['TSFE']->tmpl->setup = $this->typoScriptBackup;
-		}
-	}
-
-	/**
-	 * @return boolean
-	 */
-	public function hasTypoScriptBackup() {
-		return is_array($this->typoScriptBackup) && !empty($this->typoScriptBackup);
-	}
-
 }
