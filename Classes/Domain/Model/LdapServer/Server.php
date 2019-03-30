@@ -187,9 +187,8 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \
 				);
 				$this->logger->debug($msg, $logArray);
 			}
-			$attrs = $this->getUsedAttributes();
 					
-			$info = $this->search($connect, $baseDN, $parsedFilter, $attrs, 'sub', true, LDAP_DEREF_NEVER);
+			$info = $this->search($connect, $baseDN, $parsedFilter, 'sub');
 
 		}
 		
@@ -261,8 +260,7 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \
 			}
 			$filter = $this->getConfiguration()->getUserRules($this->table)->getFilter();
 			$parsedFilter = str_replace('<search>', '*', $filter);
-			$attrs = $this->getUsedAttributes();
-			$info = $this->search($connect, $distinguishedName, $parsedFilter, $attrs, 'base', false, LDAP_DEREF_NEVER, 1, 0);
+			$info = $this->search($connect, $distinguishedName, $parsedFilter, 'base');
 		}
 
 		$parameters = array(
@@ -322,7 +320,7 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \
 			}
 			if ($bind) {
 				$distinguishedName = \NormanSeibert\Ldap\Utility\Helpers::sanitizeQuery($dn);
-				$info = $this->search($connect, $distinguishedName, '(objectClass=*)', array(), 'base', false, LDAP_DEREF_NEVER, 1, 0);
+				$info = $this->search($connect, $distinguishedName, '(objectClass=*)', 'base');
 			}
 		}
 		
@@ -364,7 +362,7 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \
 						}
 					}
 					if (!empty($bind)) {
-						$info = $this->search($connect, $baseDN, $filter, array(), 'sub', true, LDAP_DEREF_NEVER);
+						$info = $this->search($connect, $baseDN, $filter, 'sub');
 					}
 				}
 			}
@@ -594,11 +592,10 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \
 	 * @param resource $ds
 	 * @param string $baseDN
 	 * @param string $filter
-	 * @param array $attributes
 	 * @param string $scope
 	 * @return array
 	 */
-	private function search($ds, $baseDN, $filter, $attributes = array(), $scope = 'sub') {
+	private function search($ds, $baseDN, $filter, $scope = 'sub') {
         $search = NULL;
 		$sizeLimit = 0;
 		
@@ -612,7 +609,7 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \
 		switch ($scope) {
 			case 'base':
 				try {
-					$search = @ldap_read($ds, $baseDN, $filter, $attributes, 0, $sizeLimit, 0);
+					$search = @ldap_read($ds, $baseDN, $filter);
 				} catch (Exception $e) {
 					$msg = '"ldap_read" failed';
 					if ($this->ldapConfig->logLevel) {
@@ -622,7 +619,7 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \
 				break;
 			case 'one':
 				try {
-					$search = @ldap_list($ds, $baseDN, $filter, $attributes, 0, $sizeLimit);
+					$search = @ldap_list($ds, $baseDN, $filter);
 				} catch (Exception $e) {
 					$msg = '"ldap_list" failed';
 					if ($this->ldapConfig->logLevel) {
@@ -633,7 +630,7 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \
 			case 'sub':
 			default:
 				try {
-					$search = @ldap_search($ds, $baseDN, $filter, $attributes, 0, $sizeLimit);
+					$search = @ldap_search($ds, $baseDN, $filter);
 				} catch (Exception $e) {
 					$msg = '"ldap_search" failed';
 					if ($this->ldapConfig->logLevel) {
