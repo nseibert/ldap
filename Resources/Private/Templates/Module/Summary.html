@@ -9,6 +9,7 @@
 	<table border="0" class="table table-striped" style="width: 100%">
 		<thead>
 			<tr>
+				<th rowspan="2"><f:translate key="header.status" /></th>
 				<th rowspan="2"><f:translate key="header.uid" /></th>
 				<th rowspan="2"><f:translate key="header.hostPort" /></th>
 				<th colspan="3">FE</th>
@@ -26,6 +27,7 @@
 		<tbody>
 		<f:for each="{ldapServers}" as="serverRecord">
 			<tr>
+				<td>{serverRecord.status}</td>
 				<td>{serverRecord.server.configuration.uid} ({serverRecord.server.configuration.title})</td>
 				<td>{serverRecord.server.configuration.host}:{serverRecord.server.configuration.port}</td>
 				<td>{serverRecord.server.configuration.feUserRules.baseDN}</td>

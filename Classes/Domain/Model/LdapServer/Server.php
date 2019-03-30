@@ -512,18 +512,24 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \
      * checks the LDAP server binding
      *
      * @param $connect
-     * @return resource
+     * @return boolean
      */
-	public function checkBind($connect) {
+	public function checkBind($connect = null) {
+        $ret = FALSE;
         $bind = NULL;
-		if (!empty($connect)) {
-			if ($this->getConfiguration()->getUser() && $this->getConfiguration()->getPassword()) {
-				$bind = $this->bind($connect, $this->getConfiguration()->getUser(), $this->getConfiguration()->getPassword());
-			} else {
-				$bind = $this->bind($connect);
-			}
+		if (empty($connect)) {
+			$connect = $this->connect();
 		}
-		return $bind;
+		if ($this->getConfiguration()->getUser() && $this->getConfiguration()->getPassword()) {
+			$bind = $this->bind($connect, $this->getConfiguration()->getUser(), $this->getConfiguration()->getPassword());
+		} else {
+			$bind = $this->bind($connect);
+		}
+		if ($bind) {
+			$ret = TRUE;
+		}
+
+		return $ret;
 	}
 	
 	/**

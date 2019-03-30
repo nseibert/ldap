@@ -137,6 +137,12 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 		$servers = array();
 		foreach ($ldapServers as $server) {
             /* @var $server \NormanSeibert\Ldap\Domain\Model\LdapServer\Server */
+			$rawStatus = $server->checkBind();
+			if ($rawStatus) {
+				$status = 'Bind succussful';
+			} else {
+				$status = 'Bind failed';
+			}
 			$server->setLimitLdapResults(3);
 			$server->setScope('fe');
 			$feUsers = $server->getUsers('*');
@@ -144,6 +150,7 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 			$beUsers = $server->getUsers('*');
 			$servers[] = array(
 				'server' => $server,
+				'status' => $status,
 				'feUsers' => $feUsers,
 				'beUsers' => $beUsers
 			);
