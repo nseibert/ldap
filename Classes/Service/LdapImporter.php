@@ -24,10 +24,14 @@ namespace NormanSeibert\Ldap\Service;
  * @copyright 2013 Norman Seibert
  */
 
+use Psr\Log\LoggerAwareTrait;
+
 /**
  * Service to import users from LDAP directory to TYPO3 database
  */
-class LdapImporter {
+class LdapImporter implements \Psr\Log\LoggerAwareInterface {
+
+	use LoggerAwareTrait;
 
     /**
      * @var string
@@ -161,14 +165,14 @@ class LdapImporter {
             // recursive search
             if ($this->ldapConfig->logLevel >= 1) {
                 $msg = 'LDAP query limit exceeded';
-                \TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 1);
+                $this->logger->notice($msg);
             }
             $searchCharacters = \NormanSeibert\Ldap\Utility\Helpers::getSearchCharacterRange();
             foreach ($searchCharacters as $thisCharacter) {
                 $newSearch = substr_replace($search, $thisCharacter, 1, 0);
                 $msg = 'Query server: ' . $this->ldapServer->getConfiguration()->getUid() . ' with getUsers("' . $newSearch . '")';
                 if ($this->ldapConfig->logLevel == 3) {
-                    \TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', -1);
+                    $this->logger->debug($msg);
                 }
                 $this->getUsers($runIdentifier, $command, $newSearch);
             }

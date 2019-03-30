@@ -30,8 +30,7 @@ Installation
    may prevent you from logging into the TYPO3 backend! Test first!!!
 
 #. The extension can log errors or single execution steps to the TYPO3
-   developer log. To use it, please install the extension “devlog”!  **If
-   you set the logging level to “2” all activities – even user
+   log. **If you set the logging level to “3” all activities – even user
    credentials – are logged for debugging purposes** .
 
 #. Create LDAP server records in your configuration file.

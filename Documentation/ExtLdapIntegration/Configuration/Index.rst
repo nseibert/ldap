@@ -21,7 +21,7 @@ Configuration
 Correct configuration of LDAP server records is crucial and most
 problems result from wrong configurations. A general advice is to set
 the logging level to “2” in the extension's configuration (in the
-extension manager) and install the “devlog” extension.
+extension manager).
 
 
 .. toctree::

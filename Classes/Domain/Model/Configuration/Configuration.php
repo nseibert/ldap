@@ -24,10 +24,14 @@ namespace NormanSeibert\Ldap\Domain\Model\Configuration;
  * @copyright 2013 Norman Seibert
  */
 
+use Psr\Log\LoggerAwareTrait;
+
 /**
  * Model for the extension's configuration of LDAP servsers
  */
-class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \TYPO3\CMS\Core\SingletonInterface {
+class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \TYPO3\CMS\Core\SingletonInterface, \Psr\Log\LoggerAwareInterface {
+
+	use LoggerAwareTrait;
 
     /**
      *
@@ -93,7 +97,7 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 				if ($tsParser->error) {
 					$msg = 'Mapping invalid.';
 					if ($this->logLevel >= 1) {
-						\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 3, $tsParser->error);
+						$this->logger->error($msg, $tsParser->error);
 					}
 					\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::ERROR, $msg);
 				} else {
@@ -102,12 +106,12 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 				}
 			} else {
 				$msg = 'Configuration file "' . $configFile . '" not found.';
-				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 3);
+				$this->logger->error($msg);
 				\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::ERROR, $msg);
 			}
 		} else {
 			$msg = 'No configuration file set in extension settings (in extension manager)';
-			\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 3);
+			$this->logger->error($msg);
 			\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::ERROR, $msg);
 		}
 		
@@ -124,7 +128,7 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 		$allLdapServers = $this->ldapServers;
 		if (count($allLdapServers) == 0) {
 			$msg = 'No LDAP server found.';
-			\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 2);
+			$this->logger->warning($msg);
 			\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::WARNING, $msg);
 		} else {
 			foreach ($allLdapServers as $uid => $row) {
@@ -155,7 +159,7 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 				if ($server['disable']) {
 					$load = 0;
 					$msg = 'LDAP server "'. $server['title'] .'" ignored: is disabled.';
-					\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 1);
+					$this->logger->info($msg);
 				}
 				if ($load) {
 					if ($pid && $server['pid']) {
@@ -168,7 +172,7 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 								$pidList = $pid;
 							}
 							$msg = 'LDAP server "'. $server['title'] .'" ignored: does not match list of page uids ('. $pidList .').';
-							\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 1);
+							$this->logger->info($msg);
 						}
 					}
 					if ($userPid && $server['fe_users.']['pid']) {
@@ -181,7 +185,7 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 								$pidList = $userPid;
 							}
 							$msg = 'LDAP server "'. $server['title'] .'" ignored: does not match list of page uids ('. $pidList .').';
-							\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 1);
+							$this->logger->info($msg);
 						}
 					}
 					if ($uid) {
@@ -197,7 +201,7 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 						if ($server['authenticate'] && ($server['authenticate'] != $authenticate) && ($server['authenticate'] != 'both')) {
 							$load = 0;
 							$msg = 'LDAP server "'. $server['title'] .'" ignored: no matching authentication configured.';
-							\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 1);
+							$this->logger->info($msg);
 						}
 					}
 				}
@@ -212,7 +216,7 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 		
 		if (!count($ldapServers)) {
 			$msg = 'No LDAP server found.';
-			\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 3);
+			$this->logger->error($msg);
 			\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::ERROR, $msg);
 		}
 		
@@ -234,11 +238,11 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 			if (count($errors) == 0) {
 				$msg = 'Configuration for server "' . $uid . '" loaded successfully';
 				if ($this->logLevel >= 2) {
-					\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', -1);
+					$this->logger->debug($msg);
 				}
 				$msg = 'Configuration for server "' . $uid . '"';
 				if ($this->logLevel == 3) {
-					\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 0, $server);
+					$this->logger->debug($msg, $server);
 				}
 
 				$groupRuleFE = $this->objectManager->get('NormanSeibert\\Ldap\\Domain\\Model\\LdapServer\\ServerConfigurationGroups');
@@ -308,13 +312,13 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 				
 			} else {
 				$msg = 'LDAP server configuration invalid for "'.$server['uid'].'":';
-				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 2, $errors);
+				$this->logger->warning($msg, $errors);
 				$msg .= '<ul><li>'.implode('</li><li>', $errors).'</li></ul>';
 				\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::WARNING, $msg, $server['uid']);
 			}
 		} else {
 			$msg = 'LDAP server not found: uid = "'.$uid.'":';
-			\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 2);
+			$this->logger->warning($msg);
 			\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::WARNING, $msg, $server['uid']);
 		}
 		
@@ -471,7 +475,7 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 		$result = extension_loaded('ldap');
 		if (!$result) {
 			$msg = 'PHP LDAP extension not loaded.';
-			\TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 3);
+			$this->logger->error($msg);
 			\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::ERROR, $msg);
 		}
 		return $result;

@@ -44,3 +44,11 @@ if ($config['enableFE'] || $config['enableBE']) {
 if (TYPO3_MODE === 'BE') {
     $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['extbase']['commandControllers'][] = 'NormanSeibert\\Ldap\\Command\\LdapCommandController';
 }
+
+$GLOBALS['TYPO3_CONF_VARS']['LOG']['NormanSeibert']['Ldap']['writerConfiguration'] = array(
+	\TYPO3\CMS\Core\Log\LogLevel::DEBUG => [
+		'TYPO3\\CMS\\Core\\Log\\Writer\\FileWriter' => [
+			'logFileInfix' => 'ldap',
+		],
+	],
+);
