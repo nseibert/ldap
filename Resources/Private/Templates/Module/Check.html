@@ -1,21 +1,31 @@
+<html xmlns:core="http://typo3.org/ns/TYPO3/CMS/Core/ViewHelpers"
+	xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+    xmlns:be="http://typo3.org/ns/TYPO3/CMS/Backend/ViewHelpers"
+    data-namespace-typo3-fluid="true">
+
 <f:layout name="Backend"/>
 
 <f:section name="content">
 
+	<be:moduleLayout.button.shortcutButton displayName="{f:translate(id: 'action.check')}" />
+
 	<h1><f:translate key="headline.check" /></h1>
 
-	<f:if condition="{errorCount}">
+	<f:flashMessages queueIdentifier="ldap" />
+
+	<f:if condition="{ok}">
 		<f:then>
-			<f:flashMessages  />
-		</f:then>
-		<f:else>
-			<div class="typo3-message message-ok">
-				<div class="header-container">
-					<div class="message-header message-left"><strong><f:translate key="msg.configuration.title" /></strong></div>
-					<div class="message-header message-right"></div>
-				</div>
-				<div class="message-body">
-					<f:format.nl2br><f:translate key="msg.configuration.message" /></f:format.nl2br>
+			<div class="typo3-messages">
+				<div class="alert alert-success">
+					<div class="media">
+						<div class="media-left">
+							<span class="fa-stack fa-lg"><i class="fa fa-circle fa-stack-2x"></i><i class="fa fa-check fa-stack-1x"></i></span>
+						</div>
+						<div class="media-body">
+							<h4 class="alert-title"><f:translate key="msg.configuration.title" /></h4>
+							<p class="alert-message"><f:format.nl2br><f:translate key="msg.configuration.message" /></f:format.nl2br></p>
+						</div>
+					</div>
 				</div>
 			</div>
 			<p>
@@ -26,7 +36,7 @@
 					</div>
 				</f:form>
 			</p>
-		</f:else>
+		</f:then>
 	</f:if>
 	
 </f:section>

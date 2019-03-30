@@ -1,10 +1,17 @@
+<html xmlns:core="http://typo3.org/ns/TYPO3/CMS/Core/ViewHelpers"
+	xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+    xmlns:be="http://typo3.org/ns/TYPO3/CMS/Backend/ViewHelpers"
+    data-namespace-typo3-fluid="true">
+
 <f:layout name="Backend"/>
 
 <f:section name="content">
+
+	<be:moduleLayout.button.shortcutButton displayName="{f:translate(id: 'action.importAndUpdateUsers')}" />
 	
 	<h1><f:translate key="headline.importAndUpdateUsers" /></h1>
 	
-	<f:flashMessages />
+	<f:flashMessages queueIdentifier="ldap" />
 	
 	<f:comment>
 		Settings section

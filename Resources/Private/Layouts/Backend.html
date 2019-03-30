@@ -1,24 +1,22 @@
-<f:be.container includeCssFiles="{0: '{f:uri.resource(path:\'Css/backend.css\')}'}">
+<html
+    xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+    xmlns:be="http://typo3.org/ns/TYPO3/CMS/Backend/ViewHelpers"
+    data-namespace-typo3-fluid="true">
 
-	<div id="typo3-docheader">
-		<div class="typo3-docheader-functions">
-			<div class="docheader-funcmenu">
-				<f:be.menus.actionMenu>
-					<f:be.menus.actionMenuItem label="{f:translate(key: 'action.check')}" controller="Module" action="check" />
-					<f:be.menus.actionMenuItem label="{f:translate(key: 'action.summary')}" controller="Module" action="summary" />
-					<f:be.menus.actionMenuItem label="{f:translate(key: 'action.importUsers')}" controller="Module" action="importUsers" />
-					<f:be.menus.actionMenuItem label="{f:translate(key: 'action.updateUsers')}" controller="Module" action="updateUsers" />
-					<f:be.menus.actionMenuItem label="{f:translate(key: 'action.importAndUpdateUsers')}" controller="Module" action="importAndUpdateUsers" />
-					<f:be.menus.actionMenuItem label="{f:translate(key: 'action.deleteUsers')}" controller="Module" action="deleteUsers" />
-					<f:be.menus.actionMenuItem label="{f:translate(key: 'action.checkLogin')}" controller="Module" action="checkLogin" />
-				</f:be.menus.actionMenu>
-			</div>
-		</div>
-	</div>
-	<div id="typo3-docbody">
-		<div id="typo3-inner-docbody">
-			<f:render section="content" />
-		</div>
-	</div>
+<be:moduleLayout>
 
-</f:be.container>
+	<be:moduleLayout.menu identifier="BackendUserModuleMenu">
+		<be:moduleLayout.menuItem label="{f:translate(id: 'action.check')}" uri="{f:uri.action(controller: 'Module', action: 'check')}"/>
+		<be:moduleLayout.menuItem label="{f:translate(id: 'action.summary')}" uri="{f:uri.action(controller: 'Module', action: 'summary')}"/>
+		<be:moduleLayout.menuItem label="{f:translate(id: 'action.importUsers')}" uri="{f:uri.action(controller: 'Module', action: 'importUsers')}"/>
+		<be:moduleLayout.menuItem label="{f:translate(id: 'action.updateUsers')}" uri="{f:uri.action(controller: 'Module', action: 'updateUsers')}"/>
+		<be:moduleLayout.menuItem label="{f:translate(id: 'action.importAndUpdateUsers')}" uri="{f:uri.action(controller: 'Module', action: 'importAndUpdateUsers')}"/>
+		<be:moduleLayout.menuItem label="{f:translate(id: 'action.deleteUsers')}" uri="{f:uri.action(controller: 'Module', action: 'deleteUsers')}"/>
+		<be:moduleLayout.menuItem label="{f:translate(id: 'action.checkLogin')}" uri="{f:uri.action(controller: 'Module', action: 'checkLogin')}"/>
+	</be:moduleLayout.menu>
+
+	<f:render section="content" />
+
+</be:moduleLayout>
+
+</html>

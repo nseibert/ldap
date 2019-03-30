@@ -54,6 +54,12 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 	
 	/**
 	 *
+	 * @var boolean 
+	 */
+	private $configOK;
+	
+	/**
+	 *
 	 * @var int 
 	 */
 	public $logLevel;
@@ -62,10 +68,20 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 	 * 
 	 */
 	public function __construct() {
+		$this->configOK = 1;
 		$this->objectManager = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\Object\\ObjectManager');
 		$this->config = $this->loadConfiguration();
 		$this->checkLdapExtension();
 		$this->allLdapServers = $this->getLdapServersFromFile();
+	}
+
+	/**
+	 * returns whether the configuration is ok or not
+	 * 
+	 * @return boolean
+	 */
+	public function isConfigOK() {
+		return $this->configOK;
 	}
 	
 	/**
@@ -100,6 +116,7 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 						$this->logger->error($msg, $tsParser->error);
 					}
 					\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::ERROR, $msg);
+					$this->configOK = FALSE;
 				} else {
 					$this->ldapServers = $tsParser->setup['ldapServers.'];
 					unset($tsParser->setup);
@@ -108,11 +125,13 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 				$msg = 'Configuration file "' . $configFile . '" not found.';
 				$this->logger->error($msg);
 				\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::ERROR, $msg);
+				$this->configOK = FALSE;
 			}
 		} else {
 			$msg = 'No configuration file set in extension settings (in extension manager)';
 			$this->logger->error($msg);
 			\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::ERROR, $msg);
+			$this->configOK = FALSE;
 		}
 		
 		return $conf;
@@ -130,6 +149,7 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 			$msg = 'No LDAP server found.';
 			$this->logger->warning($msg);
 			\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::WARNING, $msg);
+			$this->configOK = FALSE;
 		} else {
 			foreach ($allLdapServers as $uid => $row) {
 				$ldapServers[$uid] = $row;
@@ -218,6 +238,7 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 			$msg = 'No LDAP server found.';
 			$this->logger->error($msg);
 			\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::ERROR, $msg);
+			$this->configOK = FALSE;
 		}
 		
 		return $ldapServers;
@@ -315,11 +336,13 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 				$this->logger->warning($msg, $errors);
 				$msg .= '<ul><li>'.implode('</li><li>', $errors).'</li></ul>';
 				\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::WARNING, $msg, $server['uid']);
+				$this->configOK = FALSE;
 			}
 		} else {
 			$msg = 'LDAP server not found: uid = "'.$uid.'":';
 			$this->logger->warning($msg);
 			\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::WARNING, $msg, $server['uid']);
+			$this->configOK = FALSE;
 		}
 		
 		return $serverRecord;
@@ -477,6 +500,7 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 			$msg = 'PHP LDAP extension not loaded.';
 			$this->logger->error($msg);
 			\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::ERROR, $msg);
+			$this->configOK = FALSE;
 		}
 		return $result;
 	}

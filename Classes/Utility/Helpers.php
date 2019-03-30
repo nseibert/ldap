@@ -49,11 +49,7 @@ class Helpers {
 			$severity,
 			TRUE
 		);
-		$messageQueue = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Messaging\\FlashMessageQueue', 'extbase.flashmessages.tx_ldap_tools_ldapm1');
-		/* @var $objectManager \TYPO3\CMS\Extbase\Object\ObjectManager */
-		$objectManager = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\Object\\ObjectManager');
-		$flashMessageService = $objectManager->get(\TYPO3\CMS\Core\Messaging\FlashMessageService::class);
-		$messageQueue = $flashMessageService->getMessageQueueByIdentifier();
+		$messageQueue = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Messaging\\FlashMessageQueue', 'ldap');
 		$messageQueue->addMessage($flashMessage);
 	}
 	

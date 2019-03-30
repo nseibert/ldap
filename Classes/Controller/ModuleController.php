@@ -29,7 +29,7 @@ namespace NormanSeibert\Ldap\Controller;
  */
 class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController {
 
-	/**
+    /**
 	 * @var string Key of the extension this controller belongs to
 	 */
 	protected $extensionName = 'Ldap';
@@ -88,31 +88,28 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 		}
 	}
 
-	/**
-	 * Initialize actions
-	 *
-	 * @throws \RuntimeException
-	 * @return void
-	 */
-	public function initializeAction() {
-		// Extbase backend modules relies on frontend TypoScript for view, persistence
-		// and settings. Thus, we need a TypoScript root template, that then loads the
-		// ext_typoscript_setup.txt file of this module. This is nasty, but can not be
-		// circumvented until there is a better solution in extbase.
-		// For now we throw an exception if no settings are detected.
-		if (empty($this->settings)) {
-			throw new \RuntimeException(
-				'No settings detected. This module can not work then. ' .
-				'This usually happens if there is no frontend TypoScript template with root flag set.',
-				1344375003
-			);
-		}
-	}
+    /**
+     * Assign default variables to view
+     * @param ViewInterface $view
+     */
+    protected function initializeView(\TYPO3\CMS\Extbase\Mvc\View\ViewInterface $view) {
+        $view->assignMultiple([
+            'shortcutLabel' => 'ldap',
+            'dateFormat' => $GLOBALS['TYPO3_CONF_VARS']['SYS']['ddmmyy'],
+            'timeFormat' => $GLOBALS['TYPO3_CONF_VARS']['SYS']['hhmm'],
+        ]);
 
-	private function flushMessages() {
+        // Workaround to make FlashMessages appear in the module
+        // Don't know why this works
+        $flashMessage = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Messaging\\FlashMessage',
+			'dummy',
+			'',
+			\TYPO3\CMS\Core\Messaging\FlashMessage::ERROR,
+			FALSE
+		);
 		$messageQueue = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Messaging\\FlashMessageQueue', 'ldap');
-		$messageQueue->getAllMessagesAndFlush();
-	}
+		$messageQueue->enqueue($flashMessage);
+    }
 
 	/**
 	 * Checks LDAP configuration.
@@ -121,10 +118,8 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 	 */
 	public function checkAction() {
 		$this->ldapConfig->getLdapServers();
-		$messageQueue = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Messaging\\FlashMessageQueue', 'ldap');
-		$flashMessages = $messageQueue->getAllMessages();
-		$this->view->assign('errorCount', count($flashMessages));
-		$this->flushMessages();
+		$ok = $this->ldapConfig->isConfigOK();
+		$this->view->assign('ok', $ok);
 	}
 
 	/**
@@ -137,12 +132,7 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 		$servers = array();
 		foreach ($ldapServers as $server) {
             /* @var $server \NormanSeibert\Ldap\Domain\Model\LdapServer\Server */
-			$rawStatus = $server->checkBind();
-			if ($rawStatus) {
-				$status = 'Bind succussful';
-			} else {
-				$status = 'Bind failed';
-			}
+			$status = $server->checkBind();
 			$server->setLimitLdapResults(3);
 			$server->setScope('fe');
 			$feUsers = $server->getUsers('*');
@@ -156,7 +146,6 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 			);
 		}
 		$this->view->assign('ldapServers', $servers);
-		$this->flushMessages();
 	}
 
 	/**
@@ -230,7 +219,6 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 
 		$this->view->assign('be_users', $beUsers);
 		$this->view->assign('fe_users', $feUsers);
-		$this->flushMessages();
 	}
 
     /**
@@ -293,7 +281,6 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 
 		$this->view->assign('be_users', $beUsers);
 		$this->view->assign('fe_users', $feUsers);
-		$this->flushMessages();
 	}
 
     /**
@@ -356,7 +343,6 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 
 		$this->view->assign('be_users', $beUsers);
 		$this->view->assign('fe_users', $feUsers);
-		$this->flushMessages();
 	}
 
     /**
@@ -410,7 +396,6 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 
 		$this->view->assign('be_users', $beUsers);
 		$this->view->assign('fe_users', $feUsers);
-		$this->flushMessages();
 	}
 
     /**
@@ -462,7 +447,6 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 		$this->view->assign('ldapServers', $serverConfigurations);
 		$this->view->assign('returnUrl', 'mod.php?M=tools_LdapM1');
 		$this->view->assign('user', $user);
-		$this->flushMessages();
 	}
 
     /**
