@@ -49,7 +49,7 @@
   },
   "extra": {
     "branch-alias": {
-      "dev-master": "ldap_3.3"
+      "dev-master": "dev-ldap_3.3"
     },
     "typo3/cms": {
       "cms-package-dir": "{$vendor-dir}/typo3/cms",
