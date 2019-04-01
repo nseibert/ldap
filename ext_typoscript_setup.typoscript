@@ -1,0 +1,1 @@
+@import 'EXT:ldap/Configuration/*.typoscript'
