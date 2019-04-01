@@ -100,7 +100,7 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 			if (file_exists($configFile) && is_file($configFile)) {
 				$ok = TRUE;
 			} else {
-				$configFile = PATH_site.$conf['configFile'];
+				$configFile = \TYPO3\CMS\Core\Core\Environment::getPublicPath() . '/' . $conf['configFile'];
 				if (file_exists($configFile) && is_file($configFile)) {
 					$ok = TRUE;
 				}
@@ -110,10 +110,10 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 				$tsParser = $this->objectManager->get('TYPO3\\CMS\\Core\\TypoScript\\Parser\\TypoScriptParser');
 				$tsParser->parse($fileContent);
 				
-				if ($tsParser->error) {
+				if ($tsParser->errors && is_array($tsParser->errors) && count($tsParser->errors) > 0) {
 					$msg = 'Mapping invalid.';
 					if ($this->logLevel >= 1) {
-						$this->logger->error($msg, $tsParser->error);
+						$this->logger->error($msg, $tsParser->errors);
 					}
 					\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::ERROR, $msg);
 					$this->configOK = FALSE;
@@ -145,16 +145,23 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 	private function getLdapServersFromFile() {
         $ldapServers = array();
 		$allLdapServers = $this->ldapServers;
-		if (count($allLdapServers) == 0) {
+		if ($allLdapServers && is_array($allLdapServers)) {
+			if (count($allLdapServers) == 0) {
+				$msg = 'No LDAP server found.';
+				$this->logger->warning($msg);
+				\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::WARNING, $msg);
+				$this->configOK = FALSE;
+			} else {
+				foreach ($allLdapServers as $uid => $row) {
+					$ldapServers[$uid] = $row;
+					$ldapServers[$uid]['uid'] = rtrim($uid, '.');
+				}
+			}
+		} else {
 			$msg = 'No LDAP server found.';
 			$this->logger->warning($msg);
 			\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::WARNING, $msg);
 			$this->configOK = FALSE;
-		} else {
-			foreach ($allLdapServers as $uid => $row) {
-				$ldapServers[$uid] = $row;
-				$ldapServers[$uid]['uid'] = rtrim($uid, '.');
-			}
 		}
 		
 		return $ldapServers;

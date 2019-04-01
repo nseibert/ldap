@@ -30,6 +30,7 @@ use Psr\Log\LoggerAwareTrait;
  * Model for an LDAP server
  */
 class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \Psr\Log\LoggerAwareInterface {
+	
 	use LoggerAwareTrait;
 
 	/**
