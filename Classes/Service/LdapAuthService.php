@@ -416,7 +416,7 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService implements \Ps
 	 */
 	protected function initializeExtbaseFramework() {
 		// inject content object into the configuration manager
-		$this->configurationManager = $this->objectManager->get('TYPO3\\CMS\\Extbase\\Configuration\\ConfigurationManagerInterface');
+		$this->configurationManager = $this->objectManager->get('TYPO3\\CMS\\Extbase\\Configuration\\ConfigurationManager');
 		$contentObject = $this->objectManager->get('TYPO3\\CMS\\Frontend\\ContentObject\\ContentObjectRenderer');
 		$this->configurationManager->setContentObject($contentObject);
 
@@ -432,30 +432,11 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService implements \Ps
 			\TYPO3\CMS\Core\Utility\ArrayUtility::mergeRecursiveWithOverrule($GLOBALS['TSFE']->tmpl->setup, $typoScriptArray);
 			$this->configurationManager->setConfiguration($GLOBALS['TSFE']->tmpl->setup);
 		} elseif (is_array($typoScriptArray) && !empty($typoScriptArray)) {
-			$this->configurationManager->setConfiguration($typoScriptArray);
+			$this->configurationManager->setConfiguration($typoScriptArray['config.']['tx_extbase.']);
 		}
-
-		$this->configureObjectManager();
 
 		// initialize persistence
 		$this->persistenceManager = $this->objectManager->get('TYPO3\\CMS\\Extbase\\Persistence\\PersistenceManagerInterface');
-	}
-
-	/**
-	 * @return void
-	 */
-	protected function configureObjectManager() {
-		$typoScriptSetup = $this->configurationManager->getConfiguration(\TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface::CONFIGURATION_TYPE_FULL_TYPOSCRIPT);
-		if (!is_array($typoScriptSetup['config.']['tx_extbase.']['objects.'])) {
-			return;
-		}
-		$objectContainer = $this->objectManager->get('TYPO3\\CMS\\Extbase\\Object\\Container\\Container');
-		foreach ($typoScriptSetup['config.']['tx_extbase.']['objects.'] as $classNameWithDot => $classConfiguration) {
-			if (isset($classConfiguration['className'])) {
-				$originalClassName = rtrim($classNameWithDot, '.');
-				$objectContainer->registerImplementation($originalClassName, $classConfiguration['className']);
-			}
-		}
 	}
 }
 ?>
