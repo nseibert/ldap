@@ -39,6 +39,10 @@ class Helpers {
 	 * @return void
 	 */
 	static function addError($severity = \TYPO3\CMS\Core\Messaging\FlashMessage::INFO, $message = '', $server = '', $data = null) {
+		$storeInSession = FALSE;
+		if ($GLOBALS['BE_USER']) {
+			$storeInSession = TRUE;
+		}
 		$msg = $message;
 		if ($data) {
 			$msg .= '<br/>'.\TYPO3\CMS\Core\Utility\ArrayUtility::flatten($data);
@@ -47,7 +51,7 @@ class Helpers {
 			$msg,
 			$server,
 			$severity,
-			TRUE
+			$storeInSession
 		);
 		$messageQueue = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Messaging\\FlashMessageQueue', 'ldap');
 		$messageQueue->addMessage($flashMessage);
