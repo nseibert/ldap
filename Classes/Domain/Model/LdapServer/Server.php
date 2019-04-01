@@ -464,6 +464,7 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \
 			$connect = ldap_connect($host, $port);
 		} catch (Exception $e) {
 			$msg = 'ldap_connect(' . $uid . ', ' . $host . ':' . $port . '): Could not connect to LDAP server.';
+			// @extensionScannerIgnoreLine
 			$this->logger->error($msg);
 			\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::ERROR, $msg, $uid);
 		}
@@ -474,6 +475,7 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \
 					ldap_set_option($connect, LDAP_OPT_PROTOCOL_VERSION, 3);
 				} catch (Exception $e) {
 					$msg = 'Protocol version cannot be set to 3.';
+					// @extensionScannerIgnoreLine
 					$this->logger->error($msg);
 					\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::ERROR, $msg);
 				}
@@ -484,11 +486,13 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \
 					 	ldap_start_tls($connect);
 					} catch (Exception $e) {
 						$msg = 'function_exists("ldap_start_tls"): Function ldap_start_tls not available.';
+						// @extensionScannerIgnoreLine
 						$this->logger->error($msg);
 						\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::ERROR, $msg);
 					}
 				} else {
 					$msg = 'function_exists("ldap_start_tls"): Function ldap_start_tls not available.';
+					// @extensionScannerIgnoreLine
 					$this->logger->error($msg);
 					\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::ERROR, $msg);
 				}
@@ -497,11 +501,13 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \
 			 	ldap_set_option($connect, LDAP_OPT_REFERRALS, 0);
 			} catch (Exception $e) {
 				$msg = 'ldap_connect('.$uid.', '.$host.':'.$port.'): Could not connect to LDAP server.';
+				// @extensionScannerIgnoreLine
 				$this->logger->error($msg);
 				\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::ERROR, $msg, $uid);
 			}
 		} else {
 			$msg = 'ldap_connect('.$uid.', '.$host.':'.$port.'): Could not connect to LDAP server.';
+			// @extensionScannerIgnoreLine
 			$this->logger->error($msg);
 			\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::ERROR, $msg, $uid);
 		}
@@ -557,9 +563,11 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \
 		} catch (Exception $e) {
 			if ($this->ldapConfig->logLevel >= 2) {
 				$msg = 'ldap_bind('.$host.':'.$port.', '.$user.', '.$pass.'): Could not bind to LDAP server.';
+				// @extensionScannerIgnoreLine
 				$this->logger->error($msg);
 			} else {
 				$msg = 'ldap_bind('.$host.':'.$port.', '.$user.', ***): Could not bind to LDAP server.';
+				// @extensionScannerIgnoreLine
 				$this->logger->error($msg);
 			}
 			$msg = 'ldap_bind('.$host.':'.$port.', '.$user.', ***): Could not bind to LDAP server.';
@@ -573,6 +581,7 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \
 				$msg = 'ldap_bind('.$host.':'.$port.', '.$user.', ***): Could not bind to LDAP server.';
 				
 			}
+			// @extensionScannerIgnoreLine
 			$this->logger->error($msg);
 			\NormanSeibert\Ldap\Utility\Helpers::addError($warnLevel, $msg, $uid);
 		}
@@ -620,6 +629,7 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \
 				} catch (Exception $e) {
 					$msg = '"ldap_read" failed';
 					if ($this->ldapConfig->logLevel) {
+						// @extensionScannerIgnoreLine
 						$this->logger->error($msg);
 					}
 				}
@@ -630,6 +640,7 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \
 				} catch (Exception $e) {
 					$msg = '"ldap_list" failed';
 					if ($this->ldapConfig->logLevel) {
+						// @extensionScannerIgnoreLine
 						$this->logger->error($msg);
 					}					
 				}
@@ -641,6 +652,7 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \
 				} catch (Exception $e) {
 					$msg = '"ldap_search" failed';
 					if ($this->ldapConfig->logLevel) {
+						// @extensionScannerIgnoreLine
 						$this->logger->error($msg);
 					}					
 				}
@@ -667,6 +679,7 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \
 				'Filter' => $filter
 			);
 			if ($this->ldapConfig->logLevel) {
+				// @extensionScannerIgnoreLine
 				$this->logger->error($msg, $logArray);
 			}
 		} else {

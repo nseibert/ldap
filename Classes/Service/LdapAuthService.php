@@ -29,6 +29,7 @@ use Psr\Log\LoggerAwareTrait;
 /**
  * Service to authenticate users against LDAP directory
  */
+// @extensionScannerIgnoreLine
 class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService implements \Psr\Log\LoggerAwareInterface {
 
 	use LoggerAwareTrait;

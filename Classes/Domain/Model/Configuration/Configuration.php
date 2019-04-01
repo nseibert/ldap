@@ -113,6 +113,7 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 				if ($tsParser->errors && is_array($tsParser->errors) && count($tsParser->errors) > 0) {
 					$msg = 'Mapping invalid.';
 					if ($this->logLevel >= 1) {
+						// @extensionScannerIgnoreLine
 						$this->logger->error($msg, $tsParser->errors);
 					}
 					\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::ERROR, $msg);
@@ -123,12 +124,14 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 				}
 			} else {
 				$msg = 'Configuration file "' . $configFile . '" not found.';
+				// @extensionScannerIgnoreLine
 				$this->logger->error($msg);
 				\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::ERROR, $msg);
 				$this->configOK = FALSE;
 			}
 		} else {
 			$msg = 'No configuration file set in extension settings (in extension manager)';
+			// @extensionScannerIgnoreLine
 			$this->logger->error($msg);
 			\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::ERROR, $msg);
 			$this->configOK = FALSE;
@@ -243,7 +246,8 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 		
 		if (!count($ldapServers)) {
 			$msg = 'No LDAP server found.';
-			$this->logger->error($msg);
+			// @extensionScannerIgnoreLine
+			$this->logger->warning($msg);
 			\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::ERROR, $msg);
 			$this->configOK = FALSE;
 		}
@@ -505,6 +509,7 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 		$result = extension_loaded('ldap');
 		if (!$result) {
 			$msg = 'PHP LDAP extension not loaded.';
+			// @extensionScannerIgnoreLine
 			$this->logger->error($msg);
 			\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::ERROR, $msg);
 			$this->configOK = FALSE;

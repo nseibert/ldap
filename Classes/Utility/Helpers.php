@@ -54,6 +54,7 @@ class Helpers {
 			$storeInSession
 		);
 		$messageQueue = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Messaging\\FlashMessageQueue', 'ldap');
+		// @extensionScannerIgnoreLine
 		$messageQueue->addMessage($flashMessage);
 	}
 	
