@@ -4,7 +4,6 @@
   "description": "TYPO3 LDAP extension",
   "keywords": [
     "TYPO3",
-    "wiko",
     "ldap"
   ],
   "homepage": "https://github.com/nseibert/ldap",
@@ -21,7 +20,7 @@
   ],
   "license": "GPL-2.0+",
   "require": {
-    "typo3/cms-core": "^6.2.14 || ^7.6 || ^8.0"
+    "typo3/cms-core": "^9.0"
   },
   "autoload": {
     "psr-4": {
@@ -50,7 +49,7 @@
   },
   "extra": {
     "branch-alias": {
-      "dev-master": "1.0.x-dev"
+      "dev-master": "3.3.x-dev"
     },
     "typo3/cms": {
       "cms-package-dir": "{$vendor-dir}/typo3/cms",
