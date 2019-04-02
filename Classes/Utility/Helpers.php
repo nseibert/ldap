@@ -39,23 +39,25 @@ class Helpers {
 	 * @return void
 	 */
 	static function addError($severity = \TYPO3\CMS\Core\Messaging\FlashMessage::INFO, $message = '', $server = '', $data = null) {
-		$storeInSession = FALSE;
-		if ($GLOBALS['BE_USER'] && $GLOBALS['BE_USER']->username !== '_cli_') {
-			$storeInSession = TRUE;
+		$storeInSession =fo FALSE;
+		if (!isset($GLOBALS['TSFE'])) {
+			if ($GLOBALS['BE_USER'] && ($GLOBALS['BE_USER']->username !== '_cli_')) {
+				$storeInSession = TRUE;
+			}
+			$msg = $message;
+			if ($data) {
+				$msg .= '<br/>'.\TYPO3\CMS\Core\Utility\ArrayUtility::flatten($data);
+			}
+			$flashMessage = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Messaging\\FlashMessage',
+				$msg,
+				$server,
+				$severity,
+				$storeInSession
+			);
+			$messageQueue = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Messaging\\FlashMessageQueue', 'ldap');
+			// @extensionScannerIgnoreLine
+			$messageQueue->addMessage($flashMessage);
 		}
-		$msg = $message;
-		if ($data) {
-			$msg .= '<br/>'.\TYPO3\CMS\Core\Utility\ArrayUtility::flatten($data);
-		}
-		$flashMessage = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Messaging\\FlashMessage',
-			$msg,
-			$server,
-			$severity,
-			$storeInSession
-		);
-		$messageQueue = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Messaging\\FlashMessageQueue', 'ldap');
-		// @extensionScannerIgnoreLine
-		$messageQueue->addMessage($flashMessage);
 	}
 	
 	/**
