@@ -40,7 +40,7 @@ class Helpers {
 	 */
 	static function addError($severity = \TYPO3\CMS\Core\Messaging\FlashMessage::INFO, $message = '', $server = '', $data = null) {
 		$storeInSession = FALSE;
-		if ($GLOBALS['BE_USER']) {
+		if ($GLOBALS['BE_USER'] && $GLOBALS['BE_USER']->username !== '_cli_') {
 			$storeInSession = TRUE;
 		}
 		$msg = $message;
