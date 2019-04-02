@@ -30,7 +30,7 @@ namespace NormanSeibert\Ldap\ViewHelpers;
  *
  * @author Felix Kopp <felix-source@phorax.com>
  */
-class SectionViewHelper extends TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper {
+class SectionViewHelper extends \TYPO3\CMS\Fluid\Core\ViewHelper\AbstractViewHelper {
 
 	/**
 	 * Display section with title and content
