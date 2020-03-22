@@ -3,20 +3,18 @@ defined('TYPO3_MODE') or die();
 
 // Register the backend module
 \TYPO3\CMS\Extbase\Utility\ExtensionUtility::registerModule(
-	'NormanSeibert.' . $_EXTKEY,
-	'tools',	 // Make module a submodule of 'web'
+	'Ldap',
+	'tools',	 // Make module a submodule of 'tools'
 	'm1',	 // Submodule key
 	'',		 // Position
-	array(
-		'Module' => 'check, summary, importUsers, doImportUsers, updateUsers,
-			doUpdateUsers, importAndUpdateUsers, doImportAndUpdateUsers,
-			deleteUsers, doDeleteUsers, checkLogin, doCheckLogin'
-	),
-	array(
+	[
+		\NormanSeibert\Ldap\Controller\ModuleController::class => 'check, summary, importUsers, doImportUsers, updateUsers, doUpdateUsers, importAndUpdateUsers, doImportAndUpdateUsers, deleteUsers, doDeleteUsers, checkLogin, doCheckLogin'
+	],
+	[
 		'access' => 'user,group',
-		'icon'   => 'EXT:' . $_EXTKEY . '/Resources/Public/Icons/ldap.svg',
-		'labels' => 'LLL:EXT:' . $_EXTKEY . '/Resources/Private/Language/locallang.xml',
-	)
+		'icon'   => 'EXT:ldap/Resources/Public/Icons/ldap.svg',
+		'labels' => 'LLL:EXT:ldap/Resources/Private/Language/locallang.xml',
+	]
 );
 
 /**
