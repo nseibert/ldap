@@ -183,11 +183,9 @@ class BackendUser extends \TYPO3\CMS\Extbase\Domain\Model\BackendUser implements
 	 */
 	public function generatePassword() {
 		$password = \NormanSeibert\Ldap\Utility\Helpers::generatePassword(10, 2, 2, 2);
-		$objSalt = \TYPO3\CMS\Core\Crypto\PasswordHashing\PasswordHashFactory::getSaltingInstance(NULL);
-		if (is_object($objSalt)) {
-			$password = $objSalt->getHashedPassword($password);
-		}
-		$this->password = $password;
+		$hashInstance = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Crypto\PasswordHashing\PasswordHashFactory::class)->getDefaultHashInstance('BE');
+		$hashedPassword = $hashInstance->getHashedPassword($password);
+		$this->password = $hashedPassword;
 		return $this;
 	}
 	
