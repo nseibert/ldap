@@ -88,12 +88,12 @@ interface UserGroupInterface {
      * @param integer|NULL $pid
      * @return void
      */
-    public function setPid($pid);
+    public function setPid(int $pid);
 
     /**
      *
      * @param string $attribute
      * @return string
      */
-    public function _getProperty($attribute);
+    public function _getProperty(string $attribute);
 } 

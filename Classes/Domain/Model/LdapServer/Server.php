@@ -80,7 +80,7 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \
 	
 	/**
 	 *
-	 * @var string 
+	 * @var int 
 	 */
 	protected $uid;
 	
@@ -108,19 +108,19 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \
 	
 	/**
 	 * 
-	 * @param string $uid
+	 * @param int $uid
 	 * @return \NormanSeibert\Ldap\Domain\Model\LdapServer\Server
 	 */
-	public function setUid($uid) {
+	public function setUid(int $uid) {
 		$this->uid = $uid;
 		return $this;
 	}
 	
 	/**
 	 * 
-	 * @return string
+	 * @return int
 	 */
-	public function getUid() {
+	public function getUid(): ?int {
 		return $this->uid;
 	}
 	
@@ -821,7 +821,11 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \
 		if ($this->table == 'be_users') {
 			$this->allBeGroups = $this->beUsergroupRepository->findAll();
 		} else {
-			$pid = $this->getConfiguration()->getUserRules('fe_users')->getGroupRules()->getPid();
+			$pid = null;
+			$groupRules = $this->getConfiguration()->getUserRules('fe_users')->getGroupRules();
+			if ($groupRules) {
+				$pid = $groupRules->getPid();
+			}
 			if (empty($pid)) {
 				$pid = $this->getConfiguration()->getUserRules('fe_users')->getPid();
 			}

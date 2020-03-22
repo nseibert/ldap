@@ -82,16 +82,15 @@ class ServerConfigurationUsers extends \TYPO3\CMS\Extbase\DomainObject\AbstractE
 	 * @param int $pid
 	 * @return \NormanSeibert\Ldap\Domain\Model\LdapServer\ServerConfigurationUsers
 	 */
-	public function setPid($pid) {
+	public function setPid(int $pid): void {
 		$this->pid = $pid;
-		return $this;
 	}
 	
 	/**
 	 * 
 	 * @return int
 	 */
-	public function getPid() {
+	public function getPid(): ?int {
 		return $this->pid;
 	}
 	

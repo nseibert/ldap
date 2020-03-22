@@ -30,7 +30,7 @@ interface UserInterface {
      *
      * @return int
      */
-    public function getUid();
+    public function getUid(): ?int;
 
     /**
      * Checks whether this user is disabled.
@@ -52,7 +52,7 @@ interface UserInterface {
      * @param string $dn
      * @return object
      */
-    public function setDN($dn);
+    public function setDN(string $dn);
 
     /**
      *
@@ -78,7 +78,7 @@ interface UserInterface {
      * @param string $uid
      * @return object
      */
-    public function setServerUid($uid);
+    public function setServerUid(string $uid);
 
     /**
      *
@@ -103,7 +103,7 @@ interface UserInterface {
      * @param string $run
      * @return object
      */
-    public function setLastRun($run);
+    public function setLastRun(string $run);
 
     /**
      *
@@ -133,7 +133,7 @@ interface UserInterface {
      * @return void
      * @api
      */
-    public function setUsername($username);
+    public function setUsername(string $username);
 
     /**
      * Returns the username value
@@ -149,7 +149,7 @@ interface UserInterface {
      * @param integer|NULL $pid
      * @return void
      */
-    public function setPid($pid);
+    public function setPid(int $pid);
 
     /**
      * Reconstitutes a property. Only for internal use.
@@ -158,5 +158,5 @@ interface UserInterface {
      * @param mixed $propertyValue
      * @return boolean
      */
-    public function _setProperty($propertyName, $propertyValue);
+    public function _setProperty(string $propertyName, $propertyValue);
 } 

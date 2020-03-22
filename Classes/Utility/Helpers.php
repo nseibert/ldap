@@ -34,7 +34,7 @@ class Helpers {
 	 * 
 	 * @param int $severity
 	 * @param string $message
-	 * @param string $server
+	 * @param int $server
 	 * @param array $data
 	 * @return void
 	 */
@@ -50,7 +50,7 @@ class Helpers {
 			}
 			$flashMessage = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Messaging\\FlashMessage',
 				$msg,
-				$server,
+				'LDAP server ' . $server,
 				$severity,
 				$storeInSession
 			);

@@ -278,50 +278,58 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 				}
 
 				$groupRuleFE = $this->objectManager->get('NormanSeibert\\Ldap\\Domain\\Model\\LdapServer\\ServerConfigurationGroups');
-				$groupRuleFE
-					->setPid($server['fe_users.']['usergroups.']['pid'])
-					->setImportGroups($server['fe_users.']['usergroups.']['importGroups'])
-					->setMapping($server['fe_users.']['usergroups.']['mapping.'])
-					->setReverseMapping($server['fe_users.']['usergroups.']['reverseMapping'])
-					->setBaseDN($server['fe_users.']['usergroups.']['baseDN'])
-					->setFilter($server['fe_users.']['usergroups.']['filter'])
-					->setSearchAttribute($server['fe_users.']['usergroups.']['searchAttribute'])
-					->setAddToGroups($server['fe_users.']['usergroups.']['addToGroups'])
-					->setRestrictToGroups($server['fe_users.']['usergroups.']['restrictToGroups'])
-					->setPreserveNonLdapGroups($server['fe_users.']['usergroups.']['preserveNonLdapGroups']);
-				
 				$userRuleFE = $this->objectManager->get('NormanSeibert\\Ldap\\Domain\\Model\\LdapServer\\ServerConfigurationUsers');
-				$userRuleFE
-					->setPid($server['fe_users.']['pid'])
-					->setBaseDN($server['fe_users.']['baseDN'])
-					->setFilter($server['fe_users.']['filter'])
-					->setAutoImport($server['fe_users.']['autoImport'])
-					->setAutoEnable($server['fe_users.']['autoEnable'])
-					->setOnlyUsersWithGroup($server['fe_users.']['onlyUsersWithGroup'])
-					->setMapping($server['fe_users.']['mapping.'])
-					->setGroupRules($groupRuleFE);
+				if (is_array($server['fe_users.'])) {
+					if ($server['fe_users.']['usergroups.']['pid']) {
+						$groupRuleFE->setPid($server['fe_users.']['usergroups.']['pid']);
+					} else if ($server['fe_users.']['pid']) {
+						$groupRuleFE->setPid($server['fe_users.']['pid']);
+					}
+					$groupRuleFE
+						->setImportGroups($server['fe_users.']['usergroups.']['importGroups'])
+						->setMapping($server['fe_users.']['usergroups.']['mapping.'])
+						->setReverseMapping($server['fe_users.']['usergroups.']['reverseMapping'])
+						->setBaseDN($server['fe_users.']['usergroups.']['baseDN'])
+						->setFilter($server['fe_users.']['usergroups.']['filter'])
+						->setSearchAttribute($server['fe_users.']['usergroups.']['searchAttribute'])
+						->setAddToGroups($server['fe_users.']['usergroups.']['addToGroups'])
+						->setRestrictToGroups($server['fe_users.']['usergroups.']['restrictToGroups'])
+						->setPreserveNonLdapGroups($server['fe_users.']['usergroups.']['preserveNonLdapGroups']);
+					
+					$userRuleFE->setPid($server['fe_users.']['pid']);
+					$userRuleFE
+						->setBaseDN($server['fe_users.']['baseDN'])
+						->setFilter($server['fe_users.']['filter'])
+						->setAutoImport($server['fe_users.']['autoImport'])
+						->setAutoEnable($server['fe_users.']['autoEnable'])
+						->setOnlyUsersWithGroup($server['fe_users.']['onlyUsersWithGroup'])
+						->setMapping($server['fe_users.']['mapping.'])
+						->setGroupRules($groupRuleFE);
+				}
 
 				$groupRuleBE = $this->objectManager->get('NormanSeibert\\Ldap\\Domain\\Model\\LdapServer\\ServerConfigurationGroups');
-				$groupRuleBE
-					->setImportGroups($server['be_users.']['usergroups.']['importGroups'])
-					->setMapping($server['be_users.']['usergroups.']['mapping.'])
-					->setReverseMapping($server['be_users.']['usergroups.']['reverseMapping'])
-					->setBaseDN($server['be_users.']['usergroups.']['baseDN'])
-					->setFilter($server['be_users.']['usergroups.']['filter'])
-					->setSearchAttribute($server['be_users.']['usergroups.']['searchAttribute'])
-					->setAddToGroups($server['be_users.']['usergroups.']['addToGroups'])
-					->setRestrictToGroups($server['be_users.']['usergroups.']['restrictToGroups'])
-					->setPreserveNonLdapGroups($server['be_users.']['usergroups.']['preserveNonLdapGroups']);
-				
 				$userRuleBE = $this->objectManager->get('NormanSeibert\\Ldap\\Domain\\Model\\LdapServer\\ServerConfigurationUsers');
-				$userRuleBE
-					->setBaseDN($server['be_users.']['baseDN'])
-					->setFilter($server['be_users.']['filter'])
-					->setAutoImport($server['be_users.']['autoImport'])
-					->setAutoEnable($server['be_users.']['autoEnable'])
-					->setOnlyUsersWithGroup($server['be_users.']['onlyUsersWithGroup'])
-					->setMapping($server['be_users.']['mapping.'])
-					->setGroupRules($groupRuleBE);
+				if (is_array($server['be_users.'])) {
+					$groupRuleBE
+						->setImportGroups($server['be_users.']['usergroups.']['importGroups'])
+						->setMapping($server['be_users.']['usergroups.']['mapping.'])
+						->setReverseMapping($server['be_users.']['usergroups.']['reverseMapping'])
+						->setBaseDN($server['be_users.']['usergroups.']['baseDN'])
+						->setFilter($server['be_users.']['usergroups.']['filter'])
+						->setSearchAttribute($server['be_users.']['usergroups.']['searchAttribute'])
+						->setAddToGroups($server['be_users.']['usergroups.']['addToGroups'])
+						->setRestrictToGroups($server['be_users.']['usergroups.']['restrictToGroups'])
+						->setPreserveNonLdapGroups($server['be_users.']['usergroups.']['preserveNonLdapGroups']);
+					
+					$userRuleBE
+						->setBaseDN($server['be_users.']['baseDN'])
+						->setFilter($server['be_users.']['filter'])
+						->setAutoImport($server['be_users.']['autoImport'])
+						->setAutoEnable($server['be_users.']['autoEnable'])
+						->setOnlyUsersWithGroup($server['be_users.']['onlyUsersWithGroup'])
+						->setMapping($server['be_users.']['mapping.'])
+						->setGroupRules($groupRuleBE);
+				}
 				
 				$serverConfiguration = $this->objectManager->get('NormanSeibert\\Ldap\\Domain\\Model\\LdapServer\\ServerConfiguration');
 				$serverConfiguration
@@ -399,6 +407,11 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 			$res = \NormanSeibert\Ldap\Utility\Helpers::checkValue($server['fe_users.']['pid'], 'required,int');
 			if ($res['error']) {
 				$errors[] = 'Attribute "fe_users.pid": '.$res['error'];
+			}
+
+			$res = \NormanSeibert\Ldap\Utility\Helpers::checkValue($server['fe_users.']['usergroups.']['pid'], 'int');
+			if ($res['error']) {
+				$errors[] = 'Attribute "fe_users.usergroups.pid": '.$res['error'];
 			}
 			
 			$res = \NormanSeibert\Ldap\Utility\Helpers::checkValue($server['fe_users.']['filter'], 'required');
