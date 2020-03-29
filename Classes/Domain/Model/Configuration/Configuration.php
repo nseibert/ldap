@@ -261,12 +261,12 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 	/**
 	 * reads the definition of one specific LDAP server
 	 * 
-	 * @param string $uid
+	 * @param int $uid
 	 * @return \NormanSeibert\Ldap\Domain\Model\LdapServer\Server
 	 */
 	public function getLdapServer($uid) {
 		$serverRecord = FALSE;
-		$server = $this->allLdapServers[$uid];
+		$server = $this->allLdapServers[$uid . '.'];
 		if (is_array($server)) {
 			$errors = $this->checkServerConfiguration($server);
 			
