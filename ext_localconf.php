@@ -23,10 +23,10 @@ if ($config['enableFE'] && $config['enableBE']) {
 
 if ($config['enableFE'] || $config['enableBE']) {
 	\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addService(
-		$_EXTKEY,
-		'auth' /* sv type */,
-		'NormanSeibert\\Ldap\\Service\\LdapAuthService' /* sv key */,
-		array(
+		'ldap',
+		'auth',
+		NormanSeibert\Ldap\Service\LdapAuthService::class,
+		[
 			'title' => 'LDAP-Authentication',
 			'description' => 'Authentication service for LDAP (FE and BE).',
 			'subtype' => $subTypes,
@@ -35,19 +35,14 @@ if ($config['enableFE'] || $config['enableBE']) {
 			'quality' => 75,
 			'os' => '',
 			'exec' => '',
-			'classFile' => \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extPath($_EXTKEY) . 'Classes/Service/LdapAuthService.php',
-			'className' => 'NormanSeibert\\Ldap\\Service\\LdapAuthService',
-		)
+			'className' => NormanSeibert\Ldap\Service\LdapAuthService::class
+		]
 	);
-}
-
-if (TYPO3_MODE === 'BE') {
-    $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['extbase']['commandControllers'][] = 'NormanSeibert\\Ldap\\Command\\LdapCommandController';
 }
 
 $GLOBALS['TYPO3_CONF_VARS']['LOG']['NormanSeibert']['Ldap']['writerConfiguration'] = array(
 	\TYPO3\CMS\Core\Log\LogLevel::DEBUG => [
-		'TYPO3\\CMS\\Core\\Log\\Writer\\FileWriter' => [
+		\TYPO3\CMS\Core\Log\Writer\FileWriter::class => [
 			'logFileInfix' => 'ldap',
 		],
 	],
