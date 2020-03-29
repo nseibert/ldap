@@ -24,16 +24,19 @@ namespace NormanSeibert\Ldap\Command;
  * @copyright 2020 Norman Seibert
  */
 
-use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Style\SymfonyStyle;
-use TYPO3\CMS\Core\Core\Bootstrap;
+use \Symfony\Component\Console\Command\Command;
+use \Symfony\Component\Console\Input\InputArgument;
+use \Symfony\Component\Console\Input\InputInterface;
+use \Symfony\Component\Console\Output\OutputInterface;
+use \Symfony\Component\Console\Style\SymfonyStyle;
+use \TYPO3\CMS\Core\Core\Bootstrap;
 use \NormanSeibert\Ldap\Domain\Repository\Typo3User\FrontendUserRepository;
 use \NormanSeibert\Ldap\Domain\Repository\Typo3User\BackendUserRepository;
 use \NormanSeibert\Ldap\Domain\Model\Configuration\Configuration;
 use \NormanSeibert\Ldap\Service\LdapImporter;
+use \TYPO3\CMS\Core\Utility\GeneralUtility;
+use \TYPO3\CMS\Extbase\Object\ObjectManager;
+use \TYPO3\CMS\Extbase\Persistence\PersistenceManagerInterface;
 
 /**
  * Controller for scheduled execution
@@ -60,6 +63,12 @@ class ImportUsersCommand extends Command {
 	 */
 	protected $importer;
 
+    /**
+     *
+     * @var PersistenceManagerInterface
+     */
+    protected $persistenceManager;
+
 	/**
 	 * @param FrontendUserRepository $feUserRepository
 	 * @param BackendUserRepository $beUserRepository
@@ -73,6 +82,8 @@ class ImportUsersCommand extends Command {
 	    $this->beUserRepository = $beUserRepository;
 	    $this->ldapConfig = $ldapConfig;
 	    $this->importer = $importer;
+	    $objectManager = GeneralUtility::makeInstance(ObjectManager::class);
+	    $this->persistenceManager = $objectManager->get(PersistenceManagerInterface::class);
 	}
 
     /**
@@ -84,7 +95,7 @@ class ImportUsersCommand extends Command {
         		'Import new users'
         	)
         	->setHelp(
-        			'New users will be imported from Ldap servers.'
+        			'New users will be imported from LDAP servers.'
         	)
         	->addArgument(
         		'servers',
@@ -129,18 +140,22 @@ class ImportUsersCommand extends Command {
 				$runs = array();
 				if ($processFe) {
 					$this->importer->init($server, 'fe');
-					$runs[] = $importer->doImport();
+					$runs[] = $this->importer->doImport();
+					$this->persistenceManager->persistAll();
 					$feUsers = $this->feUserRepository->countByLastRun($runs);
 					$io->writeln('Frontend users: ' . $feUsers);
 				}
 				if ($processBe) {
 					$this->importer->init($server, 'be');
-					$runs[] = $importer->doImport();
+					$runs[] = $this->importer->doImport();
+					$this->persistenceManager->persistAll();
 					$beUsers = $this->beUserRepository->countByLastRun($runs);
 					$io->writeln('Backend users: ' . $beUsers);
 				}
 			}
 		}
+
+		$this->persistenceManager->persistAll();
 
         return 0; // everything fine
     }
