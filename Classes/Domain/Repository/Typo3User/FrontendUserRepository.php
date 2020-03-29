@@ -138,26 +138,7 @@ class FrontendUserRepository extends \TYPO3\CMS\Extbase\Domain\Repository\Fronte
 	 * @return integer
 	 */
 	public function countByLastRun($lastRun) {
-		$query = $this->createQuery();
-		$query->getQuerySettings()->setRespectStoragePage(FALSE);
-		$query->getQuerySettings()->setIncludeDeleted(TRUE);
-		\NormanSeibert\Ldap\Utility\Helpers::setRespectEnableFieldsToFalse($query);
-		if (is_array($lastRun)) {
-			if (count($lastRun) == 1) {
-				$query->matching(
-					$query->equals("lastRun", $lastRun[0])
-				);
-			} else {
-				$query->matching(
-					$query->in("lastRun", $lastRun)
-				);
-			}
-		} else {
-			$query->matching(
-				$query->equals("lastRun", $lastRun)
-			);
-		}
-		return $query->execute()->count();
+		return $this->findByLastRun($lastRun)->count();
 	}
 	
 	/**
