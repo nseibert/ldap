@@ -25,9 +25,9 @@ namespace NormanSeibert\Ldap\Domain\Model\Typo3User;
  */
 
 use \NormanSeibert\Ldap\Domain\Model\Configuration\Configuration;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Core\Crypto\Random;
-use TYPO3\CMS\Core\Crypto\PasswordHashing;
+use \TYPO3\CMS\Core\Utility\GeneralUtility;
+use \TYPO3\CMS\Core\Crypto\Random;
+use \TYPO3\CMS\Core\Crypto\PasswordHashing\PasswordHashFactory;
 
 
 /**
@@ -55,7 +55,7 @@ class BackendUser extends \TYPO3\CMS\Extbase\Domain\Model\BackendUser implements
 	
 	/**
 	 *
-	 * @var string 
+	 * @var int 
 	 */
 	protected $serverUid;
 
@@ -69,11 +69,6 @@ class BackendUser extends \TYPO3\CMS\Extbase\Domain\Model\BackendUser implements
 	 * @var string 
 	 */
 	protected $lastRun;
-	
-	/**
-	 * @var Configuration
-	 */
-	protected $ldapConfig;
 	
 	/**
 	 * @var \TYPO3\CMS\Extbase\Persistence\ObjectStorage<\TYPO3\CMS\Extbase\Domain\Model\BackendUserGroup>
@@ -105,10 +100,9 @@ class BackendUser extends \TYPO3\CMS\Extbase\Domain\Model\BackendUser implements
 	protected $options;
 
 	/**
-	 * @param Configuration $ldapConfig
+	 * 
 	 */
-	public function __construct(Configuration $ldapConfig) {
-	    $this->ldapConfig = $ldapConfig;
+	public function __construct() {
 	    $this->usergroup = new \TYPO3\CMS\Extbase\Persistence\ObjectStorage();
 	}
 	
@@ -132,29 +126,7 @@ class BackendUser extends \TYPO3\CMS\Extbase\Domain\Model\BackendUser implements
 	
 	/**
 	 * 
-	 * @param \NormanSeibert\Ldap\Domain\Model\LdapServer\Server $server
-	 * @return \NormanSeibert\Ldap\Domain\Model\Typo3User\BackendUser
-	 */
-	public function setLdapServer(\NormanSeibert\Ldap\Domain\Model\LdapServer\Server $server) {
-		$this->ldapServer = $server;
-		$this->serverUid = $server->getConfiguration()->getUid();
-		return $this;
-	}
-	
-	/**
-	 * 
-	 * @return \NormanSeibert\Ldap\Domain\Model\LdapServer\Server
-	 */
-	public function getLdapServer() {
-		if (!is_object($this->ldapServer) && $this->serverUid) {
-			$this->ldapServer = $this->ldapConfig->getLdapServer($this->serverUid.'.');
-		}
-		return $this->ldapServer;
-	}
-	
-	/**
-	 * 
-	 * @param string $uid
+	 * @param int $uid
 	 * @return \NormanSeibert\Ldap\Domain\Model\Typo3User\BackendUser
 	 */
 	public function setServerUid($uid) {
@@ -164,7 +136,7 @@ class BackendUser extends \TYPO3\CMS\Extbase\Domain\Model\BackendUser implements
 	
 	/**
 	 * 
-	 * @return string
+	 * @return int
 	 */
 	public function getServerUid() {
 		return $this->serverUid;
@@ -176,8 +148,10 @@ class BackendUser extends \TYPO3\CMS\Extbase\Domain\Model\BackendUser implements
 	 */
 	public function getLdapUser() {
 		$user = false;
-		if ($this->dn && $this->ldapServer) {
-			$user = $this->getLdapServer()->getUser($this->dn);
+		if ($this->dn && $this->serverUid) {
+			$ldapConfig = GeneralUtility::makeInstance(Configuration::class);
+			$server = $ldapConfig->getLdapServer($this->serverUid);
+			$user = $server->getUser($this->dn);
 		}
 		return $user;
 	}

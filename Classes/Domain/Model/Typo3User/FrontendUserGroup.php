@@ -39,13 +39,7 @@ class FrontendUserGroup extends \TYPO3\CMS\Extbase\Domain\Model\FrontendUserGrou
 	
 	/**
 	 *
-	 * @var \NormanSeibert\Ldap\Domain\Model\LdapServer\Server 
-	 */
-	protected $ldapServer;
-	
-	/**
-	 *
-	 * @var string 
+	 * @var int 
 	 */
 	protected $serverUid;
 	
@@ -54,19 +48,6 @@ class FrontendUserGroup extends \TYPO3\CMS\Extbase\Domain\Model\FrontendUserGrou
 	 * @var string 
 	 */
 	protected $lastRun;
-	
-	/**
-	 * @var Configuration
-	 */
-	protected $ldapConfig;
-
-	/**
-	 * @param Configuration $ldapConfig
-	 * @param 
-	 */
-	public function __construct(Configuration $ldapConfig) {
-	    $this->ldapConfig = $ldapConfig;
-	}
 	
 	/**
 	 * 
@@ -88,29 +69,7 @@ class FrontendUserGroup extends \TYPO3\CMS\Extbase\Domain\Model\FrontendUserGrou
 	
 	/**
 	 * 
-	 * @param \NormanSeibert\Ldap\Domain\Model\LdapServer\Server $server
-	 * @return \NormanSeibert\Ldap\Domain\Model\Typo3User\FrontendUserGroup
-	 */
-	public function setLdapServer(\NormanSeibert\Ldap\Domain\Model\LdapServer\Server $server) {
-		$this->ldapServer = $server;
-		$this->serverUid = $server->getConfiguration()->getUid();
-		return $this;
-	}
-	
-	/**
-	 * 
-	 * @return \NormanSeibert\Ldap\Domain\Model\LdapServer\Server
-	 */
-	public function getLdapServer() {
-		if (!is_object($this->ldapServer)) {
-			$this->ldapServer = $this->ldapConfig->getLdapServer($this->serverUid);
-		}
-		return $this->ldapServer;
-	}
-	
-	/**
-	 * 
-	 * @param string $uid
+	 * @param int $uid
 	 * @return \NormanSeibert\Ldap\Domain\Model\Typo3User\FrontendUserGroup
 	 */
 	public function setServerUid($uid) {
@@ -120,7 +79,7 @@ class FrontendUserGroup extends \TYPO3\CMS\Extbase\Domain\Model\FrontendUserGrou
 	
 	/**
 	 * 
-	 * @return string
+	 * @return int
 	 */
 	public function getServerUid() {
 		return $this->serverUid;
@@ -132,8 +91,10 @@ class FrontendUserGroup extends \TYPO3\CMS\Extbase\Domain\Model\FrontendUserGrou
 	 */
 	public function getLdapUsergroup() {
 		$group = false;
-		if ($this->dn && $this->ldapServer) {
-			$group = $this->getLdapServer()->getUser($this->dn);
+		if ($this->dn && $this->serverUid) {
+			$ldapConfig = GeneralUtility::makeInstance(Configuration::class);
+			$server = $ldapConfig->getLdapServer($this->serverUid);
+			$user = $server->getUser($this->dn);
 		}
 		return $group;
 	}
