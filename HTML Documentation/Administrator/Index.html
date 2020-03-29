@@ -1,0 +1,238 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Administrator &#8212; TYPO3 LDAP Extension 3.4 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Configuration" href="../Configuration/Index.html" />
+    <link rel="prev" title="Introduction" href="../Introduction/Index.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="administrator">
+<span id="id1"></span><h1>Administrator<a class="headerlink" href="#administrator" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<ol class="bignums arabic simple">
+<li>Install the extension through the extension manager.</li>
+<li>Set the extension’s basic settings in the extension manager. <strong>For the
+frontend login it is necessary to specify a root page id due to some
+Extbase bugs in TYPO3 6.0.</strong></li>
+<li>Configure the authentication mode, whether you want to enable FE or BE
+users to login using their LDAP credentials. Please note that enabling
+BE authentication and setting exclusive authentication against LDAP
+may prevent you from logging into the TYPO3 backend! Test first!!!</li>
+<li>The extension can log errors or single execution steps to the TYPO3
+log. <strong>If you set the logging level to “3” all activities – even user
+credentials – are logged for debugging purposes</strong> .</li>
+<li>Create LDAP server records in your configuration file.</li>
+<li>Use the LDAP backend module to check your configuration.</li>
+</ol>
+</div>
+<div class="section" id="backend-module">
+<h2>Backend Module<a class="headerlink" href="#backend-module" title="Permalink to this headline">¶</a></h2>
+<p>The backend module provides functions to:</p>
+<ul class="simple">
+<li>Get an overview of your LDAP server records</li>
+<li>Import users</li>
+<li>Update users</li>
+<li>Delete users who are not in the directory</li>
+<li>Check login against LDAP</li>
+</ul>
+</div>
+<div class="section" id="command-line-cli">
+<h2>Command Line (cli)<a class="headerlink" href="#command-line-cli" title="Permalink to this headline">¶</a></h2>
+<p>The extension provides Symfony Console Commands (cli) which can be
+invoked via the command line:</p>
+<div class="highlight-php notranslate"><div class="highlight"><pre><span></span><span class="x">typo3/sysext/core/bin/typo3 ldap:&lt;function&gt; &lt;parameters&gt;</span>
+</pre></div>
+</div>
+<p>The following functions are supported:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="22%" />
+<col width="22%" />
+<col width="57%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Function</th>
+<th class="head">Description</th>
+<th class="head">Parameters</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>importUsers</td>
+<td>Imports new users</td>
+<td><p class="first"><strong>servers [string]</strong>
+comma separated list (no spaces) of server uids from the configuration file</p>
+<p><strong>processFe [boolean, 0/1]</strong>
+Import frontend users</p>
+<p class="last"><strong>ProcessBe [boolean, 0/1]</strong>
+Import backend users</p>
+</td>
+</tr>
+<tr class="row-odd"><td>updateUsers</td>
+<td>Updates existing users</td>
+<td><p class="first"><strong>servers [string]</strong>
+comma separated list (no spaces) of server uids from the configuration file</p>
+<p><strong>processFe [boolean, 0/1]</strong>
+Update frontend users</p>
+<p class="last"><strong>ProcessBe [boolean, 0/1]</strong>
+Update backend users</p>
+</td>
+</tr>
+<tr class="row-even"><td>importOrUpdateUsers</td>
+<td>Imports new users and
+updates existing ones</td>
+<td><p class="first"><strong>servers [string]</strong>
+comma separated list (no spaces) of server uids from the configuration file</p>
+<p><strong>processFe [boolean, 0/1]</strong>
+Import/pdate frontend users</p>
+<p class="last"><strong>ProcessBe [boolean, 0/1]</strong>
+Import/pdate backend users</p>
+</td>
+</tr>
+<tr class="row-odd"><td>deleteUsers</td>
+<td>Deletes or disables users
+not found in any
+LDAP directory</td>
+<td><p class="first"><strong>processFe [boolean, 0/1]</strong>
+Delete frontend users</p>
+<p><strong>processBe [boolean, 0/1]</strong>
+Delete backend users</p>
+<p><strong>hideNotDelete [boolean, 0/1]</strong>
+Disable users instead of deleting them</p>
+<p class="last"><strong>deleteNonLdapUsers [boolean, 0/1]</strong>
+Delete/deactivate also users which have not been imported from a directory</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="scheduled-tasks">
+<h2>Scheduled Tasks<a class="headerlink" href="#scheduled-tasks" title="Permalink to this headline">¶</a></h2>
+<p>Using the Symfony Command Console (cli) as a Scheduler Task allows
+scheduled execution of an action. To create a scheduled execution
+simply add a new Scheduler task with class “Execute console commands”.
+Select the appropriate task under “Schedulable Command”, save the task
+and reopen it to set parameters. These are the same as described in
+the section above.</p>
+</div>
+<div class="section" id="faqs">
+<h2>FAQs<a class="headerlink" href="#faqs" title="Permalink to this headline">¶</a></h2>
+<p><strong>Is there a limit on the number of user records which can be imported
+from a directory?</strong></p>
+<p>No, there isn’t – at least not in the extension. Many LDAP servers are
+configured to retrieve only 1000 records per search, so please check
+your LDAP server if you get only 1000 entries.</p>
+<p><strong>Can I import nested user groups from an LDAP directory?</strong></p>
+<p>No, this is (currently) not supported.</p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../Index.html">TYPO3 LDAP Extension</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../Introduction/Index.html">Introduction</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Administrator</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#backend-module">Backend Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#command-line-cli">Command Line (cli)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#scheduled-tasks">Scheduled Tasks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#faqs">FAQs</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../Configuration/Index.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Sitemap.html">Sitemap</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../Index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="../Introduction/Index.html" title="previous chapter">Introduction</a></li>
+      <li>Next: <a href="../Configuration/Index.html" title="next chapter">Configuration</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Norman Seibert.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/Administrator/Index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
