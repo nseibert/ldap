@@ -21,7 +21,7 @@ namespace NormanSeibert\Ldap\Service;
  * 
  * @package   ldap
  * @author	  Norman Seibert <seibert@entios.de>
- * @copyright 2013 Norman Seibert
+ * @copyright 2020 Norman Seibert
  */
 
 use Psr\Log\LoggerAwareTrait;
