@@ -266,7 +266,10 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 	 */
 	public function getLdapServer($uid) {
 		$serverRecord = FALSE;
-		$server = $this->allLdapServers[$uid . '.'];
+		$server = $this->allLdapServers[$uid];
+		if (!is_array($server)) {
+			$server = $this->allLdapServers[$uid . '.'];
+		}
 		if (is_array($server)) {
 			$errors = $this->checkServerConfiguration($server);
 			
