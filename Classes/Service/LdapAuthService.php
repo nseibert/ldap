@@ -27,16 +27,16 @@ namespace NormanSeibert\Ldap\Service;
 use Psr\Log\LoggerAwareTrait;
 use \NormanSeibert\Ldap\Domain\Model\Configuration\Configuration;
 use \TYPO3\CMS\Extbase\SignalSlot\Dispatcher;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Core\Database\Connection;
-use TYPO3\CMS\Core\Database\ConnectionPool;
-use TYPO3\CMS\Core\Database\Query\Restriction\DefaultRestrictionContainer;
-use TYPO3\CMS\Core\Database\Query\Restriction\DeletedRestriction;
-use TYPO3\CMS\Core\Database\Query\Restriction\EndTimeRestriction;
-use TYPO3\CMS\Core\Database\Query\Restriction\HiddenRestriction;
-use TYPO3\CMS\Core\Database\Query\Restriction\QueryRestrictionContainerInterface;
-use TYPO3\CMS\Core\Database\Query\Restriction\RootLevelRestriction;
-use TYPO3\CMS\Core\Database\Query\Restriction\StartTimeRestriction;
+use \TYPO3\CMS\Core\Utility\GeneralUtility;
+use \TYPO3\CMS\Core\Database\Connection;
+use \TYPO3\CMS\Core\Database\ConnectionPool;
+use \TYPO3\CMS\Core\Database\Query\Restriction\DefaultRestrictionContainer;
+use \TYPO3\CMS\Core\Database\Query\Restriction\DeletedRestriction;
+use \TYPO3\CMS\Core\Database\Query\Restriction\EndTimeRestriction;
+use \TYPO3\CMS\Core\Database\Query\Restriction\HiddenRestriction;
+use \TYPO3\CMS\Core\Database\Query\Restriction\QueryRestrictionContainerInterface;
+use \TYPO3\CMS\Core\Database\Query\Restriction\RootLevelRestriction;
+use \TYPO3\CMS\Core\Database\Query\Restriction\StartTimeRestriction;
 
 
 /**
