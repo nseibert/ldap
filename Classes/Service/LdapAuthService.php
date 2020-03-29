@@ -25,12 +25,25 @@ namespace NormanSeibert\Ldap\Service;
  */
 
 use Psr\Log\LoggerAwareTrait;
+use \NormanSeibert\Ldap\Domain\Model\Configuration\Configuration;
+use \TYPO3\CMS\Extbase\SignalSlot\Dispatcher;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Core\Database\Connection;
+use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\Database\Query\Restriction\DefaultRestrictionContainer;
+use TYPO3\CMS\Core\Database\Query\Restriction\DeletedRestriction;
+use TYPO3\CMS\Core\Database\Query\Restriction\EndTimeRestriction;
+use TYPO3\CMS\Core\Database\Query\Restriction\HiddenRestriction;
+use TYPO3\CMS\Core\Database\Query\Restriction\QueryRestrictionContainerInterface;
+use TYPO3\CMS\Core\Database\Query\Restriction\RootLevelRestriction;
+use TYPO3\CMS\Core\Database\Query\Restriction\StartTimeRestriction;
+
 
 /**
  * Service to authenticate users against LDAP directory
  */
 // @extensionScannerIgnoreLine
-class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService implements \Psr\Log\LoggerAwareInterface {
+class LdapAuthService extends \TYPO3\CMS\Core\Authentication\AuthenticationService implements \Psr\Log\LoggerAwareInterface {
 
 	use LoggerAwareTrait;
 
@@ -39,12 +52,6 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService implements \Ps
 	 * @var array
 	 */
 	private $conf;
-	
-	/**
-	 *
-	 * @var object
-	 */
-	public $pObj;
 	
 	/**
 	 *
@@ -78,14 +85,12 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService implements \Ps
 
 	/**
 	 * @var \NormanSeibert\Ldap\Domain\Model\Configuration\Configuration
-     * @TYPO3\CMS\Extbase\Annotation\Inject
 	 */
 	protected $ldapConfig;
 	
 	/**
 	 *
 	 * @var \TYPO3\CMS\Extbase\Object\ObjectManager
-	 * @TYPO3\CMS\Extbase\Annotation\Inject
 	 */
 	protected $objectManager;
 
@@ -98,22 +103,33 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService implements \Ps
     /**
      *
      * @var \TYPO3\CMS\Extbase\SignalSlot\Dispatcher
-     * @TYPO3\CMS\Extbase\Annotation\Inject
      */
     protected $signalSlotDispatcher;
-
-    /**
-     *
-     * @var \NormanSeibert\Ldap\Service\TypoScriptService
-     * @TYPO3\CMS\Extbase\Annotation\Inject
-    */
-    protected $typoScriptService;
 
     /**
      *
      * @var \TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface
      */
     protected $configurationManager;
+
+    /**
+     * Enable field columns of user table
+     * @var array
+     */
+    public $enablecolumns = [
+        'rootLevel' => '',
+        // Boolean: If TRUE, 'AND pid=0' will be a part of the query...
+        'disabled' => '',
+        'starttime' => '',
+        'endtime' => '',
+        'deleted' => '',
+    ];
+
+    /**
+     * Table in database with user data
+     * @var string
+     */
+    public $user_table = '';
 
 	/**
 	 * Initialize authentication service
@@ -126,20 +142,20 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService implements \Ps
 	function initAuth($subType, $loginData, $authenticationInformation, $parentObject) {
 		$this->objectManager = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\Object\\ObjectManager');
 		$this->signalSlotDispatcher = $this->objectManager->get('TYPO3\\CMS\\Extbase\\SignalSlot\\Dispatcher');
-		$this->typoScriptService = $this->objectManager->get('NormanSeibert\\Ldap\\Service\\TypoScriptService');
+		$this->persistenceManager = $this->objectManager->get('TYPO3\\CMS\\Extbase\\Persistence\\PersistenceManagerInterface');
 		$this->ldapConfig = $this->objectManager->get('NormanSeibert\\Ldap\\Domain\\Model\\Configuration\\Configuration');
         $this->conf = $this->ldapConfig->getConfiguration();
+        
 		$this->logLevel = $this->conf['logLevel'];
-		$this->pObj = $parentObject;
 		$this->loginData = $loginData;
 		$this->authInfo = $authenticationInformation;
-		
-		// Initialize TSFE and Extbase
-		$this->initializeExtbaseFramework();
 
 		// Plaintext or RSA authentication
 		$this->username = $this->loginData['uname'];
 		$this->password = $this->loginData['uident_text'];
+
+		$this->user_table = $this->authInfo['db_user']['table'];
+		$this->ldapServers = $this->ldapConfig->getLdapServers('', '', $this->authInfo['loginType'], $this->authInfo['db_user']['checkPidList']);
 		
 		// for testing purposes only!
 		// $_SERVER[$this->conf['ssoHeader']] = 'admin@entios.local';
@@ -189,7 +205,7 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService implements \Ps
 	 * @return mixed User array or FALSE
 	 */
 	function getTypo3User() {
-		$user = $this->fetchUserRecord($this->username);
+		$user = $this->getRawUserByName($this->username);
 		if (!is_array($user)) {
 			// Failed login attempt (no user found)
 			$this->writelog(255, 3, 3, 2, 'Login-attempt from %s (%s), username \'%s\' not found!!', array($this->authInfo['REMOTE_ADDR'], $this->authInfo['REMOTE_HOST'], $this->login['uname'])); // Logout written to log
@@ -212,10 +228,10 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService implements \Ps
 	function getUser() {
 		$user = FALSE;
 		
-		if ($this->logLevel >= 2) {
+		// if ($this->logLevel >= 2) {
 			$msg = 'getUser() called, loginType: ' . $this->authInfo['loginType'];
 			$this->logger->debug($msg);
-		}
+		// }
 		if ($this->loginData['status'] == 'login') {
 			if ($this->username) {
 				if ($this->logLevel == 2) {
@@ -230,7 +246,6 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService implements \Ps
 				} else {
 					$pid = $this->authInfo['db_user']['checkPidList'];
 				}
-				$this->ldapServers = $this->ldapConfig->getLdapServers('', '', $this->authInfo['loginType'], $this->authInfo['db_user']['checkPidList']);
 				if (count($this->ldapServers)) {
 					foreach ($this->ldapServers as $server) {
 						if ($user) {
@@ -269,7 +284,7 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService implements \Ps
 
 							if (is_object($ldapUser)) {
 								// Credentials are OK
-								if ($server->getConfiguration()->getUserRules($this->authInfo['db_user']['table'])->getAutoImport()) {
+								if ($server->getConfiguration()->getUserRules($this->user_table)->getAutoImport()) {
 									// Authenticated users shall be imported/updated
 									if ($this->logLevel >= 2) {
 										$msg = 'Import/update user ' . $this->username;
@@ -282,11 +297,9 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService implements \Ps
 									} else {
 										$ldapUser->addUser();
 									}
-									// Necessary to enable fetchUserRecord()
-									$this->persistenceManager = $this->objectManager->get('TYPO3\\CMS\\Extbase\\Persistence\\PersistenceManagerInterface');
 									$this->persistenceManager->persistAll();
 								}
-								if ($server->getConfiguration()->getUserRules($this->authInfo['db_user']['table'])->getAutoEnable()) {
+								if ($server->getConfiguration()->getUserRules($this->user_table)->getAutoEnable()) {
 									$ldapUser->loadUser();
 									$typo3User = $ldapUser->getUser();
 									if (is_object($typo3User)) {
@@ -299,8 +312,6 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService implements \Ps
 											$ldapUser->enableUser();
 										}
 									}
-									// Necessary to enable fetchUserRecord()
-									$this->persistenceManager = $this->objectManager->get('TYPO3\\CMS\\Extbase\\Persistence\\PersistenceManagerInterface');
 									$this->persistenceManager->persistAll();
 								}
 								$user = $this->getTypo3User();
@@ -342,7 +353,7 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService implements \Ps
 	{
 		$ok = 100;
 		
-		if (($this->username) && (count($this->ldapServers) > 0)) {
+		if (($this->username) && ($this->ldapServers) && is_array($this->ldapServers) && (count($this->ldapServers) > 0)) {
 			$ok = 0;
 			// User has already been authenticated during getUser()
 			if (isset($user['ldap_authenticated'])) {
@@ -392,52 +403,58 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService implements \Ps
 		return $ok;
 	}
 
-    /**
-     * Get a user from DB by username
-     * provided for usage from services
-     *
-     * @param string $username user name
-     * @param string $extraWhere Additional WHERE clause: " AND ...
-     * @param string $dbUserSetup
-     * @internal param array $dbUser User db table definition: $this->db_user
-     * @return mixed User array or FALSE
-     */
-	function fetchUserRecord($username, $extraWhere = '', $dbUserSetup = '') {
-		$dbUser = is_array($dbUserSetup) ? $dbUserSetup : $this->authInfo['db_user'];
-		$user = $this->pObj->fetchUserRecord($dbUser, $username, $extraWhere);
-		return $user;
-	}
-	
-	//
-	// Helper functions
-	//
-	
 	/**
-	 * @return void
-	 */
-	protected function initializeExtbaseFramework() {
-		// inject content object into the configuration manager
-		$this->configurationManager = $this->objectManager->get('TYPO3\\CMS\\Extbase\\Configuration\\ConfigurationManager');
-		$contentObject = $this->objectManager->get('TYPO3\\CMS\\Frontend\\ContentObject\\ContentObjectRenderer');
-		$this->configurationManager->setContentObject($contentObject);
+     * This returns the restrictions needed to select the user respecting
+     * enable columns and flags like deleted, hidden, starttime, endtime
+     * and rootLevel
+     *
+     * @return QueryRestrictionContainerInterface
+     * @internal
+     */
+    protected function userConstraints(): QueryRestrictionContainerInterface
+    {
+        $restrictionContainer = GeneralUtility::makeInstance(DefaultRestrictionContainer::class);
 
-		// load extbase typoscript
-		$typoScriptArray = \NormanSeibert\Ldap\Service\TypoScriptService::loadTypoScriptFromFile('EXT:extbase/ext_typoscript_setup.typoscript');
-		// load this extensions typoscript (database column => model property map etc)
-		$typoScriptArray2 = \NormanSeibert\Ldap\Service\TypoScriptService::loadTypoScriptFromFile('EXT:ldap/Configuration/ext_typoscript_setup.typoscript');
-		if (is_array($typoScriptArray) && !empty($typoScriptArray) && is_array($typoScriptArray2) && !empty($typoScriptArray2)) {
-			\TYPO3\CMS\Core\Utility\ArrayUtility::mergeRecursiveWithOverrule($typoScriptArray, $typoScriptArray2);
-		}
+        if (empty($this->enablecolumns['disabled'])) {
+            $restrictionContainer->removeByType(HiddenRestriction::class);
+        }
 
-		if (is_array($typoScriptArray) && !empty($typoScriptArray) && isset($GLOBALS['TSFE']->tmpl->setup)) {
-			\TYPO3\CMS\Core\Utility\ArrayUtility::mergeRecursiveWithOverrule($GLOBALS['TSFE']->tmpl->setup, $typoScriptArray);
-			$this->configurationManager->setConfiguration($GLOBALS['TSFE']->tmpl->setup);
-		} elseif (is_array($typoScriptArray) && !empty($typoScriptArray)) {
-			$this->configurationManager->setConfiguration($typoScriptArray['config.']['tx_extbase.']);
-		}
+        if (empty($this->enablecolumns['deleted'])) {
+            $restrictionContainer->removeByType(DeletedRestriction::class);
+        }
 
-		// initialize persistence
-		$this->persistenceManager = $this->objectManager->get('TYPO3\\CMS\\Extbase\\Persistence\\PersistenceManagerInterface');
-	}
+        if (empty($this->enablecolumns['starttime'])) {
+            $restrictionContainer->removeByType(StartTimeRestriction::class);
+        }
+
+        if (empty($this->enablecolumns['endtime'])) {
+            $restrictionContainer->removeByType(EndTimeRestriction::class);
+        }
+
+        if (!empty($this->enablecolumns['rootLevel'])) {
+            $restrictionContainer->add(GeneralUtility::makeInstance(RootLevelRestriction::class, [$this->user_table]));
+        }
+
+        return $restrictionContainer;
+    }
+
+	/**
+     * Fetching raw user record with username=$name
+     *
+     * @param string $name The username to look up.
+     * @return array user record or FALSE
+     * @see \TYPO3\CMS\Core\Authentication\AbstractUserAuthentication::getUserByUid()
+     * @internal
+     */
+    public function getRawUserByName($name)
+    {
+        $query = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable($this->user_table);
+        $query->setRestrictions($this->userConstraints());
+        $query->select('*')
+            ->from($this->user_table)
+            ->where($query->expr()->eq('username', $query->createNamedParameter($name, \PDO::PARAM_STR)));
+
+        return $query->execute()->fetch();
+    }
 }
 ?>
