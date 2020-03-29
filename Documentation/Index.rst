@@ -1,55 +1,76 @@
-﻿.. include:: Images.txt
+.. every .rst file should include Includes.txt
+.. use correct path!
 
-.. ==================================================
-.. FOR YOUR INFORMATION
-.. --------------------------------------------------
-.. -*- coding: utf-8 -*- with BOM.
+.. include:: Includes.txt
 
-.. ==================================================
-.. DEFINE SOME TEXTROLES
-.. --------------------------------------------------
-.. role::   underline
-.. role::   typoscript(code)
-.. role::   ts(typoscript)
-   :class:  typoscript
-.. role::   php(code)
 
-=====================
-EXT: LDAP Integration
-=====================
+.. Every manual should have a start label for cross-referencing to
+.. start page. Do not remove this!
 
-:Created:
-      2010-02-18 17::3:3:
+.. _start:
 
-:Changed:
-      2014-05-28 22::3:1:
+=============================================================
+Extension Name
+=============================================================
 
-:Classification:
-      ldap
-
-:Keywords:
-      LDAP, Active Directory, Authentication, forAdmins
-
-:Author:
-      Norman Seibert
-
-:Email:
-      seibert(at)entios.de
-
-:Info 4:
-
+:Version:
+   3.4.x
 
 :Language:
-      en
+   en
+
+:Authors:
+   Norman Seibert
+
+:Email:
+   seibert@entios.de
+
+:License:
+   This extension documentation is published under the
+   `CC BY-NC-SA 4.0 <https://creativecommons.org/licenses/by-nc-sa/4.0/>`__ (Creative Commons)
+   license
+
+ldap is an extension to connect TYPO3 to LDAP directories and to fetch user records from them.
+
+**TYPO3**
+
+   The content of this document is related to TYPO3 CMS,
+   a GNU/GPL CMS/Framework available from `typo3.org
+   <https://typo3.org/>`_ .
+
+**Community Documentation:**
+
+   This documentation is community documentation for the TYPO3 extension ldap
+
+   It is maintained as part of this third party extension.
+
+   If you find an error or something is missing, please:
+   `Report a Problem <https://github.com/nseibert/ldap/issues/new>`__
+
+**Extension Manual**
+
+   This documentation is for the TYPO3 extension ldap.
 
 
-|img-1| EXT: LDAP Integration -ldapChangeLog
+
+**For Contributors**
+
+   You are welcome to help improve this guide. Just click on "Edit me on GitHub"
+   on the top right to submit your change request.
+
+
+**Sitemap:**
+
+   :ref:`sitemap`
 
 
 .. toctree::
-   :maxdepth: 5
-   :titlesonly:
-   :glob:
+   :maxdepth: 3
+   :hidden:
 
-   ExtLdapIntegration/Index
+
+   Introduction/Index
+   Administrator/Index
+   Configuration/Index
+   Sitemap
 
