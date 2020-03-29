@@ -30,6 +30,7 @@ use \NormanSeibert\Ldap\Domain\Model\LdapServer\Server;
 use \NormanSeibert\Ldap\Domain\Repository\Typo3User\FrontendUserRepository;
 use \NormanSeibert\Ldap\Domain\Repository\Typo3User\BackendUserRepository;
 use \TYPO3\CMS\Extbase\Object\ObjectManager;
+use \TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
  * Service to import users from LDAP directory to TYPO3 database
@@ -255,17 +256,10 @@ class LdapImporter implements \Psr\Log\LoggerAwareInterface {
 		$removeUsers = array();
 		foreach ($users as $user) {
             /* @var $user \NormanSeibert\Ldap\Domain\Model\Typo3User\UserInterface */
-			if (!is_object($user->getLdapServer())) {
-				$user->setLastRun($runIdentifier);
-				if ($hide) {
-					$user->setIsDisabled(TRUE);
-				} else {
-					$removeUsers[] = $user;
-				}
-				$repository->update($user);
-			} else {
-				if ($user->getLdapServer() != $tmpServer) {
-					$tmpServer = $user->getLdapServer();
+			if ($user->getServerUid()) {
+				$server = $this->ldapConfig->getLdapServer($user->getServerUid());
+				if ($server != $tmpServer) {
+					$tmpServer = $server;
 				}
 				$ldapUser = $tmpServer->getUser($user->getDN());
 				if (!is_object($ldapUser)) {
@@ -277,6 +271,14 @@ class LdapImporter implements \Psr\Log\LoggerAwareInterface {
 					}
 					$repository->update($user);
 				}
+			} else {
+				$user->setLastRun($runIdentifier);
+				if ($hide) {
+					$user->setIsDisabled(TRUE);
+				} else {
+					$removeUsers[] = $user;
+				}
+				$repository->update($user);
 			}
 		}
 
