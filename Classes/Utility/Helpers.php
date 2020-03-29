@@ -27,6 +27,11 @@ namespace NormanSeibert\Ldap\Utility;
 /**
  * Various helper functions
  */
+
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+use \TYPO3\CMS\Core\Core\Environment;
+use \TYPO3\CMS\Core\Context\Context;
+
 class Helpers {
 
 	/**
@@ -39,11 +44,11 @@ class Helpers {
 	 * @return void
 	 */
 	static function addError($severity = \TYPO3\CMS\Core\Messaging\FlashMessage::INFO, $message = '', $server = '', $data = null) {
-		$storeInSession = FALSE;
-		if (!isset($GLOBALS['TSFE'])) {
-			if ($GLOBALS['BE_USER'] && ($GLOBALS['BE_USER']->username !== '_cli_')) {
-				$storeInSession = TRUE;
-			}
+		// only when not called from a command controller
+		$context = GeneralUtility::makeInstance(Context::class);
+		$beUserId = $context->getPropertyFromAspect('backend.user', 'id');
+		$languageId = $context->getPropertyFromAspect('language', 'id');
+		if (($beUserId) && (!Environment::isCli()) && !isset($languageId)) {
 			$msg = $message;
 			if ($data) {
 				$msg .= '<br/>'.\TYPO3\CMS\Core\Utility\ArrayUtility::flatten($data);
@@ -52,7 +57,7 @@ class Helpers {
 				$msg,
 				'LDAP server ' . $server,
 				$severity,
-				$storeInSession
+				TRUE
 			);
 			$messageQueue = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Messaging\\FlashMessageQueue', 'ldap');
 			// @extensionScannerIgnoreLine
@@ -159,86 +164,6 @@ class Helpers {
 		$res = str_replace(array_keys($sanitized), array_values($sanitized), $string);
 		
 		return $res;
-	}
-
-    /**
-     * Generates a random password
-     *
-     * @param int $l number of special characters
-     * @param int $c number of alphabetic characters
-     * @param int $n number of numeric characters
-     * @param int $s number of special characters
-     * @return string
-     */
-	static function generatePassword($l = 8, $c = 0, $n = 0, $s = 0) {
-		// get count of all required minimum special chars
-		$count = $c + $n + $s;
-		$ok = true;
-		$out = false;
-		
-		// sanitize inputs; should be self-explanatory
-		if (!is_int($l) || !is_int($c) || !is_int($n) || !is_int($s)) {
-			trigger_error('Argument(s) not an integer', E_USER_WARNING);
-			$ok = false;
-		} elseif ($l < 0 || $l > 20 || $c < 0 || $n < 0 || $s < 0) {
-			trigger_error('Argument(s) out of range', E_USER_WARNING);
-			$ok = false;
-		} elseif ($c > $l) {
-			trigger_error('Number of password capitals required exceeds password length', E_USER_WARNING);
-			$ok = false;
-		} elseif ($n > $l) {
-			trigger_error('Number of password numerals exceeds password length', E_USER_WARNING);
-			$ok = false;
-		} elseif ($s > $l) {
-			trigger_error('Number of password capitals exceeds password length', E_USER_WARNING);
-			$ok = false;
-		} elseif ($count > $l) {
-			trigger_error('Number of password special characters exceeds specified password length', E_USER_WARNING);
-			$ok = false;
-		}
-		
-		// all inputs clean, proceed to build password
-		if ($ok) {
-			// change these strings if you want to include or exclude possible password characters
-			$chars = "abcdefghijklmnopqrstuvwxyz";
-			$caps = strtoupper($chars);
-			$nums = "0123456789";
-			$syms = "!@#$%^&*()-+?";
-			
-			// build the base password of all lower-case letters
-			for ($i = 0; $i < $l; $i++) {
-				$out .= substr($chars, mt_rand(0, strlen($chars) - 1), 1);
-			}
-			
-			// create arrays if special character(s) required
-			if ($count) {
-				// split base password to array; create special chars array
-				$tmp1 = str_split($out);
-				$tmp2 = array();
-			
-				// add required special character(s) to second array
-				for ($i = 0; $i < $c; $i++) {
-					array_push($tmp2, substr($caps, mt_rand(0, strlen($caps) - 1), 1));
-				}
-				for ($i = 0; $i < $n; $i++) {
-					array_push($tmp2, substr($nums, mt_rand(0, strlen($nums) - 1), 1));
-				}
-				for ($i = 0; $i < $s; $i++) {
-					array_push($tmp2, substr($syms, mt_rand(0, strlen($syms) - 1), 1));
-				}
-			
-				// hack off a chunk of the base password array that's as big as the special chars array
-				$tmp1 = array_slice($tmp1, 0, $l - $count);
-				// merge special character(s) array with base password array
-				$tmp1 = array_merge($tmp1, $tmp2);
-				// mix the characters up
-				shuffle($tmp1);
-				// convert to string for output
-				$out = implode('', $tmp1);
-			}
-		}
-
-		return $out;
 	}
 	
 	/**
