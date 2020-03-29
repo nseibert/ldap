@@ -24,25 +24,28 @@ namespace NormanSeibert\Ldap\Domain\Model\LdapUser;
  * @copyright 2013 Norman Seibert
  */
 
+use \NormanSeibert\Ldap\Domain\Repository\Typo3User\FrontendUserRepository;
+use \NormanSeibert\Ldap\Domain\Repository\Typo3User\FrontendUserGroupRepository;
+use \NormanSeibert\Ldap\Domain\Model\Typo3User\FrontendUser;
+use \NormanSeibert\Ldap\Domain\Model\Typo3User\FrontendUserGroup;
+
 /**
  * Model for users read from LDAP server
  */
 class FeUser extends \NormanSeibert\Ldap\Domain\Model\LdapUser\User {
 	
 	/**
-	 * @var \NormanSeibert\Ldap\Domain\Model\Typo3User\FrontendUser
+	 * @var FrontendUser
 	 */
 	protected $user;
 	
 	/**
-	 * @var \NormanSeibert\Ldap\Domain\Repository\Typo3User\FrontendUserRepository
-	 * @TYPO3\CMS\Extbase\Annotation\Inject
+	 * @var FrontendUserRepository
 	 */
 	protected $userRepository;
 	
 	/**
-	 * @var \NormanSeibert\Ldap\Domain\Repository\Typo3User\FrontendUserGroupRepository
-	 * @TYPO3\CMS\Extbase\Annotation\Inject
+	 * @var FrontendUserGroupRepository
 	 */
 	protected $usergroupRepository;
 	
@@ -57,12 +60,19 @@ class FeUser extends \NormanSeibert\Ldap\Domain\Model\LdapUser\User {
 	protected $pid;
 
     /**
-	 * 
+	 * @param Configuration $ldapConfig
+	 * @param ObjectManager $objectManager
+	 * @param FrontendUserRepository $userRepository
+	 * @param FrontendUserGroupRepository $usergroupRepository
+	 * @param FrontendUser $userObject
+	 * @param FrontendUserGroup $groupObject
 	 */
-	public function __construct() {
+	public function __construct(FrontendUserRepository $userRepository, FrontendUserGroupRepository $usergroupRepository, FrontendUser $userObject, FrontendUserGroup $groupObject) {
 		parent::__construct();
-		$this->userObject = 'NormanSeibert\\Ldap\\Domain\\Model\\Typo3User\\FrontendUser';
-		$this->groupObject = 'NormanSeibert\\Ldap\\Domain\\Model\\Typo3User\\FrontendUserGroup';
+		$this->userRepository = $userRepository;
+		$this->usergroupRepository = $usergroupRepository;
+		$this->userObject = $userObject;
+		$this->groupObject = $groupObject;
 	}
 	
 	/**

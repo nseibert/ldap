@@ -25,6 +25,11 @@ namespace NormanSeibert\Ldap\Service;
  */
 
 use Psr\Log\LoggerAwareTrait;
+use \NormanSeibert\Ldap\Domain\Model\Configuration\Configuration;
+use \NormanSeibert\Ldap\Domain\Model\LdapServer\Server;
+use \NormanSeibert\Ldap\Domain\Repository\Typo3User\FrontendUserRepository;
+use \NormanSeibert\Ldap\Domain\Repository\Typo3User\BackendUserRepository;
+use \TYPO3\CMS\Extbase\Object\ObjectManager;
 
 /**
  * Service to import users from LDAP directory to TYPO3 database
@@ -39,34 +44,46 @@ class LdapImporter implements \Psr\Log\LoggerAwareInterface {
     protected $table;
 
 	/**
-	 * @var \NormanSeibert\Ldap\Domain\Model\Configuration\Configuration
-	 * @TYPO3\CMS\Extbase\Annotation\Inject
+	 * @var Configuration
 	 */
 	protected $ldapConfig;
 	
 	/**
-	 * @var \NormanSeibert\Ldap\Domain\Model\LdapServer\Server
+	 * @var Server
 	 */
 	protected $ldapServer;
 	
 	/**
-	 * @var \NormanSeibert\Ldap\Domain\Repository\Typo3User\FrontendUserRepository
-	 * @TYPO3\CMS\Extbase\Annotation\Inject
+	 * @var FrontendUserRepository
 	 */
 	protected $feUserRepository;
 	
 	/**
-	 * @var \NormanSeibert\Ldap\Domain\Repository\Typo3User\BackendUserRepository
-	 * @TYPO3\CMS\Extbase\Annotation\Inject
+	 * @var BackendUserRepository
 	 */
 	protected $beUserRepository;
 	
 	/**
 	 *
-	 * @var \TYPO3\CMS\Extbase\Object\ObjectManager
-	 * @TYPO3\CMS\Extbase\Annotation\Inject
+	 * @var ObjectManager
 	 */
 	protected $objectManager;
+
+	/**
+	 * @param Configuration $ldapConfig
+	 * @param Server $ldapServer
+	 * @param FrontendUserRepository $feUserRepository
+	 * @param BackendUserRepository $beUserRepository
+	 * @param ObjectManager $objectManager
+	 * @param 
+	 */
+	public function __construct(Configuration $ldapConfig, Server $ldapServer, FrontendUserRepository $feUserRepository, BackendUserRepository $beUserRepository, ObjectManager $objectManager) {
+	    $this->ldapConfig = $ldapConfig;
+	    $this->ldapServer = $ldapServer;
+	    $this->feUserRepository = $feUserRepository;
+	    $this->beUserRepository = $beUserRepository;
+	    $this->objectManager = $objectManager;
+	}
 	
 	/**
 	 * initializes the importer
@@ -84,7 +101,6 @@ class LdapImporter implements \Psr\Log\LoggerAwareInterface {
 		} else {
 			$this->table = 'fe_users';
 		}
-		$this->ldapConfig = $this->objectManager->get('NormanSeibert\\Ldap\\Domain\\Model\\Configuration\\Configuration');
 	}
 
     /**

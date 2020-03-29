@@ -24,6 +24,11 @@ namespace NormanSeibert\Ldap\Domain\Model\Typo3User;
  * @copyright 2013 Norman Seibert
  */
 
+use \NormanSeibert\Ldap\Domain\Model\Configuration\Configuration;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Core\Crypto\Random;
+use TYPO3\CMS\Core\Crypto\PasswordHashing;
+
 /**
  * Model for TYPO3 frontend users
  */
@@ -56,10 +61,17 @@ class FrontendUser extends \TYPO3\CMS\Extbase\Domain\Model\FrontendUser implemen
 	protected $lastRun;
 	
 	/**
-	 * @var \NormanSeibert\Ldap\Domain\Model\Configuration\Configuration
-	 * @TYPO3\CMS\Extbase\Annotation\Inject
+	 * @var Configuration
 	 */
 	protected $ldapConfig;
+
+	/**
+	 * @param Configuration $ldapConfig
+	 * @param 
+	 */
+	public function __construct(Configuration $ldapConfig) {
+	    $this->ldapConfig = $ldapConfig;
+	}
 	
 	/**
 	 * Checks whether this user is disabled.
@@ -155,8 +167,8 @@ class FrontendUser extends \TYPO3\CMS\Extbase\Domain\Model\FrontendUser implemen
 	 * @return \NormanSeibert\Ldap\Domain\Model\Typo3User\FrontendUser
 	 */
 	public function generatePassword() {
-		$password = \NormanSeibert\Ldap\Utility\Helpers::generatePassword(10, 2, 2, 2);
-		$hashInstance = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Crypto\PasswordHashing\PasswordHashFactory::class)->getDefaultHashInstance('FE');
+		$password = GeneralUtility::makeInstance(Random::class)->generateRandomHexString(20);
+		$hashInstance = GeneralUtility::makeInstance(PasswordHashFactory::class)->getDefaultHashInstance('FE');
 		$hashedPassword = $hashInstance->getHashedPassword($password);
 		$this->password = $hashedPassword;
 		return $this;

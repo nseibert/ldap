@@ -24,6 +24,13 @@ namespace NormanSeibert\Ldap\Controller;
  * @copyright 2013 Norman Seibert
  */
 
+use \NormanSeibert\Ldap\Domain\Repository\Typo3User\FrontendUserRepository;
+use \NormanSeibert\Ldap\Domain\Repository\Typo3User\BackendUserRepository;
+use \NormanSeibert\Ldap\Domain\Model\Configuration\Configuration;
+use \NormanSeibert\Ldap\Domain\Model\BackendModule\ModuleData;
+use \NormanSeibert\Ldap\Service\ModuleDataStorageService;
+use \NormanSeibert\Ldap\Service\LdapImporter;
+
 /**
  * Controller for backend module
  */
@@ -40,33 +47,52 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 	protected $pageRenderer;
 
 	/**
-	 * @var \NormanSeibert\Ldap\Domain\Repository\Typo3User\FrontendUserRepository
-	 * @TYPO3\CMS\Extbase\Annotation\Inject
+	 * @var FrontendUserRepository
 	 */
 	protected $feUserRepository;
 
 	/**
-	 * @var \NormanSeibert\Ldap\Domain\Repository\Typo3User\BackendUserRepository
-	 * @TYPO3\CMS\Extbase\Annotation\Inject
+	 * @var BackendUserRepository
 	 */
 	protected $beUserRepository;
 
 	/**
-	 * @var \NormanSeibert\Ldap\Domain\Model\Configuration\Configuration
-	 * @TYPO3\CMS\Extbase\Annotation\Inject
+	 * @var Configuration
 	 */
 	protected $ldapConfig;
 
 	/**
-	 * @var \NormanSeibert\Ldap\Domain\Model\BackendModule\ModuleData
+	 * @var ModuleData
 	 *  */
 	protected $moduleData;
 
 	/**
-	 * @var \NormanSeibert\Ldap\Service\ModuleDataStorageService
-	 * @TYPO3\CMS\Extbase\Annotation\Inject
+	 * @var ModuleDataStorageService
 	 */
 	protected $moduleDataStorageService;
+
+	/**
+	 * @var LdapImporter
+	 */
+	protected $importer;
+
+	/**
+	 * @param FrontendUserRepository $feUserRepository
+	 * @param BackendUserRepository $beUserRepository
+	 * @param Configuration $ldapConfig
+	 * @param ModuleData $moduleData
+	 * @param ModuleDataStorageService $moduleDataStorageService
+	 * @param LdapImporter $importer
+	 * @param 
+	 */
+	public function __construct(FrontendUserRepository $feUserRepository, BackendUserRepository $beUserRepository, Configuration $ldapConfig, ModuleData $moduleData, ModuleDataStorageService $moduleDataStorageService, LdapImporter $importer) {
+	    $this->feUserRepository = $feUserRepository;
+	    $this->beUserRepository = $beUserRepository;
+	    $this->ldapConfig = $ldapConfig;
+	    $this->moduleData = $moduleData;
+	    $this->moduleDataStorageService = $moduleDataStorageService;
+	    $this->importer = $importer;
+	}
 
 	/**
 	 * Load and persist module data
@@ -231,17 +257,16 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 		$this->view->assign('formSettings', $settings);
 
 		$ldapServers = $this->ldapConfig->getLdapServers();
-		$importer = $this->objectManager->get('NormanSeibert\\Ldap\\Service\\LdapImporter');
 		$runs = array();
 		foreach ($ldapServers as $server) {
             /* @var $server \NormanSeibert\Ldap\Domain\Model\LdapServer\Server */
 			if (in_array($server->getConfiguration()->getUid(), $settings->getUseServers())) {
 				if ($settings->getAuthenticateFe()) {
-					$importer->init($server, 'fe');
+					$this->importer->init($server, 'fe');
 					$runs[] = $importer->doImport();
 				}
 				if ($settings->getAuthenticateBe()) {
-					$importer->init($server, 'be');
+					$this->importer->init($server, 'be');
 					$runs[] = $importer->doImport();
 				}
 			}
@@ -293,18 +318,17 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 		$this->view->assign('formSettings', $settings);
 
 		$ldapServers = $this->ldapConfig->getLdapServers();
-		$importer = $this->objectManager->get('NormanSeibert\\Ldap\\Service\\LdapImporter');
 		$runs = array();
 		foreach ($ldapServers as $server) {
             /* @var $server \NormanSeibert\Ldap\Domain\Model\LdapServer\Server */
 			if (in_array($server->getConfiguration()->getUid(), $settings->getUseServers())) {
 				if ($settings->getAuthenticateFe()) {
-					$importer->init($server, 'fe');
-					$runs[] = $importer->doUpdate();
+					$this->importer->init($server, 'fe');
+					$runs[] = $this->importer->doUpdate();
 				}
 				if ($settings->getAuthenticateBe()) {
-					$importer->init($server, 'be');
-					$runs[] = $importer->doUpdate();
+					$this->importer->init($server, 'be');
+					$runs[] = $this->importer->doUpdate();
 				}
 			}
 		}
@@ -355,17 +379,16 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 		$this->view->assign('formSettings', $settings);
 
 		$ldapServers = $this->ldapConfig->getLdapServers();
-		$importer = $this->objectManager->get('NormanSeibert\\Ldap\\Service\\LdapImporter');
 		$runs = array();
 		foreach ($ldapServers as $server) {
 			if (in_array($server->getConfiguration()->getUid(), $settings->getUseServers())) {
 				if ($settings->getAuthenticateFe()) {
-					$importer->init($server, 'fe');
-					$runs[] = $importer->doImportOrUpdate();
+					$this->importer->init($server, 'fe');
+					$runs[] = $this->importer->doImportOrUpdate();
 				}
 				if ($settings->getAuthenticateBe()) {
-					$importer->init($server, 'be');
-					$runs[] = $importer->doImportOrUpdate();
+					$this->importer->init($server, 'be');
+					$runs[] = $this->importer->doImportOrUpdate();
 				}
 			}
 		}
@@ -381,8 +404,8 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 	 * configures the deletion/deactivation and display the result list
 	 */
 	public function deleteUsersAction() {
-        $beUsers = NULL;
-        $feUsers = NULL;
+        $beUsers = array();
+        $feUsers = array();
 		$settings = $this->initializeFormSettings();
 
 		if ($this->request->hasArgument('runs')) {
@@ -407,15 +430,14 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 		$settings = $this->initializeFormSettings($formSettings);
 		$this->view->assign('formSettings', $settings);
 
-		$importer = $this->objectManager->get('NormanSeibert\\Ldap\\Service\\LdapImporter');
 		$runs = array();
 		if ($settings->getAuthenticateFe()) {
-			$importer->init(NULL, 'fe');
-			$runs[] = $importer->doDelete($settings->getHideNotDelete(), $settings->getDeleteNonLdapUsers());
+			$this->importer->init(NULL, 'fe');
+			$runs[] = $this->importer->doDelete($settings->getHideNotDelete(), $settings->getDeleteNonLdapUsers());
 		}
 		if ($settings->getAuthenticateBe()) {
-			$importer->init(NULL, 'be');
-			$runs[] = $importer->doDelete($settings->getHideNotDelete(), $settings->getDeleteNonLdapUsers());
+			$this->importer->init(NULL, 'be');
+			$runs[] = $this->importer->doDelete($settings->getHideNotDelete(), $settings->getDeleteNonLdapUsers());
 		}
 
 		$arguments = array(

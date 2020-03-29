@@ -25,6 +25,9 @@ namespace NormanSeibert\Ldap\Domain\Model\LdapUser;
  */
 
 use Psr\Log\LoggerAwareTrait;
+use \NormanSeibert\Ldap\Domain\Model\Configuration\Configuration;
+use \NormanSeibert\Ldap\Utility\ContentRendererLight;
+use \TYPO3\CMS\Extbase\Object\ObjectManager;
 
 /**
  * Model for users read from LDAP server
@@ -62,14 +65,13 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \Ps
 	protected $ldapServer;
 	
 	/**
-	 * @var \NormanSeibert\Ldap\Domain\Model\Configuration\Configuration
-	 * @TYPO3\CMS\Extbase\Annotation\Inject
+	 * @var Configuration
 	 */
 	protected $ldapConfig;
 	
 	/**
 	 *
-	 * @var \TYPO3\CMS\Extbase\Object\ObjectManager
+	 * @var ObjectManager
 	 */
 	protected $objectManager;
 	
@@ -86,7 +88,7 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \Ps
 	protected $userRules;
 
     /**
-     * @var \TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer
+     * @var ContentRendererLight
      */
     protected $cObj;
 
@@ -110,7 +112,8 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \Ps
 	 */
 	public function __construct() {
 		$this->objectManager = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\Object\\ObjectManager');
-		$this->cObj = $this->objectManager->get('TYPO3\\CMS\\Frontend\\ContentObject\\ContentObjectRenderer');
+	    $this->ldapConfig = $this->objectManager->get('NormanSeibert\\Ldap\\Domain\\Model\\Configuration\\Configuration');
+		$this->cObj = $this->objectManager->get('NormanSeibert\\Ldap\\Utility\\ContentRendererLight');
 		$this->importGroups = 1;
 	}
 	

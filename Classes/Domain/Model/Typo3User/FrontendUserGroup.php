@@ -24,6 +24,8 @@ namespace NormanSeibert\Ldap\Domain\Model\Typo3User;
  * @copyright 2013 Norman Seibert
  */
 
+use \NormanSeibert\Ldap\Domain\Model\Configuration\Configuration;
+
 /**
  * Model for TYPO3 frontend users
  */
@@ -54,16 +56,17 @@ class FrontendUserGroup extends \TYPO3\CMS\Extbase\Domain\Model\FrontendUserGrou
 	protected $lastRun;
 	
 	/**
-	 *
-	 * @var \TYPO3\CMS\Extbase\Object\ObjectManager
-	 */
-	protected $objectManager;
-	
-	/**
-	 * @var \NormanSeibert\Ldap\Domain\Model\Configuration\Configuration
-	 * @TYPO3\CMS\Extbase\Annotation\Inject
+	 * @var Configuration
 	 */
 	protected $ldapConfig;
+
+	/**
+	 * @param Configuration $ldapConfig
+	 * @param 
+	 */
+	public function __construct(Configuration $ldapConfig) {
+	    $this->ldapConfig = $ldapConfig;
+	}
 	
 	/**
 	 * 

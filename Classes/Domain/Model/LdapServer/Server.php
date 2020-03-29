@@ -25,6 +25,11 @@ namespace NormanSeibert\Ldap\Domain\Model\LdapServer;
  */
 
 use Psr\Log\LoggerAwareTrait;
+use \NormanSeibert\Ldap\Domain\Model\Configuration\Configuration;
+use \NormanSeibert\Ldap\Domain\Repository\Typo3User\FrontendUserGroupRepository;
+use \NormanSeibert\Ldap\Domain\Repository\Typo3User\BackendUserGroupRepository;
+use \TYPO3\CMS\Extbase\Object\ObjectManager;
+use \TYPO3\CMS\Extbase\SignalSlot\Dispatcher;
 
 /**
  * Model for an LDAP server
@@ -46,8 +51,7 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \
 	protected $limitLdapResults = 0;
 	
 	/**
-	 * @var \NormanSeibert\Ldap\Domain\Model\Configuration\Configuration
-	 * @TYPO3\CMS\Extbase\Annotation\Inject
+	 * @var Configuration
 	 */
 	protected $ldapConfig;
 	
@@ -57,14 +61,12 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \
 	protected $configuration;
 	
 	/**
-	 * @var \NormanSeibert\Ldap\Domain\Repository\Typo3User\FrontendUserGroupRepository
-	 * @TYPO3\CMS\Extbase\Annotation\Inject
+	 * @var FrontendUserGroupRepository
 	 */
 	protected $feUsergroupRepository;
 	
 	/**
-	 * @var \NormanSeibert\Ldap\Domain\Repository\Typo3User\BackendUserGroupRepository
-	 * @TYPO3\CMS\Extbase\Annotation\Inject
+	 * @var BackendUserGroupRepository
 	 */
 	protected $beUsergroupRepository;
 	
@@ -86,24 +88,29 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \
 	
 	/**
 	 *
-	 * @var \TYPO3\CMS\Extbase\Object\ObjectManager
-	 * @TYPO3\CMS\Extbase\Annotation\Inject
+	 * @var ObjectManager
 	 */
 	protected $objectManager;
 
     /**
      *
-     * @var \TYPO3\CMS\Extbase\SignalSlot\Dispatcher
-     * @TYPO3\CMS\Extbase\Annotation\Inject
+     * @var Dispatcher
      */
     protected $signalSlotDispatcher;
 	
 	/**
-	 * 
+	 * @param Configuration ldapConfig
+	 * @param FrontendUserGroupRepository $feUsergroupRepository
+	 * @param BackendUserGroupRepository $beUsergroupRepository
+	 * @param ObjectManager $objectManager
+	 * @param Dispatcher $signalSlotDispatcher
 	 */
-	public function __construct() {
-		$this->objectManager = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\Object\\ObjectManager');
-		$this->signalSlotDispatcher = $this->objectManager->get('TYPO3\\CMS\\Extbase\\SignalSlot\\Dispatcher');
+	public function __construct(Configuration $ldapConfig, FrontendUserGroupRepository $feUsergroupRepository, BackendUserGroupRepository $beUsergroupRepository, ObjectManager $objectManager, Dispatcher $signalSlotDispatcher) {
+		$this->ldapConfig = $ldapConfig;
+		$this->feUsergroupRepository = $feUsergroupRepository;
+		$this->beUsergroupRepository = $beUsergroupRepository;
+		$this->objectManager = $objectManager;
+		$this->signalSlotDispatcher = $signalSlotDispatcher;
 	}
 	
 	/**

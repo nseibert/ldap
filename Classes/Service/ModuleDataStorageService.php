@@ -24,6 +24,8 @@ namespace NormanSeibert\Ldap\Service;
  * @copyright 2013 Norman Seibert
  */
 
+use \TYPO3\CMS\Extbase\Object\ObjectManagerInterface;
+
 /**
  * Service to store the backend module's configuration
  */
@@ -35,10 +37,17 @@ class ModuleDataStorageService implements \TYPO3\CMS\Core\SingletonInterface {
 	const KEY = 'ldap';
 
 	/**
-	 * @var \TYPO3\CMS\Extbase\Object\ObjectManagerInterface
-	 * @TYPO3\CMS\Extbase\Annotation\Inject
+	 * @var ObjectManagerInterface
 	 */
 	protected $objectManager;
+
+	/**
+	 * @param ObjectManagerInterface $objectManager
+	 * @param 
+	 */
+	public function __construct(ObjectManagerInterface $objectManager) {
+		$this->objectManager = $objectManager;
+	}
 
 	/**
 	 * Loads module data for user settings or returns a fresh object initially

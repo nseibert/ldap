@@ -24,6 +24,8 @@ namespace NormanSeibert\Ldap\Domain\Model\Typo3User;
  * @copyright 2013 Norman Seibert
  */
 
+use \NormanSeibert\Ldap\Domain\Model\Configuration\Configuration;
+
 /**
  * Model for TYPO3 backend users
  */
@@ -54,14 +56,7 @@ class BackendUserGroup extends \TYPO3\CMS\Extbase\Domain\Model\BackendUserGroup 
 	protected $lastRun;
 	
 	/**
-	 *
-	 * @var \TYPO3\CMS\Extbase\Object\ObjectManager
-	 */
-	protected $objectManager;
-	
-	/**
-	 * @var \NormanSeibert\Ldap\Domain\Model\Configuration\Configuration
-	 * @TYPO3\CMS\Extbase\Annotation\Inject
+	 * @var Configuration
 	 */
 	protected $ldapConfig;
 
@@ -69,6 +64,14 @@ class BackendUserGroup extends \TYPO3\CMS\Extbase\Domain\Model\BackendUserGroup 
 	 * @var string
 	 */
 	protected $description = '';
+
+	/**
+	 * @param Configuration $ldapConfig
+	 * @param 
+	 */
+	public function __construct(Configuration $ldapConfig) {
+	    $this->ldapConfig = $ldapConfig;
+	}
 	
 	/**
 	 * 

@@ -24,25 +24,28 @@ namespace NormanSeibert\Ldap\Domain\Model\LdapUser;
  * @copyright 2013 Norman Seibert
  */
 
+use \NormanSeibert\Ldap\Domain\Repository\Typo3User\BackendUserRepository;
+use \NormanSeibert\Ldap\Domain\Repository\Typo3User\BackendUserGroupRepository;
+use \NormanSeibert\Ldap\Domain\Model\Typo3User\BackendUser;
+use \NormanSeibert\Ldap\Domain\Model\Typo3User\BackendUserGroup;
+
 /**
  * Model for users read from LDAP server
  */
 class BeUser extends \NormanSeibert\Ldap\Domain\Model\LdapUser\User {
 	
 	/**
-	 * @var \NormanSeibert\Ldap\Domain\Model\Typo3User\BackendUser
+	 * @var BackendUser
 	 */
 	protected $user;
 	
 	/**
-	 * @var \NormanSeibert\Ldap\Domain\Repository\Typo3User\BackendUserRepository
-	 * @TYPO3\CMS\Extbase\Annotation\Inject
+	 * @var BackendUserRepository
 	 */
 	protected $userRepository;
 	
 	/**
-	 * @var \NormanSeibert\Ldap\Domain\Repository\Typo3User\BackendUserGroupRepository
-	 * @TYPO3\CMS\Extbase\Annotation\Inject
+	 * @var BackendUserGroupRepository
 	 */
 	protected $usergroupRepository;
 	
@@ -57,12 +60,17 @@ class BeUser extends \NormanSeibert\Ldap\Domain\Model\LdapUser\User {
 	protected $pid;
 
     /**
-	 * 
+	 * @param BackendUserRepository $userRepository
+	 * @param BackendUserGroupRepository $usergroupRepository
+	 * @param BackendUser $userObject
+	 * @param BackendUserGroup $groupObject
 	 */
-	public function __construct() {
+	public function __construct(BackendUserRepository $userRepository, BackendUserGroupRepository $usergroupRepository, BackendUser $userObject, BackendUserGroup $groupObject) {
 		parent::__construct();
-		$this->userObject = 'NormanSeibert\\Ldap\\Domain\\Model\\Typo3User\\BackendUser';
-		$this->groupObject = 'NormanSeibert\\Ldap\\Domain\\Model\\Typo3User\\BackendUserGroup';
+		$this->userRepository = $userRepository;
+		$this->usergroupRepository = $usergroupRepository;
+		$this->userObject = $userObject;
+		$this->groupObject = $groupObject;
 	}
 	
 	/**

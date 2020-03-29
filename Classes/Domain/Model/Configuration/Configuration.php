@@ -25,6 +25,10 @@ namespace NormanSeibert\Ldap\Domain\Model\Configuration;
  */
 
 use Psr\Log\LoggerAwareTrait;
+use \TYPO3\CMS\Extbase\Object\ObjectManager;
+use \TYPO3\CMS\Core\Utility\GeneralUtility;
+use \NormanSeibert\Ldap\Utility\Helpers;
+use \TYPO3\CMS\Core\Messaging\FlashMessage;
 
 /**
  * Model for the extension's configuration of LDAP servsers
@@ -41,8 +45,7 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 	
 	/**
 	 *
-	 * @var \TYPO3\CMS\Extbase\Object\ObjectManager
-	 * @TYPO3\CMS\Extbase\Annotation\Inject
+	 * @var ObjectManager
 	 */
 	protected $objectManager;
 	
@@ -65,11 +68,11 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 	public $logLevel;
 	
 	/**
-	 * 
+	 * @param ObjectManager $objectManager
 	 */
-	public function __construct() {
+	public function __construct(ObjectManager $objectManager) {
 		$this->configOK = 1;
-		$this->objectManager = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\Object\\ObjectManager');
+		$this->objectManager = $objectManager;
 		$this->config = $this->loadConfiguration();
 		$this->checkLdapExtension();
 		$this->allLdapServers = $this->getLdapServersFromFile();
@@ -91,7 +94,7 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 	 * @return array
 	 */
 	private function loadConfiguration() {
-		$conf = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Configuration\\ExtensionConfiguration')->get('ldap');
+		$conf = GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Configuration\\ExtensionConfiguration')->get('ldap');
 		$this->logLevel = $conf['logLevel'];
 		
 		$ok = FALSE;
@@ -106,7 +109,7 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 				}
 			}
 			if ($ok) {
-				$fileContent = \TYPO3\CMS\Core\Utility\GeneralUtility::getUrl($configFile);
+				$fileContent = GeneralUtility::getUrl($configFile);
 				$tsParser = $this->objectManager->get('TYPO3\\CMS\\Core\\TypoScript\\Parser\\TypoScriptParser');
 				$tsParser->parse($fileContent);
 				
@@ -116,7 +119,7 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 						// @extensionScannerIgnoreLine
 						$this->logger->error($msg, $tsParser->errors);
 					}
-					\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::ERROR, $msg);
+					Helpers::addError(FlashMessage::ERROR, $msg);
 					$this->configOK = FALSE;
 				} else {
 					$this->ldapServers = $tsParser->setup['ldapServers.'];
@@ -126,14 +129,14 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 				$msg = 'Configuration file "' . $configFile . '" not found.';
 				// @extensionScannerIgnoreLine
 				$this->logger->error($msg);
-				\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::ERROR, $msg);
+				Helpers::addError(FlashMessage::ERROR, $msg);
 				$this->configOK = FALSE;
 			}
 		} else {
 			$msg = 'No configuration file set in extension settings (in extension manager)';
 			// @extensionScannerIgnoreLine
 			$this->logger->error($msg);
-			\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::ERROR, $msg);
+			Helpers::addError(FlashMessage::ERROR, $msg);
 			$this->configOK = FALSE;
 		}
 		
@@ -152,7 +155,7 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 			if (count($allLdapServers) == 0) {
 				$msg = 'No LDAP server found.';
 				$this->logger->warning($msg);
-				\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::WARNING, $msg);
+				Helpers::addError(FlashMessage::WARNING, $msg);
 				$this->configOK = FALSE;
 			} else {
 				foreach ($allLdapServers as $uid => $row) {
@@ -163,7 +166,7 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 		} else {
 			$msg = 'No LDAP server found.';
 			$this->logger->warning($msg);
-			\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::WARNING, $msg);
+			Helpers::addError(FlashMessage::WARNING, $msg);
 			$this->configOK = FALSE;
 		}
 		
@@ -193,7 +196,7 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 				}
 				if ($load) {
 					if ($pid && $server['pid']) {
-						if (!\TYPO3\CMS\Core\Utility\GeneralUtility::inList($pid, $server['pid'])) {
+						if (!GeneralUtility::inList($pid, $server['pid'])) {
 							$load = 0;
 							$pidList = '';
 							if (is_array($pid)) {
@@ -206,7 +209,7 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 						}
 					}
 					if ($userPid && $server['fe_users.']['pid']) {
-						if (!\TYPO3\CMS\Core\Utility\GeneralUtility::inList($userPid, $server['fe_users.']['pid'])) {
+						if (!GeneralUtility::inList($userPid, $server['fe_users.']['pid'])) {
 							$load = 0;
 							$pidList = '';
 							if (is_array($userPid)) {
@@ -248,7 +251,7 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 			$msg = 'No LDAP server found.';
 			// @extensionScannerIgnoreLine
 			$this->logger->warning($msg);
-			\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::ERROR, $msg);
+			Helpers::addError(FlashMessage::ERROR, $msg);
 			$this->configOK = FALSE;
 		}
 		
@@ -354,13 +357,13 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 				$msg = 'LDAP server configuration invalid for "'.$server['uid'].'":';
 				$this->logger->warning($msg, $errors);
 				$msg .= '<ul><li>'.implode('</li><li>', $errors).'</li></ul>';
-				\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::WARNING, $msg, $server['uid']);
+				Helpers::addError(FlashMessage::WARNING, $msg, $server['uid']);
 				$this->configOK = FALSE;
 			}
 		} else {
 			$msg = 'LDAP server not found: uid = "'.$uid.'":';
 			$this->logger->warning($msg);
-			\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::WARNING, $msg, $server['uid']);
+			Helpers::addError(FlashMessage::WARNING, $msg, $server['uid']);
 			$this->configOK = FALSE;
 		}
 		
@@ -376,27 +379,27 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 	private function checkServerConfiguration($server) {
 		$errors = array();
 		
-		$res = \NormanSeibert\Ldap\Utility\Helpers::checkValue($server['pid'], 'int');
+		$res = Helpers::checkValue($server['pid'], 'int');
 		if ($res['error']) {
 			$errors[] = 'Attribute "pid": '.$res['error'];
 		}
 		
-		$res = \NormanSeibert\Ldap\Utility\Helpers::checkValue($server['port'], 'required,int+');
+		$res = Helpers::checkValue($server['port'], 'required,int+');
 		if ($res['error']) {
 			$errors[] = 'Attribute "port": '.$res['error'];
 		}
 		
-		$res = \NormanSeibert\Ldap\Utility\Helpers::checkValue($server['host'], 'required');
+		$res = Helpers::checkValue($server['host'], 'required');
 		if ($res['error']) {
 			$errors[] = 'Attribute "host": '.$res['error'];
 		}
 		
-		$res = \NormanSeibert\Ldap\Utility\Helpers::checkValue($server['version'], 'list', '1,2,3');
+		$res = Helpers::checkValue($server['version'], 'list', '1,2,3');
 		if ($res['error']) {
 			$errors[] = 'Attribute "version": '.$res['error'];
 		}
 		
-		$res = \NormanSeibert\Ldap\Utility\Helpers::checkValue(strtolower($server['authenticate']), 'list', 'fe,be,both');
+		$res = Helpers::checkValue(strtolower($server['authenticate']), 'list', 'fe,be,both');
 		if ($res['error']) {
 			$errors[] = 'Attribute "auhenticate": '.$res['error'];
 		}
@@ -404,22 +407,22 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 		$server['authenticate'] = strtolower($server['authenticate']);
 		
 		if (($server['authenticate'] == 'fe') || ($server['authenticate'] == 'both')) {
-			$res = \NormanSeibert\Ldap\Utility\Helpers::checkValue($server['fe_users.']['pid'], 'required,int');
+			$res = Helpers::checkValue($server['fe_users.']['pid'], 'required,int');
 			if ($res['error']) {
 				$errors[] = 'Attribute "fe_users.pid": '.$res['error'];
 			}
 
-			$res = \NormanSeibert\Ldap\Utility\Helpers::checkValue($server['fe_users.']['usergroups.']['pid'], 'int');
+			$res = Helpers::checkValue($server['fe_users.']['usergroups.']['pid'], 'int');
 			if ($res['error']) {
 				$errors[] = 'Attribute "fe_users.usergroups.pid": '.$res['error'];
 			}
 			
-			$res = \NormanSeibert\Ldap\Utility\Helpers::checkValue($server['fe_users.']['filter'], 'required');
+			$res = Helpers::checkValue($server['fe_users.']['filter'], 'required');
 			if ($res['error']) {
 				$errors[] = 'Attribute "fe_users.filter": '.$res['error'];
 			}
 			
-			$res = \NormanSeibert\Ldap\Utility\Helpers::checkValue($server['fe_users.']['baseDN'], 'required');
+			$res = Helpers::checkValue($server['fe_users.']['baseDN'], 'required');
 			if ($res['error']) {
 				$errors[] = 'Attribute "fe_users.baseDN": '.$res['error'];
 			}
@@ -438,7 +441,7 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 				$newObj = NULL;
 			}
 
-			$res = \NormanSeibert\Ldap\Utility\Helpers::checkValue($server['fe_users.']['usergroups.']['pid'], 'int');
+			$res = Helpers::checkValue($server['fe_users.']['usergroups.']['pid'], 'int');
 			if ($res['error']) {
 				$errors[] = 'Attribute "fe_users.usergroups.pid": '.$res['error'];
 			}
@@ -459,19 +462,19 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 				$newObj = NULL;
 			}
 
-			$res = \NormanSeibert\Ldap\Utility\Helpers::checkValue($server['fe_users.']['mapping.']['username.']['data'], 'required');
+			$res = Helpers::checkValue($server['fe_users.']['mapping.']['username.']['data'], 'required');
 			if ($res['error']) {
 				$errors[] = 'Attribute "fe_users.mapping.userName.data": '.$res['error'];
 			}
 		}
 		
 		if (($server['authenticate'] == 'be') || ($server['authenticate'] == 'both')) {
-			$res = \NormanSeibert\Ldap\Utility\Helpers::checkValue($server['be_users.']['filter'], 'required');
+			$res = Helpers::checkValue($server['be_users.']['filter'], 'required');
 			if ($res['error']) {
 				$errors[] = 'Attribute "be_users.filter": '.$res['error'];
 			}
 			
-			$res = \NormanSeibert\Ldap\Utility\Helpers::checkValue($server['be_users.']['baseDN'], 'required');
+			$res = Helpers::checkValue($server['be_users.']['baseDN'], 'required');
 			if ($res['error']) {
 				$errors[] = 'Attribute "be_users.baseDN": '.$res['error'];
 			}
@@ -505,7 +508,7 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 				$newObj = NULL;
 			}
 			
-			$res = \NormanSeibert\Ldap\Utility\Helpers::checkValue($server['be_users.']['mapping.']['username.']['data'], 'required');
+			$res = Helpers::checkValue($server['be_users.']['mapping.']['username.']['data'], 'required');
 			if ($res['error']) {
 				$errors[] = 'Attribute "be_users.mapping.userName.data": '.$res['error'];
 			}
@@ -524,7 +527,7 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 			$msg = 'PHP LDAP extension not loaded.';
 			// @extensionScannerIgnoreLine
 			$this->logger->error($msg);
-			\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::ERROR, $msg);
+			Helpers::addError(FlashMessage::ERROR, $msg);
 			$this->configOK = FALSE;
 		}
 		return $result;
