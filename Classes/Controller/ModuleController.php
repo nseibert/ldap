@@ -263,11 +263,11 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 			if (in_array($server->getConfiguration()->getUid(), $settings->getUseServers())) {
 				if ($settings->getAuthenticateFe()) {
 					$this->importer->init($server, 'fe');
-					$runs[] = $importer->doImport();
+					$runs[] = $this->importer->doImport();
 				}
 				if ($settings->getAuthenticateBe()) {
 					$this->importer->init($server, 'be');
-					$runs[] = $importer->doImport();
+					$runs[] = $this->importer->doImport();
 				}
 			}
 		}
