@@ -12,6 +12,12 @@ problems result from wrong configurations. A general advice is to set
 the logging level to “2” in the extension's configuration (in the
 extension manager).
 
+.. important::
+
+   In Version 3.4.x the UIDs of LDAP server records in the configuration file changed.
+
+   **UIDs have to be integer now!**
+
 
 Typical Example
 ===============
@@ -49,7 +55,7 @@ properties may have different (and localized) labels.
 The configuration file uses a Typoscript like syntax, the root element
 to be used is “ldapServers”.
 
-**Each server needs to have an integer as a unique id to maintain
+**Each server needs to have an integer as a unique id (UID) to maintain
 compatibility with database records.**
 
 .. code-block:: php

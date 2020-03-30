@@ -40,6 +40,11 @@
 problems result from wrong configurations. A general advice is to set
 the logging level to “2” in the extension’s configuration (in the
 extension manager).</p>
+<div class="admonition important">
+<p class="first admonition-title">Important</p>
+<p>In Version 3.4.x the UIDs of LDAP server records in the configuration file changed.</p>
+<p class="last"><strong>UIDs have to be integer now!</strong></p>
+</div>
 <div class="section" id="typical-example">
 <h2>Typical Example<a class="headerlink" href="#typical-example" title="Permalink to this headline">¶</a></h2>
 <p>An example configuration file is included in the directory “example”.</p>
@@ -63,7 +68,7 @@ recognize the property names immediately, in the backend the
 properties may have different (and localized) labels.</p>
 <p>The configuration file uses a Typoscript like syntax, the root element
 to be used is “ldapServers”.</p>
-<p><strong>Each server needs to have an integer as a unique id to maintain
+<p><strong>Each server needs to have an integer as a unique id (UID) to maintain
 compatibility with database records.</strong></p>
 <div class="highlight-php notranslate"><div class="highlight"><pre><span></span><span class="x">ldapServers {</span>
 <span class="x">   1 {</span>
