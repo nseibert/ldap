@@ -1,0 +1,333 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Configuration &#8212; TYPO3 LDAP Extension 3.4 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Sitemap" href="../Sitemap.html" />
+    <link rel="prev" title="Administrator" href="../Administrator/Index.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="configuration">
+<span id="id1"></span><h1>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h1>
+<p>Correct configuration of LDAP server records is crucial and most
+problems result from wrong configurations. A general advice is to set
+the logging level to “2” in the extension’s configuration (in the
+extension manager).</p>
+<div class="section" id="typical-example">
+<h2>Typical Example<a class="headerlink" href="#typical-example" title="Permalink to this headline">¶</a></h2>
+<p>An example configuration file is included in the directory “example”.</p>
+</div>
+<div class="section" id="field-mappings">
+<span id="configuration-typoscript"></span><h2>Field Mappings<a class="headerlink" href="#field-mappings" title="Permalink to this headline">¶</a></h2>
+<p>Since this extension uses Extbase the mappings for users and
+usergroups are based on Extbase properties and no longer on database
+fields. This implies that every property you want to assign a value to
+has to be known to Extbase.</p>
+<p>You can find the Extbase standard properties in the file:</p>
+<p><em>/typo3/sysext/extbase/Configuration/Extbase/Persistence/Classes.php</em></p>
+<p>The LDAP extension adds some properties defined in:</p>
+<p><em>&lt;Extension directory&gt;/Configuration/Extbase/Persistence/Classes.php</em></p>
+</div>
+<div class="section" id="reference">
+<h2>Reference<a class="headerlink" href="#reference" title="Permalink to this headline">¶</a></h2>
+<p>The following table lists the properties of an LDAP server record. If
+you manage your server records in a configuration file you will
+recognize the property names immediately, in the backend the
+properties may have different (and localized) labels.</p>
+<p>The configuration file uses a Typoscript like syntax, the root element
+to be used is “ldapServers”.</p>
+<div class="highlight-php notranslate"><div class="highlight"><pre><span></span><span class="x">ldapServers {</span>
+<span class="x">   myLdapServer {</span>
+<span class="x">      title = My test server</span>
+<span class="x">   }</span>
+<span class="x">}</span>
+</pre></div>
+</div>
+<p>Mandatory properties are printed bold.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="21%" />
+<col width="9%" />
+<col width="61%" />
+<col width="10%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Parameter</th>
+<th class="head">Data type</th>
+<th class="head">Description</th>
+<th class="head">Default</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><strong>title</strong></td>
+<td>string</td>
+<td>Server name</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td><strong>disable</strong></td>
+<td>boolean</td>
+<td>Disable the server record</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td><strong>host</strong></td>
+<td>string</td>
+<td>The server’s ip address or DNS name</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td><strong>port</strong></td>
+<td>int+</td>
+<td>The server’s port, mostly 389 for LDAP and 636 for LDAPS</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>forcsTLS</td>
+<td>boolean</td>
+<td>Encrypt the connection even if using port 389 which is used for unencrypted connections by default</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>version</td>
+<td>int+</td>
+<td>The server’s LDAP version, currently “3” should work for most servers</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>authenticate</td>
+<td>string</td>
+<td>FE: Authenticate FE users
+BE: Authenticate BE users
+both: Authenticate FE and BE users</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td><strong>user</strong></td>
+<td>string</td>
+<td>User (DN) with read access to the directory</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td><strong>password</strong></td>
+<td>string</td>
+<td>The aformentioned user’s password</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td><strong>fe_users.</strong></td>
+<td>array / COA</td>
+<td>You have to set either “fe_users” or “be_users”, otherwise nothing will happen …</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>–&gt; <strong>.pid</strong></td>
+<td>int</td>
+<td>Page ID for user storage</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>–&gt; <strong>.baseDN</strong></td>
+<td>string</td>
+<td>The BaseDN for all LDAP searches</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>–&gt; <strong>.filter</strong></td>
+<td>string</td>
+<td>The LDAP query for user retrieval, “&lt;search&gt;” will be replaced by the user’s username</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>–&gt; .autoImport</td>
+<td>boolean</td>
+<td>If set users will be imported/updated automatically after successful DAP authentication</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td>–&gt; .autoEnable</td>
+<td>boolean</td>
+<td>If set users will be enabled automatically after login if they have been disabled in TYPO3</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>–&gt; <strong>.mapping.</strong></td>
+<td>array / COA</td>
+<td><p class="first">Configures the TYPO3 user table fields, the basic syntax is:</p>
+<div class="highlight-php notranslate"><div class="highlight"><pre><span></span><span class="x">&lt;Extbase Property&gt;.data = field:&lt;LDAP attribute&gt;</span>
+<span class="x">**The LDAP attributes have to be written in lowercase!**</span>
+</pre></div>
+</div>
+<p>Static values like “1” are assigned similarly:</p>
+<div class="highlight-php notranslate"><div class="highlight"><pre><span></span><span class="x">&lt;Extbase Property&gt;.value = &lt;Static value&gt;</span>
+</pre></div>
+</div>
+<p><strong>Example</strong></p>
+<p>The following example updates the table field “name” with the value
+“displayname” of the user’s LDAP record and wraps it with stars:</p>
+<div class="last highlight-php notranslate"><div class="highlight"><pre><span></span><span class="x">mapping {</span>
+<span class="x">   name {</span>
+<span class="x">      data = field:displayname</span>
+<span class="x">         wrap = * | *</span>
+<span class="x">      }</span>
+<span class="x">   }</span>
+<span class="x">}</span>
+</pre></div>
+</div>
+</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>–&gt; <strong>.usergroups.</strong></td>
+<td>array / COA</td>
+<td>Without a usergroup FE users are unable to login to TYPO3</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>–&gt; . –&gt; .importGroups</td>
+<td>boolean</td>
+<td>Import usergroups from the LDAP directory</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td>–&gt; . –&gt; .restrictToGroups</td>
+<td>string list</td>
+<td><p class="first">Only import groups if the name satisfies the given pattern(s)
+Regular expression.</p>
+<p><strong>Example</strong></p>
+<p>The following example imports only users which belong to a group
+beginning with “typo3” (case insensitive):</p>
+<div class="last highlight-php notranslate"><div class="highlight"><pre><span></span><span class="x">restrictToGroups = /^typo3.*/i</span>
+</pre></div>
+</div>
+</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>–&gt; . –&gt; .addToGroups</td>
+<td>int+ list</td>
+<td>Add each user to this TYPO3 user group(s)
+Comma-separated list of usergroup UIDs</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>–&gt; . –&gt; .reverseMapping</td>
+<td>boolean</td>
+<td>If your LDAP directory stores users as group attributes (OpenLDAP) set this value to 1</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>–&gt; . –&gt; .preserveNonLdapGroups</td>
+<td>boolean</td>
+<td>Preserve relations to usergroups which have not been imported from an LDAP server</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>be_users.</td>
+<td>array / COA</td>
+<td>Same as “fe_users”
+Property “pid” does not exist because BE users are stored on the root page (zero)</td>
+<td>&#160;</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="single-sign-on-sso">
+<h2>Single Sign On (SSO)<a class="headerlink" href="#single-sign-on-sso" title="Permalink to this headline">¶</a></h2>
+<p>The extension is prepared for SSO Support using an HTTP header to
+provide the username. The header is configured in the extension’s
+settings accessible from TYPO3’s Extension Manager. The Username has
+to be stored in the HTTP header configured and it has to be identical
+to the one the user would type in the normal login form.</p>
+<p><strong>Good to know</strong></p>
+<p>If the configured HTTP header is filled this value is used to login in
+the user. No credentials transmitted by a Login form are evaluated.</p>
+<p>You should make sure that nobody is able to fake the HTTP header :-)</p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../Index.html">TYPO3 LDAP Extension</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../Introduction/Index.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Administrator/Index.html">Administrator</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Configuration</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#typical-example">Typical Example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#field-mappings">Field Mappings</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#reference">Reference</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#single-sign-on-sso">Single Sign On (SSO)</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../Sitemap.html">Sitemap</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../Index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="../Administrator/Index.html" title="previous chapter">Administrator</a></li>
+      <li>Next: <a href="../Sitemap.html" title="next chapter">Sitemap</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Norman Seibert.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/Configuration/Index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
