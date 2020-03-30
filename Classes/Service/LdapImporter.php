@@ -30,7 +30,6 @@ use \NormanSeibert\Ldap\Domain\Model\LdapServer\Server;
 use \NormanSeibert\Ldap\Domain\Repository\Typo3User\FrontendUserRepository;
 use \NormanSeibert\Ldap\Domain\Repository\Typo3User\BackendUserRepository;
 use \TYPO3\CMS\Extbase\Object\ObjectManager;
-use \TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
  * Service to import users from LDAP directory to TYPO3 database
