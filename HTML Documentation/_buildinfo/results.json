@@ -1,0 +1,41 @@
+{
+  "build_time": "2020-03-30 20:20:42",
+  "checksum": "3cdde9d876af500c3748ac0b4699ed8b",
+  "checksum_ttl_seconds": 604800,
+  "copyright": "by Norman Seibert",
+  "created": {
+    "html": 1
+  },
+  "email_notify_about_new_build": [],
+  "emails_user_from_project": [
+    "seibert@entios.de"
+  ],
+  "environ": {
+    "OUR_IMAGE": "t3docs/render-documentation:latest",
+    "OUR_IMAGE_SHORT": "t3rd",
+    "OUR_IMAGE_VERSION": "latest",
+    "THEME_MTIME": "1580000000",
+    "THEME_NAME": "unknown",
+    "THEME_VERSION": "unknown",
+    "TOOLCHAIN_VERSION": "master (2.9.1)",
+    "TYPOSCRIPT_PY_VERSION": "v2.2.4"
+  },
+  "gitdir": "/PROJECT",
+  "has_neutralized_images": 0,
+  "has_neutralized_links": 0,
+  "localization": "default",
+  "postprocessed_html_files": 7,
+  "project": "ldap",
+  "publish_dir": "project/0.0.0",
+  "release": "3.4.x",
+  "sitemap_files_html_count": 7,
+  "ter_extension": "0",
+  "theme_info": {
+    "build_mtime": "1582644985",
+    "module_name": "sphinx_typo3_theme",
+    "version_scm": "4.1.3",
+    "version_scm_build": "",
+    "version_scm_core": "4.1.3",
+    "version_scm_pre_release": ""
+  }
+}

@@ -1,40 +1,86 @@
-
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
-<html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Administrator &#8212; TYPO3 LDAP Extension 3.4 documentation</title>
-    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="../_static/language_data.js"></script>
-    <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Configuration" href="../Configuration/Index.html" />
-    <link rel="prev" title="Introduction" href="../Introduction/Index.html" />
-   
-  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
-  
-  
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
-
-  </head><body>
-  
-
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          
-
-          <div class="body" role="main">
-            
-  <div class="section" id="administrator">
+<!DOCTYPE html>
+<html class="no-js" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="0.0" name="book-version"/>
+<meta content="3.4.x" name="book-release"/>
+<meta content="ldap" name="docsearch:name"/>
+<meta content="3.4.x" name="docsearch:version"/>
+<meta content="" name="docsearch:package_type"/>
+<title>Administrator — ldap 3.4.x documentation</title>
+<link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/css/webfonts.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/css/fontawesome.css" rel="stylesheet" type="text/css"/>
+<link href="../genindex.html" rel="index" title="Index"/>
+<link href="../search.html" rel="search" title="Search"/>
+<link href="#" rel="top" title="ldap 3.4.x documentation"/>
+<link href="../Configuration/Index.html" rel="next" title="Configuration"/>
+<link href="../Introduction/Index.html" rel="prev" title="Introduction"/>
+<script src="../_static/js/modernizr.min.js"></script>
+</head>
+<body>
+<div class="page">
+<div class="page-header">
+<div class="page-header-inner">
+<a class="logo" href="https://docs.typo3.org" title="TYPO3 Documentation">
+<img alt="TYPO3 Logo" class="logo-image" height="130" src="../_static/img/typo3-logo.svg" width="484"/>
+</a>
+</div>
+</div>
+<div class="page-main">
+<div class="page-main-inner">
+<div class="page-main-navigation">
+<nav>
+<input class="toc-checkbox" id="toggleToc" type="checkbox"/>
+<div class="toc-header"><div class="toc-title">
+<a class="toc-title-project" href="../Index.html">ldap</a></div><div class="toc-actions">
+<label class="toc-toggle" for="toggleToc">
+                                    Menu
+                                </label>
+</div>
+</div>
+<div class="toc-collapse">
+<div class="toc-search" role="search">
+<form action="../search.html" autocomplete="off" id="search-form" method="get">
+<input aria-label="Search this project" class="form-control" id="searchinput" name="q" placeholder="Search this project" type="text"/>
+<input name="check_keywords" type="hidden" value="yes"/>
+<input name="area" type="hidden" value="default"/>
+</form>
+</div><div aria-label="main navigation" class="toc" role="navigation">
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../Introduction/Index.html">Introduction</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Administrator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Configuration/Index.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Sitemap.html">Sitemap</a></li>
+</ul>
+</div>
+</div>
+</nav>
+</div>
+<div class="page-main-content">
+<div class="rst-content">
+<a accesskey="p" class="no-focus" href="../Introduction/Index.html" tabindex="-1"></a>
+<a accesskey="n" class="no-focus" href="../Configuration/Index.html" tabindex="-1"></a>
+<div aria-label="breadcrumbs navigation" class="breadcrumb-bar" role="navigation">
+<ol class="breadcrumb">
+<li class="breadcrumb-item"><a href="../Index.html">Start</a></li>
+<li aria-current="page" class="breadcrumb-item active">Administrator</li>
+</ol>
+<div class="breadcrumb-additions">
+<a class="btn btn-sm btn-primary" href="https://github.com/nseibert/ldap/edit/master/Documentation/Administrator/Index.rst" rel="nofollow noopener" target="_blank">
+<span class="btn-icon"><span class="fab fa-github"></span></span>
+<span class="btn-text">Edit on GitHub</span>
+</a>
+<a class="btn btn-sm btn-light" href="../_sources/Administrator/Index.rst.txt" rel="nofollow">
+<span class="btn-icon"><span class="fas fa-code"></span></span>
+<span class="btn-text">View source</span>
+</a>
+</div>
+</div>
+<div class="document" itemscope="itemscope" itemtype="http://schema.org/Article" role="main">
+<div itemprop="articleBody">
+<div class="section" id="administrator">
 <span id="id1"></span><h1>Administrator<a class="headerlink" href="#administrator" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
@@ -69,15 +115,15 @@ credentials – are logged for debugging purposes</strong> .</li>
 <h2>Command Line (cli)<a class="headerlink" href="#command-line-cli" title="Permalink to this headline">¶</a></h2>
 <p>The extension provides Symfony Console Commands (cli) which can be
 invoked via the command line:</p>
-<div class="highlight-php notranslate"><div class="highlight"><pre><span></span><span class="x">typo3/sysext/core/bin/typo3 ldap:&lt;function&gt; &lt;parameters&gt;</span>
+<div class="highlight-php notranslate"><div class="highlight"><pre><span></span><span class="nx">typo3</span><span class="o">/</span><span class="nx">sysext</span><span class="o">/</span><span class="nx">core</span><span class="o">/</span><span class="nx">bin</span><span class="o">/</span><span class="nx">typo3</span> <span class="nx">ldap</span><span class="o">:&lt;</span><span class="nx">function</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="nx">parameters</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 <p>The following functions are supported:</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="22%" />
-<col width="22%" />
-<col width="57%" />
+<col width="22%"/>
+<col width="22%"/>
+<col width="57%"/>
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Function</th>
@@ -154,85 +200,60 @@ your LDAP server if you get only 1000 entries.</p>
 <p>No, this is (currently) not supported.</p>
 </div>
 </div>
-
-
-          </div>
-          
-        </div>
-      </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-<h1 class="logo"><a href="../Index.html">TYPO3 LDAP Extension</a></h1>
-
-
-
-
-
-
-
-
-<h3>Navigation</h3>
-<ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../Introduction/Index.html">Introduction</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Administrator</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#backend-module">Backend Module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#command-line-cli">Command Line (cli)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#scheduled-tasks">Scheduled Tasks</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#faqs">FAQs</a></li>
-</ul>
+</div>
+</div>
+<nav aria-label="Page navigation example">
+<ul class="pagination justify-content-center">
+<li class="page-item">
+<a class="page-link" href="../Introduction/Index.html" title="Accesskey Alt(+Shift)+p">
+                        Previous
+                    </a>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../Configuration/Index.html">Configuration</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../Sitemap.html">Sitemap</a></li>
+<li class="page-item">
+<a class="page-link" href="../Configuration/Index.html" title="Accesskey Alt(+Shift)+n">
+                        Next
+                    </a>
+</li>
 </ul>
-
-<div class="relations">
-<h3>Related Topics</h3>
-<ul>
-  <li><a href="../Index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="../Introduction/Index.html" title="previous chapter">Introduction</a></li>
-      <li>Next: <a href="../Configuration/Index.html" title="next chapter">Configuration</a></li>
-  </ul></li>
-</ul>
+</nav>
 </div>
-<div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-    </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
-
-
-
-
-
-
-
-
-        </div>
-      </div>
-      <div class="clearer"></div>
-    </div>
-    <div class="footer">
-      &copy;2020, Norman Seibert.
-      
-      |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.5</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
-      
-      |
-      <a href="../_sources/Administrator/Index.rst.txt"
-          rel="nofollow">Page source</a>
-    </div>
-
-    
-
-    
-  </body>
+</div>
+</div>
+<div class="page-footer">
+<footer>
+<div class="frame frame-ruler-before frame-background-dark">
+<div class="frame-container">
+<div class="frame-inner"><div class="footer-additional"><p class="text-center">Last rendered on Mar 30, 2020 20:20</p><p class="text-center"><a href="https://github.com/TYPO3-Documentation/sphinx_typo3_theme" rel="nofollow noopener" target="_blank">TYPO3 Theme 4.1.3</a></p>
+</div>
+<div class="footer-meta"><div class="footer-meta-copyright">© Copyright by Norman Seibert</div>
+</div>
+</div>
+</div>
+</div>
+</footer>
+</div>
+</div>
+<script type="text/javascript">
+            var DOCUMENTATION_OPTIONS = {
+                URL_ROOT: '../',
+                VERSION: '3.4.x',
+                COLLAPSE_INDEX: false,
+                FILE_SUFFIX: '.html',
+                HAS_SOURCE: true
+            };
+        </script>
+<script src="../_static/js/jquery.min.js" type="text/javascript"></script>
+<script src="../_static/js/underscore.min.js" type="text/javascript"></script>
+<script src="../_static/js/doctools.min.js" type="text/javascript"></script>
+<script src="../_static/js/popper.min.js" type="text/javascript"></script>
+<script src="../_static/js/bootstrap.min.js" type="text/javascript"></script>
+<script src="../_static/js/theme.min.js" type="text/javascript"></script><script src="../_static/language_data.js" type="text/javascript"></script>
+<script src="../_static/js/searchtools.min.js" type="text/javascript"></script>
+<script src="../_static/js/autocomplete.min.js" type="text/javascript"></script>
+<script type="text/javascript">
+        jQuery(function() { Search.loadIndex("../searchindex.js"); });
+    </script>
+<script id="searchindexloader" type="text/javascript"></script>
+</body>
 </html>
