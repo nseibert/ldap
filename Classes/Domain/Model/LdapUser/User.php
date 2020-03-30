@@ -236,9 +236,9 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \Ps
 		$createUser = FALSE;
 
 		if ($username) {
-			$this->user = $this->objectManager->get($this->userObject);
-			$this->user->setLdapServer($this->ldapServer);
-			$this->user->setPid($this->pid);
+			$this->user = $this->userObject;
+			$this->user->setServerUid($this->ldapServer->getConfiguration()->getUid());
+			$this->user->setPid($this->userRules->getPid());
 			$this->user->setUsername($username);
 			$this->user->setDN($this->dn);
 			$this->user->generatePassword();
@@ -326,7 +326,7 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \Ps
 		if ($username) {
 			$this->user->setPid($this->pid);
 			$this->user->setUsername($username);
-			$this->user->setLdapServer($this->ldapServer);
+			$this->user->setServerUid($this->ldapServer->getConfiguration()->getUid());
 			$this->user->setDN($this->dn);
 			
 			// LDAP attributes from mapping
@@ -976,7 +976,7 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \Ps
 				$newGroup->setPid($pid);
 				$newGroup->setTitle($group['title']);
 				$newGroup->setDN($group['dn']);
-				$newGroup->setLdapServer($this->ldapServer);
+				$newGroup-->setServerUid($this->ldapServer->getConfiguration()->getUid());
 				if ($lastRun) {
 					$newGroup->setLastRun($lastRun);
 				}

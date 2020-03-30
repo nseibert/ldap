@@ -239,17 +239,10 @@ class LdapImporter implements \Psr\Log\LoggerAwareInterface {
 		$removeUsers = array();
 		foreach ($users as $user) {
             /* @var $user \NormanSeibert\Ldap\Domain\Model\Typo3User\UserInterface */
-			if (!is_object($user->getLdapServer())) {
-				$user->setLastRun($runIdentifier);
-				if ($hide) {
-					$user->setIsDisabled(TRUE);
-				} else {
-					$removeUsers[] = $user;
-				}
-				$repository->update($user);
-			} else {
-				if ($user->getLdapServer() != $tmpServer) {
-					$tmpServer = $user->getLdapServer();
+			if ($user->getServerUid()) {
+				$server = $this->ldapConfig->getLdapServer($user->getServerUid());
+				if ($server != $tmpServer) {
+					$tmpServer = $server;
 				}
 				$ldapUser = $tmpServer->getUser($user->getDN());
 				if (!is_object($ldapUser)) {
@@ -261,6 +254,14 @@ class LdapImporter implements \Psr\Log\LoggerAwareInterface {
 					}
 					$repository->update($user);
 				}
+			} else {
+				$user->setLastRun($runIdentifier);
+				if ($hide) {
+					$user->setIsDisabled(TRUE);
+				} else {
+					$removeUsers[] = $user;
+				}
+				$repository->update($user);
 			}
 		}
 

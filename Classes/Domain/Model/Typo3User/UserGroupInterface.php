@@ -40,19 +40,6 @@ interface UserGroupInterface {
 
     /**
      *
-     * @param \NormanSeibert\Ldap\Domain\Model\LdapServer\Server $server
-     * @return \NormanSeibert\Ldap\Domain\Model\Typo3User\UserInterface
-     */
-    public function setLdapServer(\NormanSeibert\Ldap\Domain\Model\LdapServer\Server $server);
-
-    /**
-     *
-     * @return \NormanSeibert\Ldap\Domain\Model\LdapServer\Server
-     */
-    public function getLdapServer();
-
-    /**
-     *
      * @param string $uid
      * @return \NormanSeibert\Ldap\Domain\Model\Typo3User\UserInterface
      */
