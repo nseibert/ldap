@@ -239,7 +239,7 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \Ps
 		$createUser = FALSE;
 
 		if ($username) {
-			$this->user = $this->userObject;
+			$this->user = $this->objectManager->get($this->userObject);
 			$this->user->setServerUid($this->ldapServer->getConfiguration()->getUid());
 			$this->user->setPid($this->userRules->getPid());
 			$this->user->setUsername($username);
