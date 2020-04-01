@@ -1,6 +1,6 @@
 {
-  "build_time": "2020-03-30 20:20:42",
-  "checksum": "3cdde9d876af500c3748ac0b4699ed8b",
+  "build_time": "2020-04-01 16:40:59",
+  "checksum": "cc99a707a2bf8773167eecbabb5e2730",
   "checksum_ttl_seconds": 604800,
   "copyright": "by Norman Seibert",
   "created": {
@@ -24,11 +24,11 @@
   "has_neutralized_images": 0,
   "has_neutralized_links": 0,
   "localization": "default",
-  "postprocessed_html_files": 7,
+  "postprocessed_html_files": 11,
   "project": "ldap",
   "publish_dir": "project/0.0.0",
   "release": "3.4.x",
-  "sitemap_files_html_count": 7,
+  "sitemap_files_html_count": 11,
   "ter_extension": "0",
   "theme_info": {
     "build_mtime": "1582644985",

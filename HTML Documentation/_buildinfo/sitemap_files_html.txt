@@ -1,5 +1,9 @@
 Administrator/Index.html
+Configuration/Extbase.html
+Configuration/Groups.html
 Configuration/Index.html
+Configuration/Reference.html
+Configuration/SSO.html
 Index.html
 Introduction/Index.html
 Sitemap.html

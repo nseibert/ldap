@@ -8,15 +8,16 @@
 <meta content="ldap" name="docsearch:name"/>
 <meta content="3.4.x" name="docsearch:version"/>
 <meta content="" name="docsearch:package_type"/>
-<title>Configuration — ldap 3.4.x documentation</title>
+<title>Extbase Field Mappings — ldap 3.4.x documentation</title>
 <link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/css/webfonts.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/css/fontawesome.css" rel="stylesheet" type="text/css"/>
 <link href="../genindex.html" rel="index" title="Index"/>
 <link href="../search.html" rel="search" title="Search"/>
 <link href="#" rel="top" title="ldap 3.4.x documentation"/>
-<link href="Reference.html" rel="next" title="Reference"/>
-<link href="../Administrator/Index.html" rel="prev" title="Administrator"/>
+<link href="Index.html" rel="up" title="Configuration"/>
+<link href="SSO.html" rel="next" title="Single Sign On (SSO)"/>
+<link href="Groups.html" rel="prev" title="Creation of TYPO3 Groups"/>
 <script src="../_static/js/modernizr.min.js"></script>
 </head>
 <body>
@@ -51,10 +52,10 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../Introduction/Index.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../Administrator/Index.html">Administrator</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Configuration</a><ul>
+<li class="toctree-l1 current"><a class="reference internal" href="Index.html">Configuration</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="Reference.html">Reference</a></li>
 <li class="toctree-l2"><a class="reference internal" href="Groups.html">Creation of TYPO3 Groups</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Extbase.html">Extbase Field Mappings</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Extbase Field Mappings</a></li>
 <li class="toctree-l2"><a class="reference internal" href="SSO.html">Single Sign On (SSO)</a></li>
 </ul>
 </li>
@@ -66,19 +67,20 @@
 </div>
 <div class="page-main-content">
 <div class="rst-content">
-<a accesskey="p" class="no-focus" href="../Administrator/Index.html" tabindex="-1"></a>
-<a accesskey="n" class="no-focus" href="Reference.html" tabindex="-1"></a>
+<a accesskey="p" class="no-focus" href="Groups.html" tabindex="-1"></a>
+<a accesskey="n" class="no-focus" href="SSO.html" tabindex="-1"></a>
 <div aria-label="breadcrumbs navigation" class="breadcrumb-bar" role="navigation">
 <ol class="breadcrumb">
 <li class="breadcrumb-item"><a href="../Index.html">Start</a></li>
-<li aria-current="page" class="breadcrumb-item active">Configuration</li>
+<li class="breadcrumb-item"><a href="Index.html">Configuration</a></li>
+<li aria-current="page" class="breadcrumb-item active">Extbase Field Mappings</li>
 </ol>
 <div class="breadcrumb-additions">
-<a class="btn btn-sm btn-primary" href="https://github.com/nseibert/ldap/edit/master/Documentation/Configuration/Index.rst" rel="nofollow noopener" target="_blank">
+<a class="btn btn-sm btn-primary" href="https://github.com/nseibert/ldap/edit/master/Documentation/Configuration/Extbase.rst" rel="nofollow noopener" target="_blank">
 <span class="btn-icon"><span class="fab fa-github"></span></span>
 <span class="btn-text">Edit on GitHub</span>
 </a>
-<a class="btn btn-sm btn-light" href="../_sources/Configuration/Index.rst.txt" rel="nofollow">
+<a class="btn btn-sm btn-light" href="../_sources/Configuration/Extbase.rst.txt" rel="nofollow">
 <span class="btn-icon"><span class="fas fa-code"></span></span>
 <span class="btn-text">View source</span>
 </a>
@@ -86,42 +88,28 @@
 </div>
 <div class="document" itemscope="itemscope" itemtype="http://schema.org/Article" role="main">
 <div itemprop="articleBody">
-<div class="section" id="configuration">
-<span id="id1"></span><h1>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h1>
-<p>Correct configuration of LDAP server records is crucial and most
-problems result from wrong configurations. A general advice is to set
-the logging level to “2” in the extension’s configuration (in the
-extension manager).</p>
-<div class="admonition important">
-<p class="first admonition-title">Important</p>
-<p>In Version 3.4.x the UIDs of LDAP server records in the configuration file changed.</p>
-<p class="last"><strong>UIDs have to be integer now!</strong></p>
-</div>
-<div class="section" id="typical-example">
-<h2>Typical Example<a class="headerlink" href="#typical-example" title="Permalink to this headline">¶</a></h2>
-<p>An example configuration file is included in the directory “example”.</p>
-<p id="configuration-typoscript"><strong>Sections:</strong></p>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="Reference.html">Reference</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Groups.html">Creation of TYPO3 Groups</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Extbase.html">Extbase Field Mappings</a></li>
-<li class="toctree-l1"><a class="reference internal" href="SSO.html">Single Sign On (SSO)</a></li>
-</ul>
-</div>
-</div>
+<div class="section" id="extbase-field-mappings">
+<h1>Extbase Field Mappings<a class="headerlink" href="#extbase-field-mappings" title="Permalink to this headline">¶</a></h1>
+<p>Since this extension uses Extbase the mappings for users and
+usergroups are based on Extbase properties and no longer on database
+fields. This implies that every property you want to assign a value to
+has to be known to Extbase.</p>
+<p>You can find the Extbase standard properties in the file:</p>
+<p><em>/typo3/sysext/extbase/Configuration/Extbase/Persistence/Classes.php</em></p>
+<p>The LDAP extension adds some properties defined in:</p>
+<p><em>&lt;Extension directory&gt;/Configuration/Extbase/Persistence/Classes.php</em></p>
 </div>
 </div>
 </div>
 <nav aria-label="Page navigation example">
 <ul class="pagination justify-content-center">
 <li class="page-item">
-<a class="page-link" href="../Administrator/Index.html" title="Accesskey Alt(+Shift)+p">
+<a class="page-link" href="Groups.html" title="Accesskey Alt(+Shift)+p">
                         Previous
                     </a>
 </li>
 <li class="page-item">
-<a class="page-link" href="Reference.html" title="Accesskey Alt(+Shift)+n">
+<a class="page-link" href="SSO.html" title="Accesskey Alt(+Shift)+n">
                         Next
                     </a>
 </li>
