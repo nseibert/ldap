@@ -1,5 +1,5 @@
 ldapServers {
-    localhost {
+    1 {
         # disable server record (0/1)
         disable = 0
 
@@ -47,7 +47,6 @@ ldapServers {
             # Makes sense for FE users because these cannot login without at least one usergroup
             onlyUsersWithGroup = 1
             
-            mapping = COA
             mapping {
                 # TYPO3 table field = LDAP attribute
                 # If an LDAP attribute is used multiple times (multivalue) the resulting array will be imploded into a comma-separated list

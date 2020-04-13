@@ -1,28 +1,27 @@
 <?php
-$tempColumns = array(
-	"tx_ldap_dn" => array(
-		"exclude" => 1,        
-		"label" => "LLL:EXT:ldap/Resources/Private/Language/locallang_db.xml:fe_users.tx_ldap_dn",
-		"config" => Array (
-			"type" => "none",
-		)
-	),
-	"tx_ldap_serveruid" => array(
-		"exclude" => 1,        
-		"label" => "LLL:EXT:ldap/Resources/Private/Language/locallang_db.xml:fe_users.tx_ldap_server",
-		"config" => Array (
-			"type" => "none",
-		)
-	),
-	"tx_ldap_lastrun" => array(
-		"exclude" => 1,        
-		"label" => "LLL:EXT:ldap/Resources/Private/Language/locallang_db.xml:fe_users.tx_ldap_lastrun",
-		"config" => Array (
-			"type" => "none",
-		)
-	),
-);
 
+$tempColumns = [
+    'tx_ldap_dn' => [
+        'exclude' => 1,
+        'label' => 'LLL:EXT:ldap/Resources/Private/Language/locallang_db.xml:fe_users.tx_ldap_dn',
+        'config' => [
+            'type' => 'none',
+        ],
+    ],
+    'tx_ldap_serveruid' => [
+        'exclude' => 1,
+        'label' => 'LLL:EXT:ldap/Resources/Private/Language/locallang_db.xml:fe_users.tx_ldap_server',
+        'config' => [
+            'type' => 'none',
+        ],
+    ],
+    'tx_ldap_lastrun' => [
+        'exclude' => 1,
+        'label' => 'LLL:EXT:ldap/Resources/Private/Language/locallang_db.xml:fe_users.tx_ldap_lastrun',
+        'config' => [
+            'type' => 'none',
+        ],
+    ],
+];
 
-\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addTCAcolumns("be_users", $tempColumns);
-?>
+\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addTCAcolumns('be_users', $tempColumns);

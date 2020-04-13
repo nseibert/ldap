@@ -1,5 +1,6 @@
 <?php
-declare(strict_types = 1);
+
+declare(strict_types=1);
 
 return [
     NormanSeibert\Ldap\Domain\Model\Typo3User\FrontendUser::class => [
@@ -7,16 +8,16 @@ return [
         'recordType' => '',
         'properties' => [
             'dn' => [
-                'fieldName' => 'tx_ldap_dn'
+                'fieldName' => 'tx_ldap_dn',
             ],
             'serverUid' => [
-                'fieldName' => 'tx_ldap_serveruid'
+                'fieldName' => 'tx_ldap_serveruid',
             ],
             'lastRun' => [
-                'fieldName' => 'tx_ldap_lastrun'
+                'fieldName' => 'tx_ldap_lastrun',
             ],
             'isDisabled' => [
-                'fieldName' => 'disable'
+                'fieldName' => 'disable',
             ],
         ],
     ],
@@ -24,28 +25,28 @@ return [
         'tableName' => 'be_users',
         'properties' => [
             'username' => [
-                'fieldName' => 'username'
+                'fieldName' => 'username',
             ],
             'dn' => [
-                'fieldName' => 'tx_ldap_dn'
+                'fieldName' => 'tx_ldap_dn',
             ],
             'serverUid' => [
-                'fieldName' => 'tx_ldap_serveruid'
+                'fieldName' => 'tx_ldap_serveruid',
             ],
             'lastRun' => [
-                'fieldName' => 'tx_ldap_lastrun'
+                'fieldName' => 'tx_ldap_lastrun',
             ],
             'databaseMounts' => [
-                'fieldName' => 'db_mountpoints'
+                'fieldName' => 'db_mountpoints',
             ],
             'fileMounts' => [
-                'fieldName' => 'file_mountpoints'
+                'fieldName' => 'file_mountpoints',
             ],
             'isDisabled' => [
-                'fileOperationPermissions' => 'file_permissions'
+                'fileOperationPermissions' => 'file_permissions',
             ],
             'options' => [
-                'fieldName' => 'options'
+                'fieldName' => 'options',
             ],
         ],
     ],
@@ -53,13 +54,13 @@ return [
         'tableName' => 'fe_groups',
         'properties' => [
             'dn' => [
-                'fieldName' => 'tx_ldap_dn'
+                'fieldName' => 'tx_ldap_dn',
             ],
             'serverUid' => [
-                'fieldName' => 'tx_ldap_serveruid'
+                'fieldName' => 'tx_ldap_serveruid',
             ],
             'lastRun' => [
-                'fieldName' => 'tx_ldap_lastrun'
+                'fieldName' => 'tx_ldap_lastrun',
             ],
         ],
     ],
@@ -67,13 +68,13 @@ return [
         'tableName' => 'be_groups',
         'properties' => [
             'dn' => [
-                'fieldName' => 'tx_ldap_dn'
+                'fieldName' => 'tx_ldap_dn',
             ],
             'serverUid' => [
-                'fieldName' => 'tx_ldap_serveruid'
+                'fieldName' => 'tx_ldap_serveruid',
             ],
             'lastRun' => [
-                'fieldName' => 'tx_ldap_lastrun'
+                'fieldName' => 'tx_ldap_lastrun',
             ],
         ],
     ],
