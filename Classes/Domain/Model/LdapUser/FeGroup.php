@@ -26,46 +26,38 @@ namespace NormanSeibert\Ldap\Domain\Model\LdapUser;
  * @copyright 2020 Norman Seibert
  */
 
-use NormanSeibert\Ldap\Domain\Repository\Typo3User\FrontendUserRepository;
 use NormanSeibert\Ldap\Domain\Repository\Typo3User\FrontendUserGroupRepository;
 
 /**
- * Model for users read from LDAP server.
+ * Model for groups read from LDAP server.
  */
-class FeUser extends \NormanSeibert\Ldap\Domain\Model\LdapUser\User
+class FeGroup extends \NormanSeibert\Ldap\Domain\Model\LdapUser\Group
 {
-    protected $user;
-
-    protected $userRepository;
+    protected $group;
 
     protected $usergroupRepository;
 
-    protected $userRules;
+    protected $usergroupRules;
 
     protected $pid;
 
-    protected $groupObject;
-
-    public function __construct(FeGroup $groupObject, FrontendUserRepository $userRepository, FrontendUserGroupRepository $usergroupRepository)
+    public function __construct(FrontendUserGroupRepository $usergroupRepository)
     {
         parent::__construct();
-        $this->groupObject = $groupObject;
-        $this->userRepository = $userRepository;
         $this->usergroupRepository = $usergroupRepository;
-        $this->userObject = 'NormanSeibert\Ldap\Domain\Model\Typo3User\FrontendUser';
+        $this->groupObject = 'NormanSeibert\Ldap\Domain\Model\Typo3User\FrontendUserGroup';
     }
 
     /**
      * sets the LDAP server (backreference).
      *
-     * @return \NormanSeibert\Ldap\Domain\Model\LdapUser\FeUser
+     * @return \NormanSeibert\Ldap\Domain\Model\LdapUser\FeGroup
      */
     public function setLdapServer(\NormanSeibert\Ldap\Domain\Model\LdapServer\Server $server)
     {
         $this->ldapServer = $server;
-        $this->groupObject->setLdapServer($server);
-        $this->userRules = $this->ldapServer->getConfiguration()->getFeUserRules();
-        $this->pid = $this->userRules->getPid();
+        $this->usergroupRules = $this->ldapServer->getConfiguration()->getFeUserRules()->getGroupRules();
+        $this->pid = 0;
 
         return $this;
     }

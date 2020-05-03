@@ -38,19 +38,19 @@ class BeUser extends \NormanSeibert\Ldap\Domain\Model\LdapUser\User
 
     protected $userRepository;
 
-    protected $usergroupRepository;
-
     protected $userRules;
 
     protected $pid;
 
-    public function __construct(BackendUserRepository $userRepository, BackendUserGroupRepository $usergroupRepository)
+    protected $groupObject;
+
+    public function __construct(BeGroup $groupObject, BackendUserRepository $userRepository, BackendUserGroupRepository $usergroupRepository)
     {
         parent::__construct();
+        $this->groupObject = $groupObject;
         $this->userRepository = $userRepository;
         $this->usergroupRepository = $usergroupRepository;
         $this->userObject = 'NormanSeibert\Ldap\Domain\Model\Typo3User\BackendUser';
-        $this->groupObject = 'NormanSeibert\Ldap\Domain\Model\Typo3User\BackendUserGroup';
     }
 
     /**
@@ -61,6 +61,7 @@ class BeUser extends \NormanSeibert\Ldap\Domain\Model\LdapUser\User
     public function setLdapServer(\NormanSeibert\Ldap\Domain\Model\LdapServer\Server $server)
     {
         $this->ldapServer = $server;
+        $this->groupObject->setLdapServer($server);
         $this->userRules = $this->ldapServer->getConfiguration()->getBeUserRules();
         $this->pid = 0;
 
