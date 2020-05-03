@@ -145,20 +145,17 @@
 
    <span class="nx">reverseMapping</span> <span class="o">=</span> <span class="mi">1</span>
 
+   <span class="c1"># Base-DN of the OU containing the usergroup records</span>
+
+   <span class="nx">baseDN</span> <span class="o">=</span>
+
+   <span class="c1"># &lt;search&gt; is replaced by the user record's DN or - if given - the "searchAttribute"</span>
+
+   <span class="nx">filter</span> <span class="o">=</span> <span class="p">(</span><span class="nx">memberUid</span><span class="o">=&lt;</span><span class="nx">search</span><span class="o">&gt;</span><span class="p">)</span>
+   <span class="nx">searchAttribute</span> <span class="o">=</span> <span class="nx">uid</span>
+
    <span class="nx">mapping</span> <span class="p">{</span>
-
-      <span class="c1"># Base-DN of the OU containing the usergroup records</span>
-
-      <span class="nx">baseDN</span> <span class="o">=</span>
-
-      <span class="c1"># &lt;search&gt; is replaced by the user record's DN or - if given - the "searchAttribute"</span>
-
-      <span class="nx">filter</span> <span class="o">=</span> <span class="p">(</span><span class="nx">memberUid</span><span class="o">=&lt;</span><span class="nx">search</span><span class="o">&gt;</span><span class="p">)</span>
-      <span class="nx">searchAttribute</span> <span class="o">=</span> <span class="nx">uid</span>
-
-      <span class="nx">mapping</span> <span class="p">{</span>
-         <span class="nx">title</span><span class="o">.</span><span class="nx">data</span> <span class="o">=</span> <span class="nx">field</span><span class="o">:</span><span class="nx">commonname</span>
-      <span class="p">}</span>
+      <span class="nx">title</span><span class="o">.</span><span class="nx">data</span> <span class="o">=</span> <span class="nx">field</span><span class="o">:</span><span class="nx">commonname</span>
    <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -189,7 +186,7 @@
 <footer>
 <div class="frame frame-ruler-before frame-background-dark">
 <div class="frame-container">
-<div class="frame-inner"><div class="footer-additional"><p class="text-center">Last rendered on Apr 01, 2020 16:40</p><p class="text-center"><a href="https://github.com/TYPO3-Documentation/sphinx_typo3_theme" rel="nofollow noopener" target="_blank">TYPO3 Theme 4.1.3</a></p>
+<div class="frame-inner"><div class="footer-additional"><p class="text-center">Last rendered on May 03, 2020 17:06</p><p class="text-center"><a href="https://github.com/TYPO3-Documentation/sphinx_typo3_theme" rel="nofollow noopener" target="_blank">TYPO3 Theme 4.1.3</a></p>
 </div>
 <div class="footer-meta"><div class="footer-meta-copyright">© Copyright by Norman Seibert</div>
 </div>

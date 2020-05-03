@@ -74,20 +74,17 @@ When user groups hold the users like it's the case in OpenLDAP.
    usergroups {
 
       reverseMapping = 1
+
+      # Base-DN of the OU containing the usergroup records
+         
+      baseDN = 
+         
+      # <search> is replaced by the user record's DN or - if given - the "searchAttribute"
+         
+      filter = (memberUid=<search>)
+      searchAttribute = uid
    
-      mapping {
-   
-         # Base-DN of the OU containing the usergroup records
-         
-         baseDN = 
-         
-         # <search> is replaced by the user record's DN or - if given - the "searchAttribute"
-         
-         filter = (memberUid=<search>)
-         searchAttribute = uid
-                    
-         mapping {
-            title.data = field:commonname
-         }
+      mapping {     
+         title.data = field:commonname
       }
    }

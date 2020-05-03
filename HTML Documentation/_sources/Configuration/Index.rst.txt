@@ -39,4 +39,3 @@ An example configuration file is included in the directory “example”.
 	Groups
 	Extbase
 	SSO
-
