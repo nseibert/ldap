@@ -245,11 +245,10 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \Ps
             $this->user->generatePassword();
 
             $pid = $this->userRules->getPid();
-            if ($pid) {
-                $this->user->setPid($pid);
-            } else {
-                $this->user->setPid(0);
+            if (empty($pid)) {
+                $pid = 0;
             }
+            $this->user->setPid($pid);
 
             // LDAP attributes from mapping
             $insertArray = $this->mapAttributes();
@@ -332,10 +331,14 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \Ps
         $updateUser = false;
 
         if ($username) {
-            $this->user->setPid($this->pid);
             $this->user->setUsername($username);
             $this->user->setServerUid($this->ldapServer->getConfiguration()->getUid());
             $this->user->setDN($this->dn);
+
+            $pid = $this->userRules->getPid();
+            if (!empty($pid)) {
+                $this->user->setPid($pid);
+            }
 
             // LDAP attributes from mapping
             $insertArray = $this->mapAttributes();
