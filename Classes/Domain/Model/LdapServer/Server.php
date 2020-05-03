@@ -357,7 +357,7 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \
             $baseDN = $this->getConfiguration()->getUserRules($this->table)->getGroupRules()->getBaseDN();
             $filter = $this->getConfiguration()->getUserRules($this->table)->getGroupRules()->getFilter();
 
-            if ($baseDN && $filter) {
+            if (!empty($filter) && !empty($baseDN)) {
                 $filter = str_replace('<search>', $findname, $filter);
 
                 $msg = 'Query server: '.$this->getConfiguration()->getUid().' with filter: '.$filter;
@@ -365,7 +365,7 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \
                     $this->logger->debug($msg);
                 }
 
-                if (!empty($filter) && !empty($baseDN)) {
+                if (!empty($filter)) {
                     $connect = $this->connect();
                     if (!empty($connect)) {
                         if ($this->getConfiguration()->getUser() && $this->getConfiguration()->getPassword()) {
