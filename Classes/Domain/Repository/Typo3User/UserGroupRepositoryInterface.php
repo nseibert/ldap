@@ -50,6 +50,14 @@ interface UserGroupRepositoryInterface
     public function findByDn($dn);
 
     /**
+     * @param string $grouptitle
+     * @param int    $pid
+     *
+     * @return \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
+     */
+    public function findByGroupTitle($grouptitle, $pid = null);
+
+    /**
      * @param array $lastRun
      *
      * @return array

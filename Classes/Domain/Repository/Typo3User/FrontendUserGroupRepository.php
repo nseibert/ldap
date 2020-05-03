@@ -44,6 +44,39 @@ class FrontendUserGroupRepository extends \TYPO3\CMS\Extbase\Domain\Repository\F
     }
 
     /**
+     * @param string $grouptitle
+     * @param int    $pid
+     *
+     * @return \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
+     */
+    public function findByGroupTitle($grouptitle, $pid = null)
+    {
+        $group = false;
+        $query = $this->createQuery();
+        $query->getQuerySettings()->setRespectStoragePage(false);
+        \NormanSeibert\Ldap\Utility\Helpers::setRespectEnableFieldsToFalse($query);
+        if ($pid) {
+            $query->matching(
+                $query->logicalAnd(
+                    $query->equals('pid', $pid),
+                    $query->equals('title', $grouptitle)
+                )
+            );
+        } else {
+            $query->matching(
+                $query->equals('title', $grouptitle)
+            );
+        }
+        $groups = $query->execute();
+        $groupCount = $groups->count();
+        if (1 == $groupCount) {
+            $group = $groups->getFirst();
+        }
+
+        return $group;
+    }
+
+    /**
      * @param array $uidList
      *
      * @return array
