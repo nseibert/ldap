@@ -26,24 +26,17 @@ namespace NormanSeibert\Ldap\Domain\Model\LdapUser;
  * @copyright 2020 Norman Seibert
  */
 
-use NormanSeibert\Ldap\Domain\Repository\Typo3User\FrontendUserRepository;
 use NormanSeibert\Ldap\Domain\Repository\Typo3User\FrontendUserGroupRepository;
+use NormanSeibert\Ldap\Domain\Repository\Typo3User\FrontendUserRepository;
 
 /**
  * Model for users read from LDAP server.
  */
 class FeUser extends \NormanSeibert\Ldap\Domain\Model\LdapUser\User
 {
-    protected $user;
-
-    protected $userRepository;
-
-    protected $usergroupRepository;
-
-    protected $userRules;
-
-    protected $pid;
-
+    /**
+     * @var \NormanSeibert\Ldap\Domain\Model\LdapUser\FeGroup
+     */
     protected $groupObject;
 
     public function __construct(FeGroup $groupObject, FrontendUserRepository $userRepository, FrontendUserGroupRepository $usergroupRepository)

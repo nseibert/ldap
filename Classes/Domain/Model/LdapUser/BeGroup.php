@@ -33,14 +33,6 @@ use NormanSeibert\Ldap\Domain\Repository\Typo3User\BackendUserGroupRepository;
  */
 class BeGroup extends \NormanSeibert\Ldap\Domain\Model\LdapUser\Group
 {
-    protected $group;
-
-    protected $usergroupRepository;
-
-    protected $usergroupRules;
-
-    protected $pid;
-
     public function __construct(BackendUserGroupRepository $usergroupRepository)
     {
         parent::__construct();

@@ -33,12 +33,9 @@ use NormanSeibert\Ldap\Domain\Repository\Typo3User\FrontendUserGroupRepository;
  */
 class FeGroup extends \NormanSeibert\Ldap\Domain\Model\LdapUser\Group
 {
-    protected $group;
-
-    protected $usergroupRepository;
-
-    protected $usergroupRules;
-
+    /**
+     * @var int
+     */
     protected $pid;
 
     public function __construct(FrontendUserGroupRepository $usergroupRepository)
@@ -57,7 +54,7 @@ class FeGroup extends \NormanSeibert\Ldap\Domain\Model\LdapUser\Group
     {
         $this->ldapServer = $server;
         $this->usergroupRules = $this->ldapServer->getConfiguration()->getFeUserRules()->getGroupRules();
-        $this->pid = 0;
+        $this->pid = $this->usergroupRules->getPid();
 
         return $this;
     }

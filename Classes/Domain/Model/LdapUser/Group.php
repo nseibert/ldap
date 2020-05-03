@@ -147,7 +147,7 @@ class Group extends \NormanSeibert\Ldap\Domain\Model\LdapUser\LdapEntity impleme
 
             if ($this->usergroupRules->getRestrictToGroups()) {
                 $groupOK = false;
-                $groupOK = $this->checkGroupName($group->getTitle());
+                $groupOK = $this->checkGroupName($groupTitle);
                 if ($groupOK) {
                     $createGroup = true;
                 }
@@ -218,7 +218,7 @@ class Group extends \NormanSeibert\Ldap\Domain\Model\LdapUser\LdapEntity impleme
 
             if ($this->usergroupRules->getRestrictToGroups()) {
                 $groupOK = false;
-                $groupOK = $this->checkGroupName($group->getTitle());
+                $groupOK = $this->checkGroupName($groupTitle);
                 if ($groupOK) {
                     $updateGroup = true;
                 }
@@ -553,6 +553,7 @@ class Group extends \NormanSeibert\Ldap\Domain\Model\LdapUser\LdapEntity impleme
         // $this->cObj->alternativeData = $this->attributes;
         // $result = $this->cObj->stdWrap('', $mapping['title.']);
         $result = $this->getAttributeMapping($mapping, 'title', $this->attributes);
+        $stdWrap = $mapping['title.']['stdWrap.'];
 
         if (is_array($result)) {
             unset($result['count']);

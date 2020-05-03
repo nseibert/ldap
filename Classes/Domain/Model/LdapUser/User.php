@@ -70,6 +70,11 @@ class User extends \NormanSeibert\Ldap\Domain\Model\LdapUser\LdapEntity implemen
      */
     protected $userObject;
 
+    /**
+     * @var int
+     */
+    protected $pid;
+
     public function __construct()
     {
         parent::__construct();
@@ -228,7 +233,7 @@ class User extends \NormanSeibert\Ldap\Domain\Model\LdapUser\LdapEntity implemen
         $rawLdapUsername = $mapping['username.']['data'];
         $ldapUsername = str_replace('field:', '', $rawLdapUsername);
 
-        $username = $this->getAttribute($ldapUsername);
+        $username = (string) $this->getAttribute($ldapUsername);
 
         $updateUser = false;
 

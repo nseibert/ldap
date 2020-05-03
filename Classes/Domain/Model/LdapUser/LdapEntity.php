@@ -182,8 +182,8 @@ class LdapEntity extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implemen
         $ldapData = $this->getAttributeMapping($mapping, $key, $data);
 
         $stdWrap = $mapping[$key.'.']['stdWrap.'];
-        if (is_array($value['stdWrap.'])) {
-            unset($value['stdWrap.']);
+        if (is_array($mapping[$key.'.']['stdWrap.'])) {
+            unset($mapping[$key.'.']['stdWrap.']);
         }
 
         if (is_array($ldapData)) {
