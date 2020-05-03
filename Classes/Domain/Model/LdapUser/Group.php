@@ -31,7 +31,7 @@ use Psr\Log\LoggerAwareTrait;
 /**
  * Model for groups read from LDAP server.
  */
-class Group extends \NormanSeibert\Ldap\Domain\Model\LdapUser\LdapObject implements \Psr\Log\LoggerAwareInterface
+class Group extends \NormanSeibert\Ldap\Domain\Model\LdapUser\LdapEntity implements \Psr\Log\LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
@@ -309,19 +309,19 @@ class Group extends \NormanSeibert\Ldap\Domain\Model\LdapUser\LdapObject impleme
     /** Assigns TYPO3 usergroups to the current TYPO3 user.
      *
      * @param string $lastRun
-     * @param \NormanSeibert\Ldap\Domain\Model\LdapUser\User
-     * @param mixed $user
+     * @param array
+     * @param mixed $userAttributes
      *
      * @return array
      */
-    public function assignGroups($lastRun = null, $user)
+    public function assignGroups($lastRun = null, $userAttributes)
     {
         $ret = [];
         $mapping = $this->usergroupRules->getMapping();
 
         if (is_array($mapping)) {
             if ($this->usergroupRules->getReverseMapping()) {
-                $ret = $this->reverseAssignGroups($user);
+                $ret = $this->reverseAssignGroups($userAttributes);
             } else {
                 switch (strtolower($mapping['field'])) {
                     case 'text':
@@ -450,11 +450,11 @@ class Group extends \NormanSeibert\Ldap\Domain\Model\LdapUser\LdapObject impleme
 
     /** Assigns TYPO3 usergroups to the current TYPO3 user by additionally querying the LDAP server for groups.
      *
-     * @param \NormanSeibert\Ldap\Domain\Model\LdapUser\User $user
+     * @param array $userAttributes
      *
      * @return array
      */
-    private function reverseAssignGroups($user)
+    private function reverseAssignGroups($userAttributes)
     {
         $msg = 'Use reverse mapping for usergroups';
         if (3 == $this->ldapConfig->logLevel) {
@@ -469,62 +469,69 @@ class Group extends \NormanSeibert\Ldap\Domain\Model\LdapUser\LdapObject impleme
             $searchAttribute = 'dn';
         }
 
-        $username = mb_strtolower($user->getAttribute($searchAttribute));
+        if ($userAttributes[$searchAttribute]) {
+            $searchFor = mb_strtolower($userAttributes[$searchAttribute]);
 
-        $ldapGroups = $this->ldapServer->getGroups($username);
+            $ldapGroups = $this->ldapServer->getGroups($searchFor);
 
-        if (is_array($ldapGroups)) {
-            unset($ldapGroups['count']);
-            if (0 == count($ldapGroups)) {
+            if (is_array($ldapGroups)) {
+                unset($ldapGroups['count']);
+                if (0 == count($ldapGroups)) {
+                    $msg = 'No usergroups found for reverse mapping';
+                    if ($this->ldapConfig->logLevel >= 2) {
+                        $this->logger->notice($msg);
+                    }
+                } else {
+                    $msg = 'Usergroups found for reverse mapping';
+                    if ($this->ldapConfig->logLevel >= 2) {
+                        $this->logger->debug($msg);
+                    }
+                    $msg = 'Usergroups for reverse mapping';
+                    if (3 == $this->ldapConfig->logLevel) {
+                        $this->logger->debug($msg, $ldapGroups);
+                    }
+                    foreach ($ldapGroups as $group) {
+                        // $this->cObj->alternativeData = $group;
+                        // $usergroup = $this->cObj->stdWrap('', $mapping['title.']);
+                        $usergroup = $this->mapAttribute($mapping, 'title', $group);
+
+                        $msg = 'Try to add usergroup "'.$usergroup.'" to user';
+                        if (3 == $this->ldapConfig->logLevel) {
+                            $this->logger->debug($msg);
+                        }
+
+                        if ($usergroup) {
+                            $tmp = $this->resolveGroup('title', $usergroup, $usergroup, $group['dn']);
+                            if ($tmp['newGroup']) {
+                                $ret['newGroups'][] = $tmp['newGroup'];
+                            }
+                            if ($tmp['existingGroup']) {
+                                $ret['existingGroups'][] = $tmp['existingGroup'];
+                            }
+                        } else {
+                            $msg = 'Usergroup mapping did not result in a title';
+                            if ($this->ldapConfig->logLevel >= 1) {
+                                $this->logger->warning($msg);
+                            }
+                        }
+                    }
+                }
+            } else {
                 $msg = 'No usergroups found for reverse mapping';
                 if ($this->ldapConfig->logLevel >= 2) {
                     $this->logger->notice($msg);
                 }
-            } else {
-                $msg = 'Usergroups found for reverse mapping';
-                if ($this->ldapConfig->logLevel >= 2) {
-                    $this->logger->debug($msg);
-                }
-                $msg = 'Usergroups for reverse mapping';
-                if (3 == $this->ldapConfig->logLevel) {
-                    $this->logger->debug($msg, $ldapGroups);
-                }
-                foreach ($ldapGroups as $group) {
-                    // $this->cObj->alternativeData = $group;
-                    // $usergroup = $this->cObj->stdWrap('', $mapping['title.']);
-                    $usergroup = $this->mapAttribute($mapping, 'title', $group);
+            }
 
-                    $msg = 'Try to add usergroup "'.$usergroup.'" to user';
-                    if (3 == $this->ldapConfig->logLevel) {
-                        $this->logger->debug($msg);
-                    }
-
-                    if ($usergroup) {
-                        $tmp = $this->resolveGroup('title', $usergroup, $usergroup, $group['dn']);
-                        if ($tmp['newGroup']) {
-                            $ret['newGroups'][] = $tmp['newGroup'];
-                        }
-                        if ($tmp['existingGroup']) {
-                            $ret['existingGroups'][] = $tmp['existingGroup'];
-                        }
-                    } else {
-                        $msg = 'Usergroup mapping did not result in a title';
-                        if ($this->ldapConfig->logLevel >= 1) {
-                            $this->logger->warning($msg);
-                        }
-                    }
-                }
+            $msg = 'Resulting usergroups to add or update';
+            if (3 == $this->ldapConfig->logLevel) {
+                $this->logger->debug($msg, $ret);
             }
         } else {
-            $msg = 'No usergroups found for reverse mapping';
-            if ($this->ldapConfig->logLevel >= 2) {
-                $this->logger->notice($msg);
+            $msg = 'Record is missing attribute "'.$searchAttribute.'" and reverseMapping cannot search for groups';
+            if ($this->ldapConfig->logLevel >= 1) {
+                $this->logger->warning($msg);
             }
-        }
-
-        $msg = 'Resulting usergroups to add or update';
-        if (3 == $this->ldapConfig->logLevel) {
-            $this->logger->debug($msg, $ret);
         }
 
         return $ret;

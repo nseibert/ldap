@@ -31,7 +31,7 @@ use Psr\Log\LoggerAwareTrait;
 /**
  * Model for users read from LDAP server.
  */
-class User extends \NormanSeibert\Ldap\Domain\Model\LdapUser\LdapObject implements \Psr\Log\LoggerAwareInterface
+class User extends \NormanSeibert\Ldap\Domain\Model\LdapUser\LdapEntity implements \Psr\Log\LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
@@ -327,7 +327,7 @@ class User extends \NormanSeibert\Ldap\Domain\Model\LdapUser\LdapObject implemen
     protected function addUsergroupsToUserRecord($lastRun = null)
     {
         if (is_object($this->userRules->getGroupRules())) {
-            $usergroups = $this->groupObject->assignGroups($lastRun, $this);
+            $usergroups = $this->groupObject->assignGroups($lastRun, $this->attributes);
 
             if (count($usergroups) > 0) {
                 foreach ($usergroups as $group) {

@@ -34,7 +34,7 @@ use TYPO3\CMS\Extbase\Object\ObjectManager;
 /**
  * Model for objects read from LDAP server.
  */
-class LdapObject extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \Psr\Log\LoggerAwareInterface
+class LdapEntity extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \Psr\Log\LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
