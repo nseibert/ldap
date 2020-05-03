@@ -26,8 +26,6 @@ namespace NormanSeibert\Ldap\Domain\Model\LdapUser;
  * @copyright 2020 Norman Seibert
  */
 
-use NormanSeibert\Ldap\Domain\Model\Typo3User\BackendUser;
-use NormanSeibert\Ldap\Domain\Model\Typo3User\BackendUserGroup;
 use NormanSeibert\Ldap\Domain\Repository\Typo3User\BackendUserGroupRepository;
 use NormanSeibert\Ldap\Domain\Repository\Typo3User\BackendUserRepository;
 
@@ -46,13 +44,13 @@ class BeUser extends \NormanSeibert\Ldap\Domain\Model\LdapUser\User
 
     protected $pid;
 
-    public function __construct(BackendUserRepository $userRepository, BackendUserGroupRepository $usergroupRepository, BackendUser $userObject, BackendUserGroup $groupObject)
+    public function __construct(BackendUserRepository $userRepository, BackendUserGroupRepository $usergroupRepository)
     {
         parent::__construct();
         $this->userRepository = $userRepository;
         $this->usergroupRepository = $usergroupRepository;
-        $this->userObject = $userObject;
-        $this->groupObject = $groupObject;
+        $this->userObject = 'NormanSeibert\Ldap\Domain\Model\Typo3User\BackendUser';
+        $this->groupObject = 'NormanSeibert\Ldap\Domain\Model\Typo3User\BackendUserGroup';
     }
 
     /**

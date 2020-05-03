@@ -26,8 +26,6 @@ namespace NormanSeibert\Ldap\Domain\Model\LdapUser;
  * @copyright 2020 Norman Seibert
  */
 
-use NormanSeibert\Ldap\Domain\Model\Typo3User\FrontendUser;
-use NormanSeibert\Ldap\Domain\Model\Typo3User\FrontendUserGroup;
 use NormanSeibert\Ldap\Domain\Repository\Typo3User\FrontendUserGroupRepository;
 use NormanSeibert\Ldap\Domain\Repository\Typo3User\FrontendUserRepository;
 
@@ -50,13 +48,13 @@ class FeUser extends \NormanSeibert\Ldap\Domain\Model\LdapUser\User
      * @param Configuration $ldapConfig
      * @param ObjectManager $objectManager
      */
-    public function __construct(FrontendUserRepository $userRepository, FrontendUserGroupRepository $usergroupRepository, FrontendUser $userObject, FrontendUserGroup $groupObject)
+    public function __construct(FrontendUserRepository $userRepository, FrontendUserGroupRepository $usergroupRepository)
     {
         parent::__construct();
         $this->userRepository = $userRepository;
         $this->usergroupRepository = $usergroupRepository;
-        $this->userObject = $userObject;
-        $this->groupObject = $groupObject;
+        $this->userObject = 'NormanSeibert\Ldap\Domain\Model\Typo3User\FrontendUser';
+        $this->groupObject = 'NormanSeibert\Ldap\Domain\Model\Typo3User\FrontendUserGroup';
     }
 
     /**

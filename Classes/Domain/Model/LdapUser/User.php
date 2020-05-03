@@ -240,10 +240,16 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \Ps
         if ($username) {
             $this->user = $this->objectManager->get($this->userObject);
             $this->user->setServerUid($this->ldapServer->getConfiguration()->getUid());
-            $this->user->setPid($this->userRules->getPid());
             $this->user->setUsername($username);
             $this->user->setDN($this->dn);
             $this->user->generatePassword();
+
+            $pid = $this->userRules->getPid();
+            if ($pid) {
+                $this->user->setPid($pid);
+            } else {
+                $this->user->setPid(0);
+            }
 
             // LDAP attributes from mapping
             $insertArray = $this->mapAttributes();
@@ -433,18 +439,16 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \Ps
 
         if ((is_array($newGroups)) && ($addnewgroups)) {
             foreach ($newGroups as $group) {
-                // @var $newGroup \NormanSeibert\Ldap\Domain\Model\Typo3User\UserGroupInterface
                 $newGroup = $this->objectManager->get($this->groupObject);
                 $newGroup->setPid($pid);
                 $newGroup->setTitle($group['title']);
                 $newGroup->setDN($group['dn']);
-                $newGroup-- > setServerUid($this->ldapServer->getConfiguration()->getUid());
+                $newGroup->setServerUid($this->ldapServer->getConfiguration()->getUid());
                 if ($lastRun) {
                     $newGroup->setLastRun($lastRun);
                 }
                 // LDAP attributes from mapping
                 if ($group['groupObject']) {
-                    // @var $groupObject \NormanSeibert\Ldap\Domain\Model\LdapUser\User
                     $groupObject = $group['groupObject'];
                     $insertArray = $this->getAttributes('group', $groupObject->getAttributes());
                     unset($insertArray['field']);
