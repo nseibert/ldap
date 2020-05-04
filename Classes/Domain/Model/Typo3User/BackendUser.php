@@ -206,8 +206,6 @@ class BackendUser extends \TYPO3\CMS\Extbase\Domain\Model\BackendUser implements
 
     /**
      * Adds a usergroup to the backend user.
-     *
-     * @param \NormanSeibert\Ldap\Domain\Model\Typo3User\BackendUserGroup $usergroup
      */
     public function addUsergroup(BackendUserGroup $usergroup)
     {
@@ -217,7 +215,7 @@ class BackendUser extends \TYPO3\CMS\Extbase\Domain\Model\BackendUser implements
     /**
      * Removes a usergroup from the backend user.
      */
-    public function removeUsergroup(\TYPO3\CMS\Extbase\Domain\Model\BackendUserGroup $usergroup)
+    public function removeUsergroup(BackendUserGroup $usergroup)
     {
         $this->usergroup->detach($usergroup);
     }

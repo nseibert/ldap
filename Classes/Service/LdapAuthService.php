@@ -87,7 +87,7 @@ class LdapAuthService extends \TYPO3\CMS\Core\Authentication\AuthenticationServi
     /**
      * Initialize authentication service.
      *
-     * @param string $subType                   Subtype of the service which is used to call the service.
+     * @param string $subType                   Subtype of the service which is used to call the service
      * @param array  $loginData                 Submitted login form data
      * @param array  $authenticationInformation Information array. Holds submitted form data etc.
      * @param object $parentObject              Parent object
@@ -123,8 +123,6 @@ class LdapAuthService extends \TYPO3\CMS\Core\Authentication\AuthenticationServi
 
     /**
      * Activates Single Sign On (SSO).
-     *
-     * @return void
      */
     public function activateSSO()
     {
@@ -165,7 +163,7 @@ class LdapAuthService extends \TYPO3\CMS\Core\Authentication\AuthenticationServi
         if (!is_array($user)) {
             // Failed login attempt (no user found)
             $this->writelog(255, 3, 3, 2, 'Login-attempt from %s (%s), username \'%s\' not found!!', [$this->authInfo['REMOTE_ADDR'], $this->authInfo['REMOTE_HOST'], $this->login['uname']]); // Logout written to log
-            \TYPO3\CMS\Core\Utility\GeneralUtility::sysLog(sprintf('Login-attempt from %s (%s), username \'%s\' not found!', $this->authInfo['REMOTE_ADDR'], $this->authInfo['REMOTE_HOST'], $this->username), 'Core', 0);
+            // GeneralUtility::sysLog(sprintf('Login-attempt from %s (%s), username \'%s\' not found!', $this->authInfo['REMOTE_ADDR'], $this->authInfo['REMOTE_HOST'], $this->username), 'Core', 0);
         } else {
             if ($this->logLevel >= 1) {
                 $msg = 'TYPO3 user found: '.$this->username;
@@ -304,9 +302,7 @@ class LdapAuthService extends \TYPO3\CMS\Core\Authentication\AuthenticationServi
     /**
      * Authenticate a user.
      *
-     * @param array $user Data of user.
-     *
-     * @return int
+     * @param array $user data of user
      */
     public function authUser(array $user): int
     {
@@ -342,7 +338,7 @@ class LdapAuthService extends \TYPO3\CMS\Core\Authentication\AuthenticationServi
             // Lock domain didn't match, so error:
             if ($this->writeAttemptLog) {
                 $this->writelog(255, 3, 3, 1, "Login-attempt from %s (%s), username '%s', locked domain '%s' did not match '%s'!", [$this->authInfo['REMOTE_ADDR'], $this->authInfo['REMOTE_HOST'], $user[$this->authInfo['db_user']['username_column']], $user['lockToDomain'], $this->authInfo['HTTP_HOST']]);
-                \TYPO3\CMS\Core\Utility\GeneralUtility::sysLog(sprintf("Login-attempt from %s (%s), username '%s', locked domain '%s' did not match '%s'!", $this->authInfo['REMOTE_ADDR'], $this->authInfo['REMOTE_HOST'], $user[$this->authInfo['db_user']['username_column']], $user['lockToDomain'], $this->authInfo['HTTP_HOST']), 'Core', 0);
+                // GeneralUtility::sysLog(sprintf("Login-attempt from %s (%s), username '%s', locked domain '%s' did not match '%s'!", $this->authInfo['REMOTE_ADDR'], $this->authInfo['REMOTE_HOST'], $user[$this->authInfo['db_user']['username_column']], $user['lockToDomain'], $this->authInfo['HTTP_HOST']), 'Core', 0);
             }
             $ok = 0;
         }
@@ -365,7 +361,7 @@ class LdapAuthService extends \TYPO3\CMS\Core\Authentication\AuthenticationServi
     /**
      * Fetching raw user record with username=$name.
      *
-     * @param string $name The username to look up.
+     * @param string $name the username to look up
      *
      * @return array user record or FALSE
      *
@@ -389,8 +385,6 @@ class LdapAuthService extends \TYPO3\CMS\Core\Authentication\AuthenticationServi
      * This returns the restrictions needed to select the user respecting
      * enable columns and flags like deleted, hidden, starttime, endtime
      * and rootLevel.
-     *
-     * @return QueryRestrictionContainerInterface
      *
      * @internal
      */

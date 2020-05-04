@@ -27,6 +27,7 @@ namespace NormanSeibert\Ldap\Domain\Model\Typo3User;
  */
 
 use NormanSeibert\Ldap\Domain\Model\Configuration\Configuration;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
  * Model for TYPO3 backend users.
