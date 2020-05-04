@@ -35,9 +35,24 @@ use NormanSeibert\Ldap\Domain\Repository\Typo3User\FrontendUserRepository;
 class FeUser extends \NormanSeibert\Ldap\Domain\Model\LdapUser\User
 {
     /**
+     * @var \NormanSeibert\Ldap\Domain\Repository\Typo3User\FrontendUserRepository
+     */
+    protected $userRepository;
+
+    /**
+     * @var \NormanSeibert\Ldap\Domain\Repository\Typo3User\FrontendUserGroupRepository
+     */
+    protected $usergroupRepository;
+
+    /**
      * @var \NormanSeibert\Ldap\Domain\Model\LdapUser\FeGroup
      */
     protected $groupObject;
+
+    /**
+     * @var \NormanSeibert\Ldap\Domain\Model\Typo3User\FrontendUser
+     */
+    protected $user;
 
     public function __construct(FeGroup $groupObject, FrontendUserRepository $userRepository, FrontendUserGroupRepository $usergroupRepository)
     {

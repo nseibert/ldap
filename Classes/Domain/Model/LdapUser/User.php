@@ -105,7 +105,6 @@ class User extends \NormanSeibert\Ldap\Domain\Model\LdapUser\LdapEntity implemen
             $this->logger->debug($msg);
         }
         // search for DN
-        // @var $user \NormanSeibert\Ldap\Domain\Model\Typo3User\UserInterface
         $user = $this->userRepository->findByDn($this->dn, $pid);
         // search for Username if no record with DN found
         if (is_object($user)) {

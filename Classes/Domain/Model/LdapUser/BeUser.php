@@ -35,9 +35,24 @@ use NormanSeibert\Ldap\Domain\Repository\Typo3User\BackendUserRepository;
 class BeUser extends \NormanSeibert\Ldap\Domain\Model\LdapUser\User
 {
     /**
+     * @var \NormanSeibert\Ldap\Domain\Repository\Typo3User\BackendUserRepository
+     */
+    protected $userRepository;
+
+    /**
+     * @var \NormanSeibert\Ldap\Domain\Repository\Typo3User\BackendUserGroupRepository
+     */
+    protected $usergroupRepository;
+
+    /**
      * @var \NormanSeibert\Ldap\Domain\Model\LdapUser\BeGroup
      */
     protected $groupObject;
+
+    /**
+     * @var \NormanSeibert\Ldap\Domain\Model\Typo3User\BackendUser
+     */
+    protected $user;
 
     public function __construct(BeGroup $groupObject, BackendUserRepository $userRepository, BackendUserGroupRepository $usergroupRepository)
     {

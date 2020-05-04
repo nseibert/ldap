@@ -34,6 +34,11 @@ use NormanSeibert\Ldap\Domain\Repository\Typo3User\FrontendUserGroupRepository;
 class FeGroup extends \NormanSeibert\Ldap\Domain\Model\LdapUser\Group
 {
     /**
+     * @var \NormanSeibert\Ldap\Domain\Repository\Typo3User\FrontendUserGroupRepository
+     */
+    protected $usergroupRepository;
+
+    /**
      * @var int
      */
     protected $pid;
