@@ -331,7 +331,7 @@ class User extends \NormanSeibert\Ldap\Domain\Model\LdapUser\LdapEntity implemen
     protected function addUsergroupsToUserRecord($lastRun = null)
     {
         if (is_object($this->userRules->getGroupRules())) {
-            $usergroups = $this->groupObject->assignGroups($lastRun, $this->attributes);
+            $usergroups = $this->groupObject->assignGroups($lastRun, $this->dn, $this->attributes);
 
             if (count($usergroups) > 0) {
                 foreach ($usergroups as $group) {

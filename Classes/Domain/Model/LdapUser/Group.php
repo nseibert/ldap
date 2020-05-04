@@ -309,12 +309,12 @@ class Group extends \NormanSeibert\Ldap\Domain\Model\LdapUser\LdapEntity impleme
     /** Assigns TYPO3 usergroups to the current TYPO3 user.
      *
      * @param string $lastRun
-     * @param array
-     * @param mixed $userAttributes
+     * @param string $userDN
+     * @param array  $userAttributes
      *
      * @return array
      */
-    public function assignGroups($lastRun = null, $userAttributes)
+    public function assignGroups($lastRun = null, $userDN, $userAttributes)
     {
         $ret = [];
         $mapping = $this->usergroupRules->getMapping();
@@ -325,17 +325,17 @@ class Group extends \NormanSeibert\Ldap\Domain\Model\LdapUser\LdapEntity impleme
             } else {
                 switch (strtolower($mapping['field'])) {
                     case 'text':
-                        $ret = $this->assignGroupsText();
+                        $ret = $this->assignGroupsText($userAttributes);
 
                         break;
 
                     case 'parent':
-                        $ret = $this->assignGroupsParent();
+                        $ret = $this->assignGroupsParent($userDN);
 
                         break;
 
                     case 'dn':
-                        $ret = $this->assignGroupsDN();
+                        $ret = $this->assignGroupsDN($userAttributes);
 
                         break;
 
@@ -539,9 +539,11 @@ class Group extends \NormanSeibert\Ldap\Domain\Model\LdapUser\LdapEntity impleme
 
     /** Determines usergroups based on a text attribute.
      *
+     * @param array $userAttributes
+     *
      * @return array
      */
-    private function assignGroupsText()
+    private function assignGroupsText($userAttributes)
     {
         $msg = 'Use text based mapping for usergroups';
         if (3 == $this->ldapConfig->logLevel) {
@@ -552,7 +554,7 @@ class Group extends \NormanSeibert\Ldap\Domain\Model\LdapUser\LdapEntity impleme
 
         // $this->cObj->alternativeData = $this->attributes;
         // $result = $this->cObj->stdWrap('', $mapping['title.']);
-        $result = $this->getAttributeMapping($mapping, 'title', $this->attributes);
+        $result = $this->getAttributeMapping($mapping, 'title', $userAttributes);
         $stdWrap = $mapping['title.']['stdWrap.'];
 
         if (is_array($result)) {
@@ -565,7 +567,7 @@ class Group extends \NormanSeibert\Ldap\Domain\Model\LdapUser\LdapEntity impleme
         } elseif ('Array' == $result) {
             $tmp = explode(':', $mapping['title.']['data']);
             $attrname = $tmp[1];
-            $result = $this->attributes[$attrname];
+            $result = $userAttributes[$attrname];
             unset($result['count']);
             $attr = [];
             foreach ($result as $v) {
@@ -603,11 +605,11 @@ class Group extends \NormanSeibert\Ldap\Domain\Model\LdapUser\LdapEntity impleme
 
     /** Determines usergroups based on the user records parent record.
      *
-     * @internal param array $mapping
+     * @param string $userDN
      *
      * @return array
      */
-    private function assignGroupsParent()
+    private function assignGroupsParent($userDN)
     {
         $msg = 'Use parent node for usergroup';
         if (3 == $this->ldapConfig->logLevel) {
@@ -616,7 +618,7 @@ class Group extends \NormanSeibert\Ldap\Domain\Model\LdapUser\LdapEntity impleme
         $ret = [];
         $mapping = $this->usergroupRules->getMapping();
 
-        $path = explode(',', $this->dn);
+        $path = explode(',', $userDN);
         unset($path[0]);
         $parentDN = implode(',', $path);
         $ldapGroup = $this->ldapServer->getGroup($parentDN);
@@ -640,9 +642,11 @@ class Group extends \NormanSeibert\Ldap\Domain\Model\LdapUser\LdapEntity impleme
 
     /** Determines usergroups based on DNs in an attribute of the user's record.
      *
+     * @param array $userAttributes
+     *
      * @return array
      */
-    private function assignGroupsDN()
+    private function assignGroupsDN($userAttributes)
     {
         $msg = 'Find usergroup DNs in user attribute for mapping';
         if (3 == $this->ldapConfig->logLevel) {
@@ -653,7 +657,7 @@ class Group extends \NormanSeibert\Ldap\Domain\Model\LdapUser\LdapEntity impleme
 
         // $this->cObj->alternativeData = $this->attributes;
         // $groupDNs = $this->cObj->stdWrap('', $mapping['field.']);
-        $groupDNs = $this->getAttributeMapping($mapping, 'field', $this->attributes);
+        $groupDNs = $this->getAttributeMapping($mapping, 'field', $userAttributes);
 
         if (is_array($groupDNs)) {
             unset($groupDNs['count']);
