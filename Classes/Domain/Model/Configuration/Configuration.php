@@ -241,6 +241,7 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
                         ->setAddToGroups($server['be_users.']['usergroups.']['addToGroups'])
                         ->setRestrictToGroups($server['be_users.']['usergroups.']['restrictToGroups'])
                         ->setPreserveNonLdapGroups($server['be_users.']['usergroups.']['preserveNonLdapGroups'])
+                        ->setPid(0)
                     ;
 
                     $userRuleBE
@@ -251,6 +252,7 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
                         ->setOnlyUsersWithGroup($server['be_users.']['onlyUsersWithGroup'])
                         ->setMapping($server['be_users.']['mapping.'])
                         ->setGroupRules($groupRuleBE)
+                        ->setPid(0)
                     ;
                 }
 
