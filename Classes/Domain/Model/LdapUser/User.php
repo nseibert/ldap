@@ -51,7 +51,7 @@ class User extends \NormanSeibert\Ldap\Domain\Model\LdapUser\LdapEntity implemen
     protected $groupObject;
 
     /**
-     * @var \NormanSeibert\Ldap\Domain\Model\Typo3User\UserInterface
+     * @var \NormanSeibert\Ldap\Domain\Model\Typo3User\BackendUser|\NormanSeibert\Ldap\Domain\Model\Typo3User\FrontendUser
      */
     protected $user;
 
