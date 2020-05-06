@@ -28,7 +28,7 @@ namespace NormanSeibert\Ldap\Domain\Repository\Typo3User;
 /**
  * Repository for TYPO3 backend usergroups.
  */
-interface UserGroupRepositoryInterface
+interface UserGroupRepositoryInterface extends \TYPO3\CMS\Extbase\Persistence\RepositoryInterface
 {
     /**
      * @return array
@@ -45,7 +45,7 @@ interface UserGroupRepositoryInterface
     /**
      * @param string $dn
      *
-     * @return \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
+     * @return \TYPO3\CMS\Extbase\Domain\Repository\BackendUserGroupRepository|\TYPO3\CMS\Extbase\Domain\Repository\FrontendUserGroupRepository|\TYPO3\CMS\Extbase\Persistence\QueryResultInterface
      */
     public function findByDn($dn);
 
@@ -53,7 +53,7 @@ interface UserGroupRepositoryInterface
      * @param string $grouptitle
      * @param int    $pid
      *
-     * @return \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
+     * @return \TYPO3\CMS\Extbase\Domain\Repository\BackendUserGroupRepository|\TYPO3\CMS\Extbase\Domain\Repository\FrontendUserGroupRepository|\TYPO3\CMS\Extbase\Persistence\QueryResultInterface
      */
     public function findByGroupTitle($grouptitle, $pid = null);
 
@@ -65,7 +65,7 @@ interface UserGroupRepositoryInterface
     public function findByLastRun($lastRun);
 
     /**
-     * @return \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
+     * @return \TYPO3\CMS\Extbase\Domain\Repository\BackendUserGroupRepository|\TYPO3\CMS\Extbase\Domain\Repository\FrontendUserGroupRepository|\TYPO3\CMS\Extbase\Persistence\QueryResultInterface
      */
     public function findLdapImported();
 }

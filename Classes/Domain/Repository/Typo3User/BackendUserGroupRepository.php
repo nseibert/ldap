@@ -47,7 +47,7 @@ class BackendUserGroupRepository extends \TYPO3\CMS\Extbase\Domain\Repository\Ba
      * @param string $grouptitle
      * @param int    $pid
      *
-     * @return \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
+     * @return \TYPO3\CMS\Extbase\Domain\Repository\BackendUserGroupRepository|\TYPO3\CMS\Extbase\Persistence\QueryResultInterface
      */
     public function findByGroupTitle($grouptitle, $pid = null)
     {
@@ -88,7 +88,7 @@ class BackendUserGroupRepository extends \TYPO3\CMS\Extbase\Domain\Repository\Ba
     /**
      * @param string $dn
      *
-     * @return \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
+     * @return \TYPO3\CMS\Extbase\Domain\Repository\BackendUserGroupRepository|\TYPO3\CMS\Extbase\Persistence\QueryResultInterface
      */
     public function findByDn($dn)
     {
@@ -126,7 +126,7 @@ class BackendUserGroupRepository extends \TYPO3\CMS\Extbase\Domain\Repository\Ba
     }
 
     /**
-     * @return \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
+     * @return \TYPO3\CMS\Extbase\Domain\Repository\BackendUserGroupRepository|\TYPO3\CMS\Extbase\Persistence\QueryResultInterface
      */
     public function findLdapImported()
     {

@@ -47,7 +47,7 @@ class FrontendUserGroupRepository extends \TYPO3\CMS\Extbase\Domain\Repository\F
      * @param string $grouptitle
      * @param int    $pid
      *
-     * @return \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
+     * @return \TYPO3\CMS\Extbase\Domain\Repository\FrontendUserGroupRepository|\TYPO3\CMS\Extbase\Persistence\QueryResultInterface
      */
     public function findByGroupTitle($grouptitle, $pid = null)
     {
@@ -116,7 +116,7 @@ class FrontendUserGroupRepository extends \TYPO3\CMS\Extbase\Domain\Repository\F
      * @param string $dn
      * @param int    $pid
      *
-     * @return \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
+     * @return \TYPO3\CMS\Extbase\Domain\Repository\FrontendUserGroupRepository|\TYPO3\CMS\Extbase\Persistence\QueryResultInterface
      */
     public function findByDn($dn, $pid = null)
     {
@@ -142,7 +142,7 @@ class FrontendUserGroupRepository extends \TYPO3\CMS\Extbase\Domain\Repository\F
     /**
      * @param array $lastRun
      *
-     * @return \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
+     * @return \TYPO3\CMS\Extbase\Domain\Repository\FrontendUserGroupRepository|\TYPO3\CMS\Extbase\Persistence\QueryResultInterface
      */
     public function findByLastRun($lastRun)
     {
@@ -157,7 +157,7 @@ class FrontendUserGroupRepository extends \TYPO3\CMS\Extbase\Domain\Repository\F
     }
 
     /**
-     * @return \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
+     * @return \TYPO3\CMS\Extbase\Domain\Repository\FrontendUserGroupRepository|\TYPO3\CMS\Extbase\Persistence\QueryResultInterface
      */
     public function findLdapImported()
     {

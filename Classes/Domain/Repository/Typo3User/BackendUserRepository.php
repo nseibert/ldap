@@ -34,7 +34,7 @@ class BackendUserRepository extends \TYPO3\CMS\Extbase\Domain\Repository\Backend
      * @param string $username
      * @param int    $pid
      *
-     * @return \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
+     * @return \TYPO3\CMS\Extbase\Domain\Repository\BackendUserRepository|\TYPO3\CMS\Extbase\Persistence\QueryResultInterface
      */
     public function findByUsername($username, $pid = null)
     {
@@ -58,7 +58,7 @@ class BackendUserRepository extends \TYPO3\CMS\Extbase\Domain\Repository\Backend
      * @param string $dn
      * @param int    $pid
      *
-     * @return \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
+     * @return \TYPO3\CMS\Extbase\Domain\Repository\BackendUserRepository|\TYPO3\CMS\Extbase\Persistence\QueryResultInterface
      */
     public function findByDn($dn, $pid = null)
     {
@@ -81,7 +81,7 @@ class BackendUserRepository extends \TYPO3\CMS\Extbase\Domain\Repository\Backend
     /**
      * @param mixed $lastRun
      *
-     * @return \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
+     * @return \TYPO3\CMS\Extbase\Domain\Repository\BackendUserRepository|\TYPO3\CMS\Extbase\Persistence\QueryResultInterface
      */
     public function findByLastRun($lastRun)
     {
@@ -119,7 +119,7 @@ class BackendUserRepository extends \TYPO3\CMS\Extbase\Domain\Repository\Backend
     }
 
     /**
-     * @return \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
+     * @return \TYPO3\CMS\Extbase\Domain\Repository\BackendUserRepository|\TYPO3\CMS\Extbase\Persistence\QueryResultInterface
      */
     public function findLdapImported()
     {

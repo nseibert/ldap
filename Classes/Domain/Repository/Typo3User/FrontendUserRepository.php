@@ -78,7 +78,7 @@ class FrontendUserRepository extends \TYPO3\CMS\Extbase\Domain\Repository\Fronte
      * @param string $dn
      * @param int    $pid
      *
-     * @return \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
+     * @return \TYPO3\CMS\Extbase\Domain\Repository\FrontendUserRepository|\TYPO3\CMS\Extbase\Persistence\QueryResultInterface
      */
     public function findByDn($dn, $pid = null)
     {
@@ -110,7 +110,7 @@ class FrontendUserRepository extends \TYPO3\CMS\Extbase\Domain\Repository\Fronte
     /**
      * @param mixed $lastRun
      *
-     * @return \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
+     * @return \TYPO3\CMS\Extbase\Domain\Repository\FrontendUserRepository|\TYPO3\CMS\Extbase\Persistence\QueryResultInterface
      */
     public function findByLastRun($lastRun)
     {
@@ -148,7 +148,7 @@ class FrontendUserRepository extends \TYPO3\CMS\Extbase\Domain\Repository\Fronte
     }
 
     /**
-     * @return \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
+     * @return \TYPO3\CMS\Extbase\Domain\Repository\FrontendUserRepository|\TYPO3\CMS\Extbase\Persistence\QueryResultInterface
      */
     public function findLdapImported()
     {

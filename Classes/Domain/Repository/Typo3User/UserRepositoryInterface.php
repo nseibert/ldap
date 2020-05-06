@@ -24,13 +24,13 @@ namespace NormanSeibert\Ldap\Domain\Repository\Typo3User;
  * @author	  Norman Seibert <seibert@entios.de>
  * @copyright 2020 Norman Seibert
  */
-interface UserRepositoryInterface
+interface UserRepositoryInterface extends \TYPO3\CMS\Extbase\Persistence\RepositoryInterface
 {
     /**
      * @param string $dn
      * @param int    $pid
      *
-     * @return \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
+     * @return \TYPO3\CMS\Extbase\Domain\Repository\BackendUserRepository|\TYPO3\CMS\Extbase\Domain\Repository\FrontendUserRepository|\TYPO3\CMS\Extbase\Persistence\QueryResultInterface
      */
     public function findByDn($dn, $pid = null);
 
@@ -38,14 +38,14 @@ interface UserRepositoryInterface
      * @param string $dn
      * @param int    $pid
      *
-     * @return \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
+     * @return \TYPO3\CMS\Extbase\Domain\Repository\BackendUserRepository|\TYPO3\CMS\Extbase\Domain\Repository\FrontendUserRepository|\TYPO3\CMS\Extbase\Persistence\QueryResultInterface
      */
     public function findByUsername($dn, $pid = null);
 
     /**
      * @param mixed $lastRun
      *
-     * @return \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
+     * @return \TYPO3\CMS\Extbase\Domain\Repository\BackendUserRepository|\TYPO3\CMS\Extbase\Domain\Repository\FrontendUserRepository|\TYPO3\CMS\Extbase\Persistence\QueryResultInterface
      */
     public function findByLastRun($lastRun);
 
