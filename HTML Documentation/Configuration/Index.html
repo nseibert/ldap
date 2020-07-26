@@ -15,7 +15,7 @@
 <link href="../genindex.html" rel="index" title="Index"/>
 <link href="../search.html" rel="search" title="Search"/>
 <link href="#" rel="top" title="ldap 3.4.x documentation"/>
-<link href="../Sitemap.html" rel="next" title="Sitemap"/>
+<link href="Reference.html" rel="next" title="Reference"/>
 <link href="../Administrator/Index.html" rel="prev" title="Administrator"/>
 <script src="../_static/js/modernizr.min.js"></script>
 </head>
@@ -51,7 +51,13 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../Introduction/Index.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../Administrator/Index.html">Administrator</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Configuration</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Configuration</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Reference.html">Reference</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Groups.html">Creation of TYPO3 Groups</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Extbase.html">Extbase Field Mappings</a></li>
+<li class="toctree-l2"><a class="reference internal" href="SSO.html">Single Sign On (SSO)</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="../Sitemap.html">Sitemap</a></li>
 </ul>
 </div>
@@ -61,7 +67,7 @@
 <div class="page-main-content">
 <div class="rst-content">
 <a accesskey="p" class="no-focus" href="../Administrator/Index.html" tabindex="-1"></a>
-<a accesskey="n" class="no-focus" href="../Sitemap.html" tabindex="-1"></a>
+<a accesskey="n" class="no-focus" href="Reference.html" tabindex="-1"></a>
 <div aria-label="breadcrumbs navigation" class="breadcrumb-bar" role="navigation">
 <ol class="breadcrumb">
 <li class="breadcrumb-item"><a href="../Index.html">Start</a></li>
@@ -86,214 +92,23 @@
 problems result from wrong configurations. A general advice is to set
 the logging level to “2” in the extension’s configuration (in the
 extension manager).</p>
+<div class="admonition important">
+<p class="first admonition-title">Important</p>
+<p>In Version 3.4.x the UIDs of LDAP server records in the configuration file changed.</p>
+<p class="last"><strong>UIDs have to be integer now!</strong></p>
+</div>
 <div class="section" id="typical-example">
 <h2>Typical Example<a class="headerlink" href="#typical-example" title="Permalink to this headline">¶</a></h2>
 <p>An example configuration file is included in the directory “example”.</p>
+<p id="configuration-typoscript"><strong>Sections:</strong></p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Reference.html">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Groups.html">Creation of TYPO3 Groups</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Extbase.html">Extbase Field Mappings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="SSO.html">Single Sign On (SSO)</a></li>
+</ul>
 </div>
-<div class="section" id="field-mappings">
-<span id="configuration-typoscript"></span><h2>Field Mappings<a class="headerlink" href="#field-mappings" title="Permalink to this headline">¶</a></h2>
-<p>Since this extension uses Extbase the mappings for users and
-usergroups are based on Extbase properties and no longer on database
-fields. This implies that every property you want to assign a value to
-has to be known to Extbase.</p>
-<p>You can find the Extbase standard properties in the file:</p>
-<p><em>/typo3/sysext/extbase/Configuration/Extbase/Persistence/Classes.php</em></p>
-<p>The LDAP extension adds some properties defined in:</p>
-<p><em>&lt;Extension directory&gt;/Configuration/Extbase/Persistence/Classes.php</em></p>
-</div>
-<div class="section" id="reference">
-<h2>Reference<a class="headerlink" href="#reference" title="Permalink to this headline">¶</a></h2>
-<p>The following table lists the properties of an LDAP server record. If
-you manage your server records in a configuration file you will
-recognize the property names immediately, in the backend the
-properties may have different (and localized) labels.</p>
-<p>The configuration file uses a Typoscript like syntax, the root element
-to be used is “ldapServers”.</p>
-<div class="highlight-php notranslate"><div class="highlight"><pre><span></span><span class="nx">ldapServers</span> <span class="p">{</span>
-   <span class="nx">myLdapServer</span> <span class="p">{</span>
-      <span class="nx">title</span> <span class="o">=</span> <span class="nx">My</span> <span class="nx">test</span> <span class="nx">server</span>
-   <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-<p>Mandatory properties are printed bold.</p>
-<table border="1" class="docutils">
-<colgroup>
-<col width="21%"/>
-<col width="9%"/>
-<col width="61%"/>
-<col width="10%"/>
-</colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">Parameter</th>
-<th class="head">Data type</th>
-<th class="head">Description</th>
-<th class="head">Default</th>
-</tr>
-</thead>
-<tbody valign="top">
-<tr class="row-even"><td><strong>title</strong></td>
-<td>string</td>
-<td>Server name</td>
-<td> </td>
-</tr>
-<tr class="row-odd"><td><strong>disable</strong></td>
-<td>boolean</td>
-<td>Disable the server record</td>
-<td>0</td>
-</tr>
-<tr class="row-even"><td><strong>host</strong></td>
-<td>string</td>
-<td>The server’s ip address or DNS name</td>
-<td> </td>
-</tr>
-<tr class="row-odd"><td><strong>port</strong></td>
-<td>int+</td>
-<td>The server’s port, mostly 389 for LDAP and 636 for LDAPS</td>
-<td> </td>
-</tr>
-<tr class="row-even"><td>forcsTLS</td>
-<td>boolean</td>
-<td>Encrypt the connection even if using port 389 which is used for unencrypted connections by default</td>
-<td>0</td>
-</tr>
-<tr class="row-odd"><td>version</td>
-<td>int+</td>
-<td>The server’s LDAP version, currently “3” should work for most servers</td>
-<td> </td>
-</tr>
-<tr class="row-even"><td>authenticate</td>
-<td>string</td>
-<td>FE: Authenticate FE users
-BE: Authenticate BE users
-both: Authenticate FE and BE users</td>
-<td> </td>
-</tr>
-<tr class="row-odd"><td><strong>user</strong></td>
-<td>string</td>
-<td>User (DN) with read access to the directory</td>
-<td> </td>
-</tr>
-<tr class="row-even"><td><strong>password</strong></td>
-<td>string</td>
-<td>The aformentioned user’s password</td>
-<td> </td>
-</tr>
-<tr class="row-odd"><td><strong>fe_users.</strong></td>
-<td>array / COA</td>
-<td>You have to set either “fe_users” or “be_users”, otherwise nothing will happen …</td>
-<td> </td>
-</tr>
-<tr class="row-even"><td>–&gt; <strong>.pid</strong></td>
-<td>int</td>
-<td>Page ID for user storage</td>
-<td> </td>
-</tr>
-<tr class="row-odd"><td>–&gt; <strong>.baseDN</strong></td>
-<td>string</td>
-<td>The BaseDN for all LDAP searches</td>
-<td> </td>
-</tr>
-<tr class="row-even"><td>–&gt; <strong>.filter</strong></td>
-<td>string</td>
-<td>The LDAP query for user retrieval, “&lt;search&gt;” will be replaced by the user’s username</td>
-<td> </td>
-</tr>
-<tr class="row-odd"><td>–&gt; .autoImport</td>
-<td>boolean</td>
-<td>If set users will be imported/updated automatically after successful DAP authentication</td>
-<td>0</td>
-</tr>
-<tr class="row-even"><td>–&gt; .autoEnable</td>
-<td>boolean</td>
-<td>If set users will be enabled automatically after login if they have been disabled in TYPO3</td>
-<td>0</td>
-</tr>
-<tr class="row-odd"><td>–&gt; <strong>.mapping.</strong></td>
-<td>array / COA</td>
-<td><p class="first">Configures the TYPO3 user table fields, the basic syntax is:</p>
-<div class="highlight-php notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="nx">Extbase</span> <span class="nx">Property</span><span class="o">&gt;.</span><span class="nx">data</span> <span class="o">=</span> <span class="nx">field</span><span class="o">:&lt;</span><span class="nx">LDAP</span> <span class="nx">attribute</span><span class="o">&gt;</span>
-<span class="o">**</span><span class="nx">The</span> <span class="nx">LDAP</span> <span class="nx">attributes</span> <span class="nx">have</span> <span class="nx">to</span> <span class="nx">be</span> <span class="nx">written</span> <span class="nx">in</span> <span class="nx">lowercase</span><span class="o">!**</span>
-</pre></div>
-</div>
-<p>Static values like “1” are assigned similarly:</p>
-<div class="highlight-php notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="nx">Extbase</span> <span class="nx">Property</span><span class="o">&gt;.</span><span class="nx">value</span> <span class="o">=</span> <span class="o">&lt;</span><span class="k">Static</span> <span class="nx">value</span><span class="o">&gt;</span>
-</pre></div>
-</div>
-<p><strong>Example</strong></p>
-<p>The following example updates the table field “name” with the value
-“displayname” of the user’s LDAP record and wraps it with stars:</p>
-<div class="last highlight-php notranslate"><div class="highlight"><pre><span></span><span class="nx">mapping</span> <span class="p">{</span>
-   <span class="nx">name</span> <span class="p">{</span>
-      <span class="nx">data</span> <span class="o">=</span> <span class="nx">field</span><span class="o">:</span><span class="nx">displayname</span>
-         <span class="nx">wrap</span> <span class="o">=</span> <span class="o">*</span> <span class="o">|</span> <span class="o">*</span>
-      <span class="p">}</span>
-   <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-</td>
-<td> </td>
-</tr>
-<tr class="row-even"><td>–&gt; <strong>.usergroups.</strong></td>
-<td>array / COA</td>
-<td>Without a usergroup FE users are unable to login to TYPO3</td>
-<td> </td>
-</tr>
-<tr class="row-odd"><td>–&gt; . –&gt; .importGroups</td>
-<td>boolean</td>
-<td>Import usergroups from the LDAP directory</td>
-<td>0</td>
-</tr>
-<tr class="row-even"><td>–&gt; . –&gt; .restrictToGroups</td>
-<td>string list</td>
-<td><p class="first">Only import groups if the name satisfies the given pattern(s)
-Regular expression.</p>
-<p><strong>Example</strong></p>
-<p>The following example imports only users which belong to a group
-beginning with “typo3” (case insensitive):</p>
-<div class="last highlight-php notranslate"><div class="highlight"><pre><span></span><span class="nx">restrictToGroups</span> <span class="o">=</span> <span class="o">/^</span><span class="nx">typo3</span><span class="o">.*/</span><span class="nx">i</span>
-</pre></div>
-</div>
-</td>
-<td> </td>
-</tr>
-<tr class="row-odd"><td>–&gt; . –&gt; .addToGroups</td>
-<td>int+ list</td>
-<td>Add each user to this TYPO3 user group(s)
-Comma-separated list of usergroup UIDs</td>
-<td> </td>
-</tr>
-<tr class="row-even"><td>–&gt; . –&gt; .reverseMapping</td>
-<td>boolean</td>
-<td>If your LDAP directory stores users as group attributes (OpenLDAP) set this value to 1</td>
-<td>0</td>
-</tr>
-<tr class="row-odd"><td>–&gt; . –&gt; .preserveNonLdapGroups</td>
-<td>boolean</td>
-<td>Preserve relations to usergroups which have not been imported from an LDAP server</td>
-<td> </td>
-</tr>
-<tr class="row-even"><td>be_users.</td>
-<td>array / COA</td>
-<td>Same as “fe_users”
-Property “pid” does not exist because BE users are stored on the root page (zero)</td>
-<td> </td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="section" id="single-sign-on-sso">
-<h2>Single Sign On (SSO)<a class="headerlink" href="#single-sign-on-sso" title="Permalink to this headline">¶</a></h2>
-<p>The extension is prepared for SSO Support using an HTTP header to
-provide the username. The header is configured in the extension’s
-settings accessible from TYPO3’s Extension Manager. The Username has
-to be stored in the HTTP header configured and it has to be identical
-to the one the user would type in the normal login form.</p>
-<p><strong>Good to know</strong></p>
-<p>If the configured HTTP header is filled this value is used to login in
-the user. No credentials transmitted by a Login form are evaluated.</p>
-<p>You should make sure that nobody is able to fake the HTTP header :-)</p>
 </div>
 </div>
 </div>
@@ -306,7 +121,7 @@ the user. No credentials transmitted by a Login form are evaluated.</p>
                     </a>
 </li>
 <li class="page-item">
-<a class="page-link" href="../Sitemap.html" title="Accesskey Alt(+Shift)+n">
+<a class="page-link" href="Reference.html" title="Accesskey Alt(+Shift)+n">
                         Next
                     </a>
 </li>
@@ -320,7 +135,7 @@ the user. No credentials transmitted by a Login form are evaluated.</p>
 <footer>
 <div class="frame frame-ruler-before frame-background-dark">
 <div class="frame-container">
-<div class="frame-inner"><div class="footer-additional"><p class="text-center">Last rendered on Mar 30, 2020 20:29</p><p class="text-center"><a href="https://github.com/TYPO3-Documentation/sphinx_typo3_theme" rel="nofollow noopener" target="_blank">TYPO3 Theme 4.1.3</a></p>
+<div class="frame-inner"><div class="footer-additional"><p class="text-center">Last rendered on May 03, 2020 17:06</p><p class="text-center"><a href="https://github.com/TYPO3-Documentation/sphinx_typo3_theme" rel="nofollow noopener" target="_blank">TYPO3 Theme 4.1.3</a></p>
 </div>
 <div class="footer-meta"><div class="footer-meta-copyright">© Copyright by Norman Seibert</div>
 </div>

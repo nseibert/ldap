@@ -1,0 +1,28 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  NormanSeibert\Ldap\:
+    resource: '../Classes/*'
+
+  NormanSeibert\Ldap\Command\ImportUsersCommand:
+    tags:
+      - name: 'console.command'
+        command: 'ldap:importUsers'
+
+  NormanSeibert\Ldap\Command\UpdateUsersCommand:
+    tags:
+      - name: 'console.command'
+        command: 'ldap:updateUsers'
+
+  NormanSeibert\Ldap\Command\ImportOrUpdateUsersCommand:
+    tags:
+      - name: 'console.command'
+        command: 'ldap:importOrUpdateUsers'
+
+  NormanSeibert\Ldap\Command\DeleteUsersCommand:
+    tags:
+      - name: 'console.command'
+        command: 'ldap:deleteUsers'

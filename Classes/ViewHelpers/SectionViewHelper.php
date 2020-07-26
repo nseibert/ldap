@@ -1,7 +1,8 @@
 <?php
+
 namespace NormanSeibert\Ldap\ViewHelpers;
 
-/***************************************************************
+/*
  *  Copyright notice
  *
  *  (c) 2012 Felix Kopp <felix-source@phorax.com>
@@ -24,32 +25,35 @@ namespace NormanSeibert\Ldap\ViewHelpers;
  *  GNU General Public License for more details.
  *
  *  This copyright notice MUST APPEAR in all copies of the script!
- ***************************************************************/
+ */
 /**
- * Displays a section in backend module template, similar to template::section()
+ * Displays a section in backend module template, similar to template::section().
  *
  * @author Felix Kopp <felix-source@phorax.com>
  */
-class SectionViewHelper extends \TYPO3\CMS\Fluid\Core\ViewHelper\AbstractViewHelper {
+class SectionViewHelper extends \TYPO3Fluid\Fluid\Core\ViewHelper\AbstractViewHelper
+{
+    /**
+     * Display section with title and content.
+     *
+     * @param string $title
+     * @param bool   $collapsible
+     *
+     * @return string
+     *
+     * @see template::section()
+     */
+    public function render($title, $collapsible = false)
+    {
+        if ($collapsible) {
+            $uniqueId = 'section_'.md5((microtime().rand()));
 
-	/**
-	 * Display section with title and content
-	 *
-	 * @param string $title
-	 * @param boolean $collapsible
-	 * @return string
-	 * @see template::section()
-	 */
-	public function render($title, $collapsible = FALSE) {
-		if ($collapsible) {
-			$uniqueId = 'section_' . md5((microtime() . rand()));
-			return '<h3 class="collapsibleSection"><a href="#" onClick="$(\'' .
-				$uniqueId . '\').toggle(); return false;">' . $title . '</a></h3>' .
-				'<div id="' . $uniqueId . '" class="collapsibleSection">' .
-				$this->renderChildren() . '</div>';
-		}
-		return '<h3>' . $title . '</h3>' . $this->renderChildren();
-	}
+            return '<h3 class="collapsibleSection"><a href="#" onClick="$(\''.
+                $uniqueId.'\').toggle(); return false;">'.$title.'</a></h3>'.
+                '<div id="'.$uniqueId.'" class="collapsibleSection">'.
+                $this->renderChildren().'</div>';
+        }
+
+        return '<h3>'.$title.'</h3>'.$this->renderChildren();
+    }
 }
-
-?>

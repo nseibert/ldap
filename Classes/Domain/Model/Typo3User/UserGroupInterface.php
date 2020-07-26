@@ -1,5 +1,7 @@
 <?php
+
 namespace NormanSeibert\Ldap\Domain\Model\Typo3User;
+
 /**
  * This script is part of the TYPO3 project. The TYPO3 project is
  * free software; you can redistribute it and/or modify
@@ -19,68 +21,61 @@ namespace NormanSeibert\Ldap\Domain\Model\Typo3User;
  *
  * This copyright notice MUST APPEAR in all copies of the script!
  *
- * @package   ldap
  * @author	  Norman Seibert <seibert@entios.de>
- * @copyright 2013 Norman Seibert
+ * @copyright 2020 Norman Seibert
  */
-
-interface UserGroupInterface {
+interface UserGroupInterface
+{
     /**
-     *
      * @param string $dn
+     *
      * @return \NormanSeibert\Ldap\Domain\Model\Typo3User\UserInterface
      */
     public function setDN($dn);
 
     /**
-     *
      * @return string
      */
     public function getDN();
 
     /**
-     *
      * @param string $uid
+     *
      * @return \NormanSeibert\Ldap\Domain\Model\Typo3User\UserInterface
      */
     public function setServerUid($uid);
 
     /**
-     *
      * @return string
      */
     public function getServerUid();
 
     /**
-     *
      * @param string $run
+     *
      * @return \NormanSeibert\Ldap\Domain\Model\Typo3User\UserInterface
      */
     public function setLastRun($run);
 
     /**
-     *
      * @return string
      */
     public function getLastRun();
 
     /**
-     *
      * @return string
      */
     public function getTitle();
+
     /**
      * Setter for the pid.
      *
-     * @param integer|NULL $pid
-     * @return void
+     * @param null|int $pid
      */
-    public function setPid($pid);
+    public function setPid(int $pid);
 
     /**
-     *
-     * @param string $attribute
      * @return string
      */
-    public function _getProperty($attribute);
-} 
+    public function _getProperty(string $attribute);
+}

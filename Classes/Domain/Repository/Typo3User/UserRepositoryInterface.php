@@ -1,5 +1,7 @@
 <?php
+
 namespace NormanSeibert\Ldap\Domain\Repository\Typo3User;
+
 /**
  * This script is part of the TYPO3 project. The TYPO3 project is
  * free software; you can redistribute it and/or modify
@@ -19,41 +21,39 @@ namespace NormanSeibert\Ldap\Domain\Repository\Typo3User;
  *
  * This copyright notice MUST APPEAR in all copies of the script!
  *
- * @package   ldap
  * @author	  Norman Seibert <seibert@entios.de>
- * @copyright 2013 Norman Seibert
+ * @copyright 2020 Norman Seibert
  */
-
-interface UserRepositoryInterface {
-
+interface UserRepositoryInterface extends \TYPO3\CMS\Extbase\Persistence\RepositoryInterface
+{
     /**
-     *
      * @param string $dn
-     * @param int $pid
-     * @return \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
+     * @param int    $pid
+     *
+     * @return \TYPO3\CMS\Extbase\Domain\Repository\BackendUserRepository|\TYPO3\CMS\Extbase\Domain\Repository\FrontendUserRepository|\TYPO3\CMS\Extbase\Persistence\QueryResultInterface
      */
-    function findByDn($dn, $pid = NULL);
+    public function findByDn($dn, $pid = null);
 
     /**
-     *
      * @param string $dn
-     * @param int $pid
-     * @return \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
+     * @param int    $pid
+     *
+     * @return \TYPO3\CMS\Extbase\Domain\Repository\BackendUserRepository|\TYPO3\CMS\Extbase\Domain\Repository\FrontendUserRepository|\TYPO3\CMS\Extbase\Persistence\QueryResultInterface
      */
-    function findByUsername($dn, $pid = NULL);
+    public function findByUsername($dn, $pid = null);
 
     /**
-     *
      * @param mixed $lastRun
-     * @return \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
+     *
+     * @return \TYPO3\CMS\Extbase\Domain\Repository\BackendUserRepository|\TYPO3\CMS\Extbase\Domain\Repository\FrontendUserRepository|\TYPO3\CMS\Extbase\Persistence\QueryResultInterface
      */
-    function findByLastRun($lastRun);
+    public function findByLastRun($lastRun);
 
     /**
      * Adds an object to this repository.
      *
      * @param object $object The object to add
-     * @return void
+     *
      * @api
      */
     public function add($object);
@@ -62,16 +62,17 @@ interface UserRepositoryInterface {
      * Removes an object from this repository.
      *
      * @param object $object The object to remove
-     * @return void
+     *
      * @api
      */
     public function remove($object);
 
     /**
-     * Replaces an existing object with the same identifier by the given object
+     * Replaces an existing object with the same identifier by the given object.
      *
      * @param object $modifiedObject The modified object
+     *
      * @api
      */
     public function update($modifiedObject);
-} 
+}
