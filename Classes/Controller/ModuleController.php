@@ -109,6 +109,11 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 		}
 	}
 
+	private function flushMessages() {
+		$messageQueue = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Messaging\\FlashMessageQueue', 'ldap');
+		$messageQueue->getAllMessagesAndFlush();
+	}
+
 	/**
 	 * Checks LDAP configuration.
 	 *
@@ -116,8 +121,10 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 	 */
 	public function checkAction() {
 		$this->ldapConfig->getLdapServers();
-		$flashMessages = \TYPO3\CMS\Core\Messaging\FlashMessageQueue::getAllMessages();
+		$messageQueue = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Messaging\\FlashMessageQueue', 'ldap');
+		$flashMessages = $messageQueue->getAllMessages();
 		$this->view->assign('errorCount', count($flashMessages));
+		$this->flushMessages();
 	}
 
 	/**
@@ -142,6 +149,7 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 			);
 		}
 		$this->view->assign('ldapServers', $servers);
+		$this->flushMessages();
 	}
 
 	/**
@@ -192,8 +200,8 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 	 * configures the import and display the result list
 	 */
 	public function importUsersAction() {
-        $beUsers = NULL;
-        $feUsers = NULL;
+        $beUsers = array();
+        $feUsers = array();
 		$settings = $this->initializeFormSettings();
 
 		$ldapServers = $this->ldapConfig->getLdapServers();
@@ -215,6 +223,7 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 
 		$this->view->assign('be_users', $beUsers);
 		$this->view->assign('fe_users', $feUsers);
+		$this->flushMessages();
 	}
 
     /**
@@ -231,7 +240,7 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 		$runs = array();
 		foreach ($ldapServers as $server) {
             /* @var $server \NormanSeibert\Ldap\Domain\Model\LdapServer\Server */
-			if (\TYPO3\CMS\Core\Utility\GeneralUtility::inArray($settings->getUseServers(), $server->getConfiguration()->getUid())) {
+			if (in_array($server->getConfiguration()->getUid(), $settings->getUseServers())) {
 				if ($settings->getAuthenticateFe()) {
 					$importer->init($server, 'fe');
 					$runs[] = $importer->doImport();
@@ -254,8 +263,8 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 	 * configures the update and display the result list
 	 */
 	public function updateUsersAction() {
-        $beUsers = NULL;
-        $feUsers = NULL;
+        $beUsers = array();
+        $feUsers = array();
 		$settings = $this->initializeFormSettings();
 
 		$ldapServers = $this->ldapConfig->getLdapServers();
@@ -277,6 +286,7 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 
 		$this->view->assign('be_users', $beUsers);
 		$this->view->assign('fe_users', $feUsers);
+		$this->flushMessages();
 	}
 
     /**
@@ -293,7 +303,7 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 		$runs = array();
 		foreach ($ldapServers as $server) {
             /* @var $server \NormanSeibert\Ldap\Domain\Model\LdapServer\Server */
-			if (\TYPO3\CMS\Core\Utility\GeneralUtility::inArray($settings->getUseServers(), $server->getConfiguration()->getUid())) {
+			if (in_array($server->getConfiguration()->getUid(), $settings->getUseServers())) {
 				if ($settings->getAuthenticateFe()) {
 					$importer->init($server, 'fe');
 					$runs[] = $importer->doUpdate();
@@ -316,8 +326,8 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 	 * configures the import/update and display the result list
 	 */
 	public function importAndUpdateUsersAction() {
-        $beUsers = NULL;
-        $feUsers = NULL;
+        $beUsers = array();
+        $feUsers = array();
 		$settings = $this->initializeFormSettings();
 
 		$ldapServers = $this->ldapConfig->getLdapServers();
@@ -339,6 +349,7 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 
 		$this->view->assign('be_users', $beUsers);
 		$this->view->assign('fe_users', $feUsers);
+		$this->flushMessages();
 	}
 
     /**
@@ -354,7 +365,7 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 		$importer = $this->objectManager->get('NormanSeibert\\Ldap\\Service\\LdapImporter');
 		$runs = array();
 		foreach ($ldapServers as $server) {
-			if (\TYPO3\CMS\Core\Utility\GeneralUtility::inArray($settings->getUseServers(), $server->getConfiguration()->getUid())) {
+			if (in_array($server->getConfiguration()->getUid(), $settings->getUseServers())) {
 				if ($settings->getAuthenticateFe()) {
 					$importer->init($server, 'fe');
 					$runs[] = $importer->doImportOrUpdate();
@@ -392,6 +403,7 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 
 		$this->view->assign('be_users', $beUsers);
 		$this->view->assign('fe_users', $feUsers);
+		$this->flushMessages();
 	}
 
     /**
@@ -443,6 +455,7 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 		$this->view->assign('ldapServers', $serverConfigurations);
 		$this->view->assign('returnUrl', 'mod.php?M=tools_LdapM1');
 		$this->view->assign('user', $user);
+		$this->flushMessages();
 	}
 
     /**
@@ -462,7 +475,7 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 		foreach ($ldapServers as $server) {
             /* @var $server \NormanSeibert\Ldap\Domain\Model\LdapServer\Server */
 			if (!$user['found']) {
-				if (\TYPO3\CMS\Core\Utility\GeneralUtility::inArray($settings->getUseServers(), $server->getConfiguration()->getUid())) {
+				if (in_array($server->getConfiguration()->getUid(), $settings->getUseServers())) {
 					$server->setScope($settings->getLoginType());
 					$loginname = \NormanSeibert\Ldap\Utility\Helpers::sanitizeCredentials($settings->getLoginname());
 					$password = \NormanSeibert\Ldap\Utility\Helpers::sanitizeCredentials($settings->getPassword());

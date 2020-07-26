@@ -1,0 +1,24 @@
+{namespace ldap = NormanSeibert\Ldap\ViewHelpers}
+
+<table border="0" class="table table-striped">
+	<thead>
+		<tr>
+			<th><f:translate key="header.username" /></th>
+			<th><f:translate key="header.name" /></th>
+			<th><f:translate key="header.email" /></th>
+			<th><f:translate key="header.usergroups" /></th>
+			<th><f:translate key="header.ldapServer" /></th>
+			<th><f:translate key="header.dn" /></th>
+		</tr>
+	</thead>
+	<tbody>
+		<f:for each="{users}" as="user">
+			<f:render partial="Module/ListRowUsers" arguments="{formSettings: formSettings, user: user, dateFormat: dateFormat, timeFormat: timeFormat, returnUrl: returnUrl}" />
+		</f:for>
+		<tr>
+			<td colspan="7">
+				<f:count subject="{users}" /> Users
+			</td>
+		</tr>
+	</tbody>
+</table>

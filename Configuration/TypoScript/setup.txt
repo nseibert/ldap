@@ -82,3 +82,5 @@ module.tx_ldap {
 		dummy = foo
 	}
 }
+
+module.tx_ldap.view.widget.TYPO3\CMS\Fluid\ViewHelpers\Widget\PaginateViewHelper.templateRootPath = EXT:ldap/Resources/Private/Templates/

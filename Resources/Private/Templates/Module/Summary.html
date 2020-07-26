@@ -4,25 +4,28 @@
 
 	<h1><f:translate key="headline.summary" /></h1>
 	
-	<f:flashMessages renderMode="div" />
+	<f:flashMessages />
 	
-	<table style="width:100%;" class="typo3-dblist">
-		<tr class="t3-row-header">
-			<td rowspan="2"><f:translate key="header.uid" /></td>
-			<td rowspan="2"><f:translate key="header.hostPort" /></td>
-			<td colspan="3">FE</td>
-			<td colspan="3">BE</td>
-		</tr>
-		<tr class="t3-row-header">
-			<td><f:translate key="header.baseDn" /></td>
-			<td><f:translate key="header.filter" /></td>
-			<td><f:translate key="header.users" /></td>
-			<td><f:translate key="header.baseDn" /></td>
-			<td><f:translate key="header.filter" /></td>
-			<td><f:translate key="header.users" /></td>
-		</tr>
+	<table border="0" class="table table-striped" style="width: 100%">
+		<thead>
+			<tr>
+				<th rowspan="2"><f:translate key="header.uid" /></th>
+				<th rowspan="2"><f:translate key="header.hostPort" /></th>
+				<th colspan="3">FE</th>
+				<th colspan="3">BE</th>
+			</tr>
+			<tr>
+				<th><f:translate key="header.baseDn" /></th>
+				<th><f:translate key="header.filter" /></th>
+				<th><f:translate key="header.users" /></th>
+				<th><f:translate key="header.baseDn" /></th>
+				<th><f:translate key="header.filter" /></th>
+				<th><f:translate key="header.users" /></th>
+			</tr>
+		</thead>
+		<tbody>
 		<f:for each="{ldapServers}" as="serverRecord">
-			<tr class="db_list_normal">
+			<tr>
 				<td>{serverRecord.server.configuration.uid} ({serverRecord.server.configuration.title})</td>
 				<td>{serverRecord.server.configuration.host}:{serverRecord.server.configuration.port}</td>
 				<td>{serverRecord.server.configuration.feUserRules.baseDN}</td>
@@ -30,12 +33,7 @@
 				<td>
 					<f:for each="{serverRecord.feUsers}" as="user">
 						<p>
-							<b>{user.dn}</b>
-							<ul>
-								<f:for each="{user.attributes}" as="value" key="attribute">
-									<li>{attribute}: {value}</li>
-								</f:for>
-							</ul>
+							{user.dn}
 						</p>
 					</f:for>
 				</td>
@@ -44,17 +42,13 @@
 				<td>
 					<f:for each="{serverRecord.beUsers}" as="user">
 						<p>
-							<b>{user.dn}</b>
-							<ul>
-								<f:for each="{user.attributes}" as="value" key="attribute">
-									<li>{attribute}: {value}</li>
-								</f:for>
-							</ul>
+							{user.dn}
 						</p>
 					</f:for>
 				</td>
 			</tr>
 		</f:for>
+		</tbody>
 	</table>
 	
 </f:section>

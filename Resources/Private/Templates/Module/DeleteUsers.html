@@ -4,7 +4,7 @@
 	
 	<h1><f:translate key="headline.deleteUsers" /></h1>
 	
-	<f:flashMessages renderMode="div" />
+	<f:flashMessages />
 	
 	<f:comment>
 		Settings section
@@ -19,121 +19,21 @@
 	<h3><f:translate key="headline.deleteResults" /></h3>
 	
 	<f:if condition="{formSettings.authenticateFe}">
-	
-		<h4><f:translate key="headline.fe_users" /></h4>
-
-		<f:if condition="<f:count subject='{fe_users}' /> > 10">
-			<f:then>
-				<f:widget.paginate objects="{fe_users}" as="paginatedUsers" configuration="{itemsPerPage: 10, insertAbove: 1, insertBelow: 1}">
-					<table border="0" class="typo3-dblist">
-						<tr class="t3-row-header">
-							<td></td>
-							<td><f:translate key="header.username" /></td>
-							<td><f:translate key="header.name" /></td>
-							<td><f:translate key="header.email" /></td>
-							<td><f:translate key="header.usergroups" /></td>
-							<td><f:translate key="header.ldapServer" /></td>
-							<td><f:translate key="header.dn" /></td>
-						</tr>
-						<f:for each="{paginatedUsers}" as="user">
-							<f:render partial="Module/ListRowFeUsers" arguments="{formSettings: formSettings, user: user, dateFormat: dateFormat, timeFormat: timeFormat, returnUrl: returnUrl}" />
-						</f:for>
-						<f:comment>
-							Footer row: no officially defined style yet
-						</f:comment>
-						<tr>
-							<td colspan="7">
-								<f:count subject="{fe_users}" /> Users
-							</td>
-						</tr>
-					</table>
-				</f:widget.paginate>
-			</f:then>
-			<f:else>
-				<table class="typo3-dblist">
-					<tr class="t3-row-header">
-						<td></td>
-						<td><f:translate key="header.username" /></td>
-						<td><f:translate key="header.name" /></td>
-						<td><f:translate key="header.email" /></td>
-						<td><f:translate key="header.usergroups" /></td>
-						<td><f:translate key="header.ldapServer" /></td>
-						<td><f:translate key="header.dn" /></td>
-					</tr>
-					<f:for each="{fe_users}" as="user">
-						<f:render partial="Module/ListRowFeUsers" arguments="{formSettings: formSettings, user: user, dateFormat: dateFormat, timeFormat: timeFormat, returnUrl: returnUrl}" />
-					</f:for>
-					<f:comment>
-						Footer row: no officially defined style yet
-					</f:comment>
-					<tr>
-						<td colspan="7">
-							<f:count subject="{fe_users}" /> Users
-						</td>
-					</tr>
-				</table>
-			</f:else>
-		</f:if>
-		
+		<div class="userlist">
+			<h4><f:translate key="headline.fe_users" /></h4>
+			<f:widget.paginate objects="{fe_users}" as="paginatedUsers" configuration="{itemsPerPage: 10, insertAbove: 1, insertBelow: 1}">
+				<f:render partial="Module/ListTable" arguments="{formSettings: formSettings, users: paginatedUsers, dateFormat: dateFormat, timeFormat: timeFormat, returnUrl: returnUrl}" />
+			</f:widget.paginate>
+		</div>
 	</f:if>
 	
 	<f:if condition="{formSettings.authenticateBe}">
-	
-		<h4><f:translate key="headline.be_users" /></h4>
-
-		<f:if condition="<f:count subject='{be_users}' /> > 10">
-			<f:then>
-				<f:widget.paginate objects="{be_users}" as="paginatedUsers" configuration="{itemsPerPage: 10, insertAbove: 1, insertBelow: 1}">
-					<table class="typo3-dblist">
-						<tr class="t3-row-header">
-							<td></td>
-							<td><f:translate key="header.username" /></td>
-							<td><f:translate key="header.name" /></td>
-							<td><f:translate key="header.email" /></td>
-							<td><f:translate key="header.usergroups" /></td>
-							<td><f:translate key="header.ldapServer" /></td>
-							<td><f:translate key="header.dn" /></td>
-						</tr>
-						<f:for each="{paginatedUsers}" as="user">
-							<f:render partial="Module/ListRowBeUsers" arguments="{formSettings: formSettings, user: user, dateFormat: dateFormat, timeFormat: timeFormat, returnUrl: returnUrl}" />
-						</f:for>
-						<f:comment>
-							Footer row: no officially defined style yet
-						</f:comment>
-						<tr>
-							<td colspan="7">
-								<f:count subject="{be_users}" /> Users
-							</td>
-						</tr>
-					</table>
-				</f:widget.paginate>
-			</f:then>
-			<f:else>
-				<table class="typo3-dblist">
-					<tr class="t3-row-header">
-						<td></td>
-						<td><f:translate key="header.username" /></td>
-						<td><f:translate key="header.name" /></td>
-						<td><f:translate key="header.email" /></td>
-						<td><f:translate key="header.usergroups" /></td>
-						<td><f:translate key="header.ldapServer" /></td>
-						<td><f:translate key="header.dn" /></td>
-					</tr>
-					<f:for each="{be_users}" as="user">
-						<f:render partial="Module/ListRowBeUsers" arguments="{formSettings: formSettings, user: user, dateFormat: dateFormat, timeFormat: timeFormat, returnUrl: returnUrl}" />
-					</f:for>
-					<f:comment>
-						Footer row: no officially defined style yet
-					</f:comment>
-					<tr>
-						<td colspan="7">
-							<f:count subject="{be_users}" /> Users
-						</td>
-					</tr>
-				</table>
-			</f:else>
-		</f:if>
-		
+		<div class="userlist">
+			<h4><f:translate key="headline.be_users" /></h4>
+			<f:widget.paginate objects="{be_users}" as="paginatedUsers" configuration="{itemsPerPage: 10, insertAbove: 1, insertBelow: 1}">
+				<f:render partial="Module/ListTable" arguments="{formSettings: formSettings, users: paginatedUsers, dateFormat: dateFormat, timeFormat: timeFormat, returnUrl: returnUrl}" />
+			</f:widget.paginate>
+		</div>
 	</f:if>
 	
 </f:section>

@@ -284,11 +284,7 @@ Mandatory properties are printed bold.
          
             <Extbase Property>.data = field:<LDAP attribute>
          
-         If an LDAP attribute is used multiple times (multivalue) the resulting
-         array will be imploded into a comma-separated list. In this case you
-         have to use “stdWrap.” for all wrapping functions.
-         
-         **The LDAP attribute have to be written in lowercase!**
+         **The LDAP attributes have to be written in lowercase!**
          
          Static values like “1” are assigned similarly:
          
@@ -349,8 +345,7 @@ Mandatory properties are printed bold.
          List of strings
    
    Description
-         Only import groups if the name satisfies the given pattern(s). Please
-         note, that all wraps and stdWrap. is applied before.
+         Only import groups if the name satisfies the given pattern(s).
          
          Regular expression.
          

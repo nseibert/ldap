@@ -2,8 +2,7 @@
 
 <f:form action="{action}" controller="Module" objectName="formSettings" object="{formSettings}">
 
-	<ldap:Section title="{f:translate(key: 'headline.settings')}" collapsible="TRUE">
-		
+
 		<f:if condition="{0:action} == {0:'doDeleteUsers'}">
 			<f:then>
 				<f:form.hidden
@@ -84,8 +83,9 @@
 			</f:else>
 		</f:if>
 	
-	</ldap:Section>
 
-	<f:form.submit value="{f:translate(key: 'form.start')}" class="submit" />
+	<div class="btn-group">
+		<f:form.submit value="{f:translate(key: 'form.start')}" class="btn btn-default" />
+	</div>
 		
 </f:form>

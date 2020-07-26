@@ -17,11 +17,21 @@ if (TYPO3_MODE == "BE")    {
 			),
 			array(
 				'access' => 'user,group',
-				'icon'   => 'EXT:' . $_EXTKEY . '/Resources/Public/Icons/mod_icon.gif',
+				'icon'   => 'EXT:' . $_EXTKEY . '/Resources/Public/Icons/ldap.svg',
 				'labels' => 'LLL:EXT:' . $_EXTKEY . '/Resources/Private/Language/locallang.xml',
 			)
 		);
 	}
+
+	/**
+     * Register icons
+     */
+    $iconRegistry = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Imaging\IconRegistry::class);
+    $iconRegistry->registerIcon(
+        'extension-ldap-main',
+        \TYPO3\CMS\Core\Imaging\IconProvider\SvgIconProvider::class,
+        ['source' => 'EXT:ldap/Resources/Public/Icons/ldap.svg']
+    );
 }
 
 $tempColumns = array(
@@ -49,39 +59,8 @@ $tempColumns = array(
 );
 
 
-if (version_compare(TYPO3_branch, '6.1', '<')) {
-	\TYPO3\CMS\Core\Utility\GeneralUtility::loadTCA("fe_users");
-}
-if (version_compare(TYPO3_branch, '6.2', '<')) {
-	\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addTCAcolumns("fe_users", $tempColumns, 1);
-} else {
-	\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addTCAcolumns("fe_users", $tempColumns);
-}
-
-if (version_compare(TYPO3_branch, '6.1', '<')) {
-	\TYPO3\CMS\Core\Utility\GeneralUtility::loadTCA("be_users");
-}
-if (version_compare(TYPO3_branch, '6.2', '<')) {
-	\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addTCAcolumns("be_users", $tempColumns, 1);
-} else {
-	\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addTCAcolumns("be_users", $tempColumns);
-}
-
-if (version_compare(TYPO3_branch, '6.1', '<')) {
-	\TYPO3\CMS\Core\Utility\GeneralUtility::loadTCA("fe_groups");
-}
-if (version_compare(TYPO3_branch, '6.2', '<')) {
-	\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addTCAcolumns("fe_groups", $tempColumns, 1);
-} else {
-	\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addTCAcolumns("fe_groups", $tempColumns);
-}
-
-if (version_compare(TYPO3_branch, '6.1', '<')) {
-	\TYPO3\CMS\Core\Utility\GeneralUtility::loadTCA("be_groups");
-}
-if (version_compare(TYPO3_branch, '6.2', '<')) {
-	\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addTCAcolumns("be_groups", $tempColumns, 1);
-} else {
-	\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addTCAcolumns("be_groups", $tempColumns);
-}
+\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addTCAcolumns("fe_users", $tempColumns);
+\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addTCAcolumns("be_users", $tempColumns);
+\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addTCAcolumns("fe_groups", $tempColumns);
+\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addTCAcolumns("be_groups", $tempColumns);
 ?>

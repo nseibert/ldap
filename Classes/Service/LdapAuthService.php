@@ -116,12 +116,6 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
      */
     protected $reflectionService;
 
-    /**
-     *
-     * @var \TYPO3\CMS\Core\Cache\CacheManager
-     */
-    protected $cacheManager;
-
 	/**
 	 * Initialize authentication service
 	 *
@@ -142,9 +136,9 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 		$this->authInfo = $authenticationInformation;
 		
 		// Initialize TSFE and Extbase
-		if (version_compare(TYPO3_branch, '6.0', '>')) {
-			\TYPO3\CMS\Core\Core\Bootstrap::getInstance()->loadCachedTca();
-		}
+//		if (version_compare(TYPO3_branch, '6.0', '>')) {
+//			\TYPO3\CMS\Core\Core\Bootstrap::getInstance()->loadCachedTca();
+//		}
 		$this->initializeRequiredTsfeParts();
 		$this->initializeExtbaseFramework();
 
@@ -237,14 +231,14 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 	function getUser() {
 		$user = FALSE;
 		
-		if ($this->logLevel > 0) {
+		if ($this->logLevel >= 2) {
 			\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('getUser() called, loginType: ' . $this->authInfo['loginType'], 'ldap', 0);
 		}
 		if ($this->loginData['status'] == 'login') {
 			if ($this->username) {
-				if ($this->logLevel == 1) {
+				if ($this->logLevel == 2) {
 					\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('Username: ' . $this->username, 'ldap', 0);
-				} elseif ($this->logLevel > 1) {
+				} elseif ($this->logLevel == 3) {
 					\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('Username / Password: ' . $this->username . ' / ' . $this->password, 'ldap', 0);
 				}
 				if ($this->authInfo['loginType'] == 'BE') {
@@ -263,7 +257,7 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 							// Authenticate the user here because only users shall be imported which are authenticated.
 							// Otherwise every user present in the directory would be imported regardless of the entered password.
 							
-							if ($this->logLevel >= 1) {
+							if ($this->logLevel >= 2) {
 								\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('Try to authenticate with server: ' . $server->getUid(), 'ldap', 0);
 							}
 
@@ -274,13 +268,13 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 							if ($this->conf['enableSSO'] && $this->conf['ssoHeader'] && ($_SERVER[$this->conf['ssoHeader']])) {
                                 /* @var $ldapUser \NormanSeibert\Ldap\Domain\Model\LdapUser\User */
 								$ldapUser = $server->checkUser($this->username);
-								if ($this->logLevel >= 1) {
+								if ($this->logLevel >= 2) {
 									\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('Check SSO user: ' . $this->username, 'ldap', 0);
 								}
 							} else {
                                 /* @var $ldapUser \NormanSeibert\Ldap\Domain\Model\LdapUser\User */
 								$ldapUser = $server->authenticateUser($this->username, $this->password);
-								if ($this->logLevel >= 1) {
+								if ($this->logLevel >= 2) {
 									\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('Authenticate user: ' . $this->username, 'ldap', 0);
 								}
 							}
@@ -289,7 +283,7 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 								// Credentials are OK
 								if ($server->getConfiguration()->getUserRules($this->authInfo['db_user']['table'])->getAutoImport()) {
 									// Authenticated users shall be imported/updated
-									if ($this->logLevel >= 1) {
+									if ($this->logLevel >= 2) {
 										\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('Import/update user ' . $this->username, 'ldap', 0);
 									}
 									$ldapUser->loadUser();
@@ -309,7 +303,7 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 									if (is_object($typo3User)) {
 										if ($typo3User->getIsDisabled()) {
 											// Authenticated users shall be enabled
-											if ($this->logLevel >= 1) {
+											if ($this->logLevel >= 2) {
 												\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('Enable user ' . $this->username, 'ldap', 0);
 											}
 											$ldapUser->enableUser();
@@ -321,10 +315,14 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 								}
 								$user = $this->getTypo3User();
 								$user['ldap_authenticated'] = TRUE;
+
+								if ($this->logLevel >= 1) {
+									\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('User authenticated successfully ' . $this->username, 'ldap', -1);
+								}
 							} else {
 								// $user = $this->getTypo3User();
 								if ($this->logLevel >= 1) {
-									\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('Login failed', 'ldap', 2);
+									\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('Login failed', 'ldap', 1);
 								}
 							}
 						}
