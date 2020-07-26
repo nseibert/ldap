@@ -24,10 +24,14 @@ namespace NormanSeibert\Ldap\Service;
  * @copyright 2013 Norman Seibert
  */
 
+use Psr\Log\LoggerAwareTrait;
+
 /**
  * Service to import users from LDAP directory to TYPO3 database
  */
-class LdapImporter {
+class LdapImporter implements \Psr\Log\LoggerAwareInterface {
+
+	use LoggerAwareTrait;
 
     /**
      * @var string
@@ -36,7 +40,7 @@ class LdapImporter {
 
 	/**
 	 * @var \NormanSeibert\Ldap\Domain\Model\Configuration\Configuration
-	 * @inject
+	 * @TYPO3\CMS\Extbase\Annotation\Inject
 	 */
 	protected $ldapConfig;
 	
@@ -47,20 +51,20 @@ class LdapImporter {
 	
 	/**
 	 * @var \NormanSeibert\Ldap\Domain\Repository\Typo3User\FrontendUserRepository
-	 * @inject
+	 * @TYPO3\CMS\Extbase\Annotation\Inject
 	 */
 	protected $feUserRepository;
 	
 	/**
 	 * @var \NormanSeibert\Ldap\Domain\Repository\Typo3User\BackendUserRepository
-	 * @inject
+	 * @TYPO3\CMS\Extbase\Annotation\Inject
 	 */
 	protected $beUserRepository;
 	
 	/**
 	 *
 	 * @var \TYPO3\CMS\Extbase\Object\ObjectManager
-	 * @inject
+	 * @TYPO3\CMS\Extbase\Annotation\Inject
 	 */
 	protected $objectManager;
 	
@@ -161,14 +165,14 @@ class LdapImporter {
             // recursive search
             if ($this->ldapConfig->logLevel >= 1) {
                 $msg = 'LDAP query limit exceeded';
-                \TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', 1);
+                $this->logger->notice($msg);
             }
             $searchCharacters = \NormanSeibert\Ldap\Utility\Helpers::getSearchCharacterRange();
             foreach ($searchCharacters as $thisCharacter) {
                 $newSearch = substr_replace($search, $thisCharacter, 1, 0);
                 $msg = 'Query server: ' . $this->ldapServer->getConfiguration()->getUid() . ' with getUsers("' . $newSearch . '")';
                 if ($this->ldapConfig->logLevel == 3) {
-                    \TYPO3\CMS\Core\Utility\GeneralUtility::devLog($msg, 'ldap', -1);
+                    $this->logger->debug($msg);
                 }
                 $this->getUsers($runIdentifier, $command, $newSearch);
             }
@@ -235,17 +239,10 @@ class LdapImporter {
 		$removeUsers = array();
 		foreach ($users as $user) {
             /* @var $user \NormanSeibert\Ldap\Domain\Model\Typo3User\UserInterface */
-			if (!is_object($user->getLdapServer())) {
-				$user->setLastRun($runIdentifier);
-				if ($hide) {
-					$user->setIsDisabled(TRUE);
-				} else {
-					$removeUsers[] = $user;
-				}
-				$repository->update($user);
-			} else {
-				if ($user->getLdapServer() != $tmpServer) {
-					$tmpServer = $user->getLdapServer();
+			if ($user->getServerUid()) {
+				$server = $this->ldapConfig->getLdapServer($user->getServerUid());
+				if ($server != $tmpServer) {
+					$tmpServer = $server;
 				}
 				$ldapUser = $tmpServer->getUser($user->getDN());
 				if (!is_object($ldapUser)) {
@@ -257,6 +254,14 @@ class LdapImporter {
 					}
 					$repository->update($user);
 				}
+			} else {
+				$user->setLastRun($runIdentifier);
+				if ($hide) {
+					$user->setIsDisabled(TRUE);
+				} else {
+					$removeUsers[] = $user;
+				}
+				$repository->update($user);
 			}
 		}
 

@@ -43,12 +43,6 @@ class BackendUser extends \TYPO3\CMS\Extbase\Domain\Model\BackendUser implements
 	
 	/**
 	 *
-	 * @var \NormanSeibert\Ldap\Domain\Model\LdapServer\Server 
-	 */
-	protected $ldapServer;
-	
-	/**
-	 *
 	 * @var string 
 	 */
 	protected $serverUid;
@@ -63,12 +57,6 @@ class BackendUser extends \TYPO3\CMS\Extbase\Domain\Model\BackendUser implements
 	 * @var string 
 	 */
 	protected $lastRun;
-	
-	/**
-	 * @var \NormanSeibert\Ldap\Domain\Model\Configuration\Configuration
-	 * @inject
-	 */
-	protected $ldapConfig;
 	
 	/**
 	 * @var \TYPO3\CMS\Extbase\Persistence\ObjectStorage<\TYPO3\CMS\Extbase\Domain\Model\BackendUserGroup>
@@ -127,28 +115,6 @@ class BackendUser extends \TYPO3\CMS\Extbase\Domain\Model\BackendUser implements
 	
 	/**
 	 * 
-	 * @param \NormanSeibert\Ldap\Domain\Model\LdapServer\Server $server
-	 * @return \NormanSeibert\Ldap\Domain\Model\Typo3User\BackendUser
-	 */
-	public function setLdapServer(\NormanSeibert\Ldap\Domain\Model\LdapServer\Server $server) {
-		$this->ldapServer = $server;
-		$this->serverUid = $server->getConfiguration()->getUid();
-		return $this;
-	}
-	
-	/**
-	 * 
-	 * @return \NormanSeibert\Ldap\Domain\Model\LdapServer\Server
-	 */
-	public function getLdapServer() {
-		if (!is_object($this->ldapServer) && $this->serverUid) {
-			$this->ldapServer = $this->ldapConfig->getLdapServer($this->serverUid.'.');
-		}
-		return $this->ldapServer;
-	}
-	
-	/**
-	 * 
 	 * @param string $uid
 	 * @return \NormanSeibert\Ldap\Domain\Model\Typo3User\BackendUser
 	 */
@@ -171,10 +137,11 @@ class BackendUser extends \TYPO3\CMS\Extbase\Domain\Model\BackendUser implements
 	 */
 	public function getLdapUser() {
 		$user = false;
-		if ($this->dn && $this->ldapServer) {
-			$user = $this->getLdapServer()->getUser($this->dn);
+		if ($this->dn && $this->serverUid) {
+			$ldapConfig = GeneralUtility::makeInstance(Configuration::class);
+			$server = $ldapConfig->getLdapServer($this->serverUid);
+			$user = $server->getUser($this->dn);
 		}
-		return $user;
 	}
 	
 	/**
@@ -183,13 +150,9 @@ class BackendUser extends \TYPO3\CMS\Extbase\Domain\Model\BackendUser implements
 	 */
 	public function generatePassword() {
 		$password = \NormanSeibert\Ldap\Utility\Helpers::generatePassword(10, 2, 2, 2);
-		if (\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::isLoaded('saltedpasswords')) {
-			if (\TYPO3\CMS\Saltedpasswords\Utility\SaltedPasswordsUtility::isUsageEnabled('BE')) {
-				$objSalt = \TYPO3\CMS\Saltedpasswords\Salt\SaltFactory::getSaltingInstance(NULL);
-				if (is_object($objSalt)) {
-					$password = $objSalt->getHashedPassword($password);
-				}
-			}
+		$objSalt = \TYPO3\CMS\Core\Crypto\PasswordHashing\PasswordHashFactory::getSaltingInstance(NULL);
+		if (is_object($objSalt)) {
+			$password = $objSalt->getHashedPassword($password);
 		}
 		$this->password = $password;
 		return $this;

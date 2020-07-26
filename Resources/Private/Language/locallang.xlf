@@ -78,6 +78,9 @@
 		<trans-unit id="form.user" xml:space="preserve">
 			<source>Username:</source>
 		</trans-unit>
+		<trans-unit id="header.status" xml:space="preserve">
+			<source>Status</source>
+		</trans-unit>
 		<trans-unit id="header.baseDn" xml:space="preserve">
 			<source>BaseDN</source>
 		</trans-unit>

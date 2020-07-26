@@ -1,14 +1,22 @@
+<html xmlns:core="http://typo3.org/ns/TYPO3/CMS/Core/ViewHelpers"
+	xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+    xmlns:be="http://typo3.org/ns/TYPO3/CMS/Backend/ViewHelpers"
+    data-namespace-typo3-fluid="true">
+
 <f:layout name="Backend"/>
 
 <f:section name="content">
 
+	<be:moduleLayout.button.shortcutButton displayName="{f:translate(id: 'action.summary')}" />
+
 	<h1><f:translate key="headline.summary" /></h1>
-	
-	<f:flashMessages />
+
+	<f:flashMessages queueIdentifier="ldap" />
 	
 	<table border="0" class="table table-striped" style="width: 100%">
 		<thead>
 			<tr>
+				<th rowspan="2"></th>
 				<th rowspan="2"><f:translate key="header.uid" /></th>
 				<th rowspan="2"><f:translate key="header.hostPort" /></th>
 				<th colspan="3">FE</th>
@@ -26,6 +34,24 @@
 		<tbody>
 		<f:for each="{ldapServers}" as="serverRecord">
 			<tr>
+				<td>
+					<f:if condition="{serverRecord.status}">
+						<f:then>
+							<span class="t3js-icon icon icon-size-small icon-state-default icon-status-dialog-ok">
+								<span class="icon-markup">
+									<span class="icon-unify"><i class="fa fa-check-circle"></i></span>
+								</span>
+							</span>
+						</f:then>
+						<f:else>
+							<span class="t3js-icon icon icon-size-small icon-state-default icon-status-dialog-error">
+								<span class="icon-markup">
+									<span class="icon-unify"><i class="fa fa-exclamation-circle"></i></span>
+								</span>
+							</span>
+						</f:else>
+					</f:if>
+				</td>
 				<td>{serverRecord.server.configuration.uid} ({serverRecord.server.configuration.title})</td>
 				<td>{serverRecord.server.configuration.host}:{serverRecord.server.configuration.port}</td>
 				<td>{serverRecord.server.configuration.feUserRules.baseDN}</td>

@@ -36,13 +36,13 @@ class BeUser extends \NormanSeibert\Ldap\Domain\Model\LdapUser\User {
 	
 	/**
 	 * @var \NormanSeibert\Ldap\Domain\Repository\Typo3User\BackendUserRepository
-	 * @inject
+	 * @TYPO3\CMS\Extbase\Annotation\Inject
 	 */
 	protected $userRepository;
 	
 	/**
 	 * @var \NormanSeibert\Ldap\Domain\Repository\Typo3User\BackendUserGroupRepository
-	 * @inject
+	 * @TYPO3\CMS\Extbase\Annotation\Inject
 	 */
 	protected $usergroupRepository;
 	

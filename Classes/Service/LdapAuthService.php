@@ -24,10 +24,15 @@ namespace NormanSeibert\Ldap\Service;
  * @copyright 2013 Norman Seibert
  */
 
+use Psr\Log\LoggerAwareTrait;
+
 /**
  * Service to authenticate users against LDAP directory
  */
-class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
+// @extensionScannerIgnoreLine
+class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService implements \Psr\Log\LoggerAwareInterface {
+
+	use LoggerAwareTrait;
 
 	/**
 	 *
@@ -73,14 +78,14 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 
 	/**
 	 * @var \NormanSeibert\Ldap\Domain\Model\Configuration\Configuration
-     * @inject
+     * @TYPO3\CMS\Extbase\Annotation\Inject
 	 */
 	protected $ldapConfig;
 	
 	/**
 	 *
 	 * @var \TYPO3\CMS\Extbase\Object\ObjectManager
-	 * @inject
+	 * @TYPO3\CMS\Extbase\Annotation\Inject
 	 */
 	protected $objectManager;
 
@@ -93,14 +98,14 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
     /**
      *
      * @var \TYPO3\CMS\Extbase\SignalSlot\Dispatcher
-     * @inject
+     * @TYPO3\CMS\Extbase\Annotation\Inject
      */
     protected $signalSlotDispatcher;
 
     /**
      *
      * @var \NormanSeibert\Ldap\Service\TypoScriptService
-     * @inject
+     * @TYPO3\CMS\Extbase\Annotation\Inject
     */
     protected $typoScriptService;
 
@@ -109,12 +114,6 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
      * @var \TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface
      */
     protected $configurationManager;
-
-    /**
-     *
-     * @var \TYPO3\CMS\Extbase\Reflection\ReflectionService
-     */
-    protected $reflectionService;
 
 	/**
 	 * Initialize authentication service
@@ -136,10 +135,6 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 		$this->authInfo = $authenticationInformation;
 		
 		// Initialize TSFE and Extbase
-//		if (version_compare(TYPO3_branch, '6.0', '>')) {
-//			\TYPO3\CMS\Core\Core\Bootstrap::getInstance()->loadCachedTca();
-//		}
-		$this->initializeRequiredTsfeParts();
 		$this->initializeExtbaseFramework();
 
 		// Plaintext or RSA authentication
@@ -153,22 +148,6 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 		// SSO
 		if (($this->loginData['status'] != 'logout') && empty($this->password) && $this->conf['enableSSO']) {
 			$this->activateSSO();
-		} elseif (strlen($this->password) == 0) {
-			if ($this->pObj->security_level == 'rsa') {
-				if (\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::isLoaded('rsaauth')) {
-					$backend = \TYPO3\CMS\Rsaauth\Backend\BackendFactory::getBackend();
-					$storage = \TYPO3\CMS\Rsaauth\Storage\StorageFactory::getStorage();
-					$key = $storage->get();
-					
-					if ($key != NULL && substr($this->loginData['uident'], 0, 4) == 'rsa:') {
-						$this->password = $backend->decrypt($key, substr($this->loginData['uident'], 4));
-					}
-				} else {
-					\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('You have an error in your TYPO3 configuration. Your security level is set to "rsa" but the  extension "rsaauth" is not loaded.', 'ldap', 3);
-				}
-			} elseif ($this->pObj->security_level == 'superchallenged') {
-				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('LDAP extension does not work with security level "superchallenged". Please install und activate extension "rsaauth".', 'ldap', 3);
-			}
 		}
 	}
 
@@ -198,7 +177,8 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 			}
 			
 			if ($this->logLevel > 0) {
-				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('SSO active for user: ' . $this->username, 'ldap', 0);
+				$msg = 'SSO active for user: ' . $this->username;
+				$this->logger->info($msg);
 			}
 		}
 	}
@@ -216,7 +196,8 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 			\TYPO3\CMS\Core\Utility\GeneralUtility::sysLog(sprintf('Login-attempt from %s (%s), username \'%s\' not found!', $this->authInfo['REMOTE_ADDR'], $this->authInfo['REMOTE_HOST'], $this->username), 'Core', 0);
 		} else {
 			if ($this->logLevel >= 1) {
-				\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('TYPO3 user found: ' . $this->username, 'ldap', -1);
+				$msg = 'TYPO3 user found: ' . $this->username;
+				$this->logger->debug($msg);
 			}
 			unset($user['ldap_authenticated']);
 		}
@@ -232,14 +213,17 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 		$user = FALSE;
 		
 		if ($this->logLevel >= 2) {
-			\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('getUser() called, loginType: ' . $this->authInfo['loginType'], 'ldap', 0);
+			$msg = 'getUser() called, loginType: ' . $this->authInfo['loginType'];
+			$this->logger->debug($msg);
 		}
 		if ($this->loginData['status'] == 'login') {
 			if ($this->username) {
 				if ($this->logLevel == 2) {
-					\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('Username: ' . $this->username, 'ldap', 0);
+					$msg = 'Username: ' . $this->username;
+					$this->logger->debug($msg);
 				} elseif ($this->logLevel == 3) {
-					\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('Username / Password: ' . $this->username . ' / ' . $this->password, 'ldap', 0);
+					$msg = 'Username / Password: ' . $this->username . ' / ' . $this->password;
+					$this->logger->debug($msg);
 				}
 				if ($this->authInfo['loginType'] == 'BE') {
 					$pid = 0;
@@ -251,14 +235,16 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 					foreach ($this->ldapServers as $server) {
 						if ($user) {
 							if ($this->logLevel >= 1) {
-								\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('User already authenticated', 'ldap', 0);
+								$msg = 'User already authenticated';
+								$this->logger->debug($msg);
 							}
 						} else {
 							// Authenticate the user here because only users shall be imported which are authenticated.
 							// Otherwise every user present in the directory would be imported regardless of the entered password.
 							
 							if ($this->logLevel >= 2) {
-								\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('Try to authenticate with server: ' . $server->getUid(), 'ldap', 0);
+								$msg = 'Try to authenticate with server: ' . $server->getUid();
+								$this->logger->debug($msg);
 							}
 
 							/* @var $server \NormanSeibert\Ldap\Domain\Model\LdapServer\Server */
@@ -269,13 +255,15 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
                                 /* @var $ldapUser \NormanSeibert\Ldap\Domain\Model\LdapUser\User */
 								$ldapUser = $server->checkUser($this->username);
 								if ($this->logLevel >= 2) {
-									\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('Check SSO user: ' . $this->username, 'ldap', 0);
+									$msg = 'Check SSO user: ' . $this->username;
+									$this->logger->debug($msg);
 								}
 							} else {
                                 /* @var $ldapUser \NormanSeibert\Ldap\Domain\Model\LdapUser\User */
 								$ldapUser = $server->authenticateUser($this->username, $this->password);
 								if ($this->logLevel >= 2) {
-									\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('Authenticate user: ' . $this->username, 'ldap', 0);
+									$msg = 'Authenticate user: ' . $this->username;
+									$this->logger->debug($msg);
 								}
 							}
 
@@ -284,7 +272,8 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 								if ($server->getConfiguration()->getUserRules($this->authInfo['db_user']['table'])->getAutoImport()) {
 									// Authenticated users shall be imported/updated
 									if ($this->logLevel >= 2) {
-										\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('Import/update user ' . $this->username, 'ldap', 0);
+										$msg = 'Import/update user ' . $this->username;
+										$this->logger->debug($msg);
 									}
 									$ldapUser->loadUser();
 									$typo3User = $ldapUser->getUser();
@@ -304,7 +293,8 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 										if ($typo3User->getIsDisabled()) {
 											// Authenticated users shall be enabled
 											if ($this->logLevel >= 2) {
-												\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('Enable user ' . $this->username, 'ldap', 0);
+												$msg = 'Enable user ' . $this->username;
+												$this->logger->debug($msg);
 											}
 											$ldapUser->enableUser();
 										}
@@ -317,12 +307,14 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 								$user['ldap_authenticated'] = TRUE;
 
 								if ($this->logLevel >= 1) {
-									\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('User authenticated successfully ' . $this->username, 'ldap', -1);
+									$msg = 'User authenticated successfully ' . $this->username;
+									$this->logger->debug($msg);
 								}
 							} else {
 								// $user = $this->getTypo3User();
 								if ($this->logLevel >= 1) {
-									\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('Login failed', 'ldap', 1);
+									$msg = 'Login failed';
+									$this->logger->notice($msg);
 								}
 							}
 						}
@@ -330,14 +322,11 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 				} else {
 					$user = $this->getTypo3User();
 					if ($this->logLevel >= 1) {
-						\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('No LDAP servers configured', 'ldap', 2);
+						$msg = 'No LDAP servers configured';
+						$this->logger->warning($msg);
 					}
 				}
 			}
-		}
-		
-		if (isset($GLOBALS['TSFE'])) {
-			$this->typoScriptService->restoreTypoScriptBackup();
 		}
 		
 		return $user;
@@ -347,9 +336,10 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 	 * Authenticate a user
 	 *
 	 * @param array $user Data of user.
-	 * @return boolean
+	 * @return int
 	 */
-	public function authUser(array $user) {
+	public function authUser(array $user):int
+	{
 		$ok = 100;
 		
 		if (($this->username) && (count($this->ldapServers) > 0)) {
@@ -357,7 +347,8 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 			// User has already been authenticated during getUser()
 			if (isset($user['ldap_authenticated'])) {
 				if ($this->logLevel >= 1) {
-					\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('Login successful', 'ldap', -1);
+					$msg = 'Login successful';
+					$this->logger->debug($msg);
 				}
 				$ok = 100;
 			}
@@ -367,10 +358,12 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 					$this->writelog(255, 3, 3, 1, "Login-attempt from %s (%s), username '%s', password not accepted!", array($this->info['REMOTE_ADDR'], $this->info['REMOTE_HOST'], $this->username));
 				}
 				if ($this->logLevel == 1) {
-					\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('Password not accepted', 'ldap', 2);
+					$msg = 'Password not accepted';
+					$this->logger->notice($msg);
 				}
 				if ($this->logLevel > 1) {
-					\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('Password not accepted: ' . $this->password, 'ldap', 2);
+					$msg = 'Password not accepted: ' . $this->password;
+					$this->logger->notice($msg);
 				}
 			}
 			$ok = $ok ? 200 : ($this->conf['onlyLDAP'] ? 0 : 100);
@@ -381,7 +374,7 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 				$this->writelog(255, 3, 3, 1, "Login-attempt from %s (%s), username '%s', locked domain '%s' did not match '%s'!", array($this->authInfo['REMOTE_ADDR'], $this->authInfo['REMOTE_HOST'], $user[$this->authInfo['db_user']['username_column']], $user['lockToDomain'], $this->authInfo['HTTP_HOST']));
 				\TYPO3\CMS\Core\Utility\GeneralUtility::sysLog(sprintf("Login-attempt from %s (%s), username '%s', locked domain '%s' did not match '%s'!", $this->authInfo['REMOTE_ADDR'], $this->authInfo['REMOTE_HOST'], $user[$this->authInfo['db_user']['username_column']], $user['lockToDomain'], $this->authInfo['HTTP_HOST']), 'Core', 0);
 			}
-			$ok = false;
+			$ok = 0;
 		}
 
 		$parameters = array(
@@ -392,10 +385,9 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 		$this->signalSlotDispatcher->dispatch(__CLASS__, 'beforeAuthentication', $parameters);
 		
 		if ($this->logLevel >= 1) {
-			\TYPO3\CMS\Core\Utility\GeneralUtility::devLog('function "authUser" returns: ' . $ok, 'ldap', 0);
+			$msg = 'function "authUser" returns: ' . $ok;
+			$this->logger->debug($msg);
 		}
-		
-		$this->typoScriptService->restoreTypoScriptBackup();
 			
 		return $ok;
 	}
@@ -423,77 +415,29 @@ class LdapAuthService extends \TYPO3\CMS\Sv\AuthenticationService {
 	/**
 	 * @return void
 	 */
-	protected function initializeRequiredTsfeParts() {
-		if (isset($GLOBALS['TSFE'])) {
-			if (empty($GLOBALS['TSFE']->sys_page)) {
-				$GLOBALS['TSFE']->sys_page = $this->objectManager->get('TYPO3\\CMS\\Frontend\\Page\\PageRepository');
-			}
-			if (empty($GLOBALS['TSFE']->tmpl)) {
-				$GLOBALS['TSFE']->tmpl = $this->objectManager->get('TYPO3\\CMS\\Core\\TypoScript\\ExtendedTemplateService');
-			}
-			/*
-			if (empty($GLOBALS['TSFE']->csConvObj)))	{
-				$GLOBALS['TSFE']->csConvObj = $this->objectManager->get('TYPO3\\CMS\\Core\\Charset\\CharsetConverter');
-			}
-			*/
-		}
-	}
-	
-	/**
-	 * @return void
-	 */
 	protected function initializeExtbaseFramework() {
 		// inject content object into the configuration manager
-		$this->configurationManager = $this->objectManager->get('TYPO3\\CMS\\Extbase\\Configuration\\ConfigurationManagerInterface');
+		$this->configurationManager = $this->objectManager->get('TYPO3\\CMS\\Extbase\\Configuration\\ConfigurationManager');
 		$contentObject = $this->objectManager->get('TYPO3\\CMS\\Frontend\\ContentObject\\ContentObjectRenderer');
 		$this->configurationManager->setContentObject($contentObject);
 
-		if (isset($GLOBALS['TSFE'])) {
-			$this->typoScriptService->makeTypoScriptBackup();
-		}
 		// load extbase typoscript
-		$typoScriptArray = \NormanSeibert\Ldap\Service\TypoScriptService::loadTypoScriptFromFile('EXT:extbase/ext_typoscript_setup.txt');
+		$typoScriptArray = \NormanSeibert\Ldap\Service\TypoScriptService::loadTypoScriptFromFile('EXT:extbase/ext_typoscript_setup.typoscript');
 		// load this extensions typoscript (database column => model property map etc)
-		$typoScriptArray2 = \NormanSeibert\Ldap\Service\TypoScriptService::loadTypoScriptFromFile('EXT:ldap/Configuration/TypoScript/setup.txt');
+		$typoScriptArray2 = \NormanSeibert\Ldap\Service\TypoScriptService::loadTypoScriptFromFile('EXT:ldap/Configuration/ext_typoscript_setup.typoscript');
 		if (is_array($typoScriptArray) && !empty($typoScriptArray) && is_array($typoScriptArray2) && !empty($typoScriptArray2)) {
 			\TYPO3\CMS\Core\Utility\ArrayUtility::mergeRecursiveWithOverrule($typoScriptArray, $typoScriptArray2);
 		}
 
-		if (is_array($typoScriptArray) && !empty($typoScriptArray) && isset($GLOBALS['TSFE'])) {
+		if (is_array($typoScriptArray) && !empty($typoScriptArray) && isset($GLOBALS['TSFE']->tmpl->setup)) {
 			\TYPO3\CMS\Core\Utility\ArrayUtility::mergeRecursiveWithOverrule($GLOBALS['TSFE']->tmpl->setup, $typoScriptArray);
 			$this->configurationManager->setConfiguration($GLOBALS['TSFE']->tmpl->setup);
 		} elseif (is_array($typoScriptArray) && !empty($typoScriptArray)) {
-			$this->configurationManager->setConfiguration($typoScriptArray);
-		}
-
-		$this->configureObjectManager();
-
-		// initialize reflection
-		$this->reflectionService = $this->objectManager->get('TYPO3\\CMS\\Extbase\\Reflection\\ReflectionService');
-		$this->reflectionService->setDataCache(\TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Cache\\CacheManager')->getCache('extbase_reflection'));
-		if (!$this->reflectionService->isInitialized()) {
-			$this->reflectionService->initialize();
+			$this->configurationManager->setConfiguration($typoScriptArray['config.']['tx_extbase.']);
 		}
 
 		// initialize persistence
 		$this->persistenceManager = $this->objectManager->get('TYPO3\\CMS\\Extbase\\Persistence\\PersistenceManagerInterface');
-	}
-
-	/**
-	 * @return void
-	 */
-	protected function configureObjectManager() {
-		$typoScriptSetup = $this->configurationManager->getConfiguration(\TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface::CONFIGURATION_TYPE_FULL_TYPOSCRIPT);
-		if (!is_array($typoScriptSetup['config.']['tx_extbase.']['objects.'])) {
-			return;
-		}
-		$objectContainer = $this->objectManager->get('TYPO3\\CMS\\Extbase\\Object\\Container\\Container');
-		foreach ($typoScriptSetup['config.']['tx_extbase.']['objects.'] as $classNameWithDot => $classConfiguration) {
-			if (isset($classConfiguration['className'])) {
-				$originalClassName = rtrim($classNameWithDot, '.');
-				$objectContainer->registerImplementation($originalClassName, $classConfiguration['className']);
-			}
-		}
 	}
 }
 ?>

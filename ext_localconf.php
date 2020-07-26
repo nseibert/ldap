@@ -3,7 +3,7 @@ if (!defined("TYPO3_MODE")) {
 	exit("Access denied.");
 }
 
-$config = unserialize($TYPO3_CONF_VARS['EXT']['extConf']['ldap']);
+$config = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Configuration\\ExtensionConfiguration')->get('ldap');
 
 if ($config['enableFE'] && !$config['enableBE']) {
 	$subTypes = 'getUserFE,authUserFE';
@@ -44,3 +44,11 @@ if ($config['enableFE'] || $config['enableBE']) {
 if (TYPO3_MODE === 'BE') {
     $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['extbase']['commandControllers'][] = 'NormanSeibert\\Ldap\\Command\\LdapCommandController';
 }
+
+$GLOBALS['TYPO3_CONF_VARS']['LOG']['NormanSeibert']['Ldap']['writerConfiguration'] = array(
+	\TYPO3\CMS\Core\Log\LogLevel::DEBUG => [
+		'TYPO3\\CMS\\Core\\Log\\Writer\\FileWriter' => [
+			'logFileInfix' => 'ldap',
+		],
+	],
+);

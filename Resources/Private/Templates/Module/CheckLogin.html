@@ -1,12 +1,17 @@
-{namespace ldap = NormanSeibert\Ldap\ViewHelpers}
+<html xmlns:core="http://typo3.org/ns/TYPO3/CMS/Core/ViewHelpers"
+	xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+    xmlns:be="http://typo3.org/ns/TYPO3/CMS/Backend/ViewHelpers"
+    data-namespace-typo3-fluid="true">
 
 <f:layout name="Backend"/>
 
 <f:section name="content">
+
+	<be:moduleLayout.button.shortcutButton displayName="{f:translate(id: 'action.checkLogin')}" />
 	
 	<h1><f:translate key="headline.checkLogin" /></h1>
 	
-	<f:flashMessages />
+	<f:flashMessages queueIdentifier="ldap" />
 	
 	<f:form action="doCheckLogin" controller="Module" objectName="formSettings" object="{formSettings}">
 		
@@ -61,9 +66,19 @@
 						<f:if condition="{user.submitted}">
 							<f:if condition="{user.found}">
 								<f:then>
+									<span class="t3js-icon icon icon-size-small icon-state-default icon-status-dialog-ok">
+										<span class="icon-markup">
+											<span class="icon-unify"><i class="fa fa-check-circle"></i></span>
+										</span>
+									</span>
 									{user.serverUid}: {user.dn}
 								</f:then>
 								<f:else>
+									<span class="t3js-icon icon icon-size-small icon-state-default icon-status-dialog-error">
+										<span class="icon-markup">
+											<span class="icon-unify"><i class="fa fa-exclamation-circle"></i></span>
+										</span>
+									</span>
 									<f:translate key="form.noUserFound" />
 								</f:else>
 							</f:if>
@@ -84,9 +99,19 @@
 						<f:if condition="{user.submitted}">
 							<f:if condition="{user.authenticated}">
 								<f:then>
+									<span class="t3js-icon icon icon-size-small icon-state-default icon-status-dialog-ok">
+										<span class="icon-markup">
+											<span class="icon-unify"><i class="fa fa-check-circle"></i></span>
+										</span>
+									</span>
 									<f:translate key="form.authenticationSuccess" />
 								</f:then>
 								<f:else>
+									<span class="t3js-icon icon icon-size-small icon-state-default icon-status-dialog-error">
+										<span class="icon-markup">
+											<span class="icon-unify"><i class="fa fa-exclamation-circle"></i></span>
+										</span>
+									</span>
 									<f:translate key="form.authenticationFail" />
 								</f:else>
 							</f:if>

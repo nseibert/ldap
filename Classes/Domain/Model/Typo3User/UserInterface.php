@@ -62,19 +62,6 @@ interface UserInterface {
 
     /**
      *
-     * @param \NormanSeibert\Ldap\Domain\Model\LdapServer\Server $server
-     * @return object
-     */
-    public function setLdapServer(\NormanSeibert\Ldap\Domain\Model\LdapServer\Server $server);
-
-    /**
-     *
-     * @return \NormanSeibert\Ldap\Domain\Model\LdapServer\Server
-     */
-    public function getLdapServer();
-
-    /**
-     *
      * @param string $uid
      * @return object
      */

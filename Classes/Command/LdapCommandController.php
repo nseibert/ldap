@@ -31,19 +31,19 @@ class LdapCommandController extends \TYPO3\CMS\Extbase\Mvc\Controller\CommandCon
 
 	/**
 	 * @var \NormanSeibert\Ldap\Domain\Repository\Typo3User\FrontendUserRepository
-	 * @inject
+	 * @TYPO3\CMS\Extbase\Annotation\Inject
 	 */
 	protected $feUserRepository;
 
 	/**
 	 * @var \NormanSeibert\Ldap\Domain\Repository\Typo3User\BackendUserRepository
-	 * @inject
+	 * @TYPO3\CMS\Extbase\Annotation\Inject
 	 */
 	protected $beUserRepository;
 	
 	/**
 	 * @var \NormanSeibert\Ldap\Domain\Model\Configuration\Configuration
-	 * @inject
+	 * @TYPO3\CMS\Extbase\Annotation\Inject
 	 */
 	protected $ldapConfig;
 	

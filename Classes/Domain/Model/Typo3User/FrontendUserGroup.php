@@ -37,12 +37,6 @@ class FrontendUserGroup extends \TYPO3\CMS\Extbase\Domain\Model\FrontendUserGrou
 	
 	/**
 	 *
-	 * @var \NormanSeibert\Ldap\Domain\Model\LdapServer\Server 
-	 */
-	protected $ldapServer;
-	
-	/**
-	 *
 	 * @var string 
 	 */
 	protected $serverUid;
@@ -60,12 +54,6 @@ class FrontendUserGroup extends \TYPO3\CMS\Extbase\Domain\Model\FrontendUserGrou
 	protected $objectManager;
 	
 	/**
-	 * @var \NormanSeibert\Ldap\Domain\Model\Configuration\Configuration
-	 * @inject
-	 */
-	protected $ldapConfig;
-	
-	/**
 	 * 
 	 * @param string $dn
 	 * @return \NormanSeibert\Ldap\Domain\Model\Typo3User\FrontendUserGroup
@@ -81,28 +69,6 @@ class FrontendUserGroup extends \TYPO3\CMS\Extbase\Domain\Model\FrontendUserGrou
 	 */
 	public function getDN() {
 		return $this->dn;
-	}
-	
-	/**
-	 * 
-	 * @param \NormanSeibert\Ldap\Domain\Model\LdapServer\Server $server
-	 * @return \NormanSeibert\Ldap\Domain\Model\Typo3User\FrontendUserGroup
-	 */
-	public function setLdapServer(\NormanSeibert\Ldap\Domain\Model\LdapServer\Server $server) {
-		$this->ldapServer = $server;
-		$this->serverUid = $server->getConfiguration()->getUid();
-		return $this;
-	}
-	
-	/**
-	 * 
-	 * @return \NormanSeibert\Ldap\Domain\Model\LdapServer\Server
-	 */
-	public function getLdapServer() {
-		if (!is_object($this->ldapServer)) {
-			$this->ldapServer = $this->ldapConfig->getLdapServer($this->serverUid);
-		}
-		return $this->ldapServer;
 	}
 	
 	/**
@@ -128,9 +94,10 @@ class FrontendUserGroup extends \TYPO3\CMS\Extbase\Domain\Model\FrontendUserGrou
 	 * @return \NormanSeibert\Ldap\Domain\Model\LdapUser\User
 	 */
 	public function getLdapUsergroup() {
-		$group = false;
-		if ($this->dn && $this->ldapServer) {
-			$group = $this->getLdapServer()->getUser($this->dn);
+		if ($this->dn && $this->serverUid) {
+			$ldapConfig = GeneralUtility::makeInstance(Configuration::class);
+			$server = $ldapConfig->getLdapServer($this->serverUid);
+			$user = $server->getUser($this->dn);
 		}
 		return $group;
 	}
