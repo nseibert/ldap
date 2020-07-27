@@ -976,7 +976,7 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \Ps
 				$newGroup->setPid($pid);
 				$newGroup->setTitle($group['title']);
 				$newGroup->setDN($group['dn']);
-				$newGroup-->setServerUid($this->ldapServer->getConfiguration()->getUid());
+				$newGroup->setServerUid($this->ldapServer->getConfiguration()->getUid());
 				if ($lastRun) {
 					$newGroup->setLastRun($lastRun);
 				}

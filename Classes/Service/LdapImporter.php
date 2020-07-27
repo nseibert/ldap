@@ -240,11 +240,15 @@ class LdapImporter implements \Psr\Log\LoggerAwareInterface {
 		foreach ($users as $user) {
             /* @var $user \NormanSeibert\Ldap\Domain\Model\Typo3User\UserInterface */
 			if ($user->getServerUid()) {
-				$server = $this->ldapConfig->getLdapServer($user->getServerUid());
+				// note the . behind the uid as it comes from the DB
+				$server = $this->ldapConfig->getLdapServer($user->getServerUid().".");
 				if ($server != $tmpServer) {
 					$tmpServer = $server;
 				}
-				$ldapUser = $tmpServer->getUser($user->getDN());
+				$ldapUser = NULL;
+				if ($tmpServer) {
+					$ldapUser = $tmpServer->getUser($user->getDN());
+				}
 				if (!is_object($ldapUser)) {
 					$user->setLastRun($runIdentifier);
 					if ($hide) {

@@ -352,7 +352,7 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
 		} else {
 			$msg = 'LDAP server not found: uid = "'.$uid.'":';
 			$this->logger->warning($msg);
-			\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::WARNING, $msg, $server['uid']);
+			\NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::WARNING, $msg, $uid);
 			$this->configOK = FALSE;
 		}
 		
