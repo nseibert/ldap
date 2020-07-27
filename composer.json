@@ -1,5 +1,5 @@
 {
-  "name": "nseibert/ldap",
+  "name": "normanseibert/ldap",
   "type": "typo3-cms-extension",
   "description": "TYPO3 LDAP extension",
   "keywords": [
@@ -26,9 +26,6 @@
     "psr-4": {
       "NormanSeibert\\Ldap\\": "Classes"
     }
-  },
-  "replace": {
-    "ldap": "self.version"
   }
 }
 
