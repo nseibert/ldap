@@ -381,8 +381,8 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 	 * configures the deletion/deactivation and display the result list
 	 */
 	public function deleteUsersAction() {
-        $beUsers = NULL;
-        $feUsers = NULL;
+        $beUsers = array();
+        $feUsers = array();
 		$settings = $this->initializeFormSettings();
 
 		if ($this->request->hasArgument('runs')) {
