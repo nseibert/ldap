@@ -57,6 +57,12 @@ class ServerConfigurationUsers extends \TYPO3\CMS\Extbase\DomainObject\AbstractE
 	 *
 	 * @var boolean 
 	 */
+	protected $autoUpdateEnable;
+	
+	/**
+	 *
+	 * @var boolean 
+	 */
 	protected $onlyUsersWithGroup;
 	
 	/**
@@ -165,6 +171,24 @@ class ServerConfigurationUsers extends \TYPO3\CMS\Extbase\DomainObject\AbstractE
 	 */
 	public function getAutoEnable() {
 		return $this->autoEnable;
+	}
+	
+	/**
+	 * 
+	 * @param boolean $auto
+	 * @return \NormanSeibert\Ldap\Domain\Model\LdapServer\ServerConfigurationUsers
+	 */
+	public function setAutoUpdateEnable($auto) {
+		$this->autoUpdateEnable = $auto;
+		return $this;
+	}
+	
+	/**
+	 * 
+	 * @return boolean
+	 */
+	public function getAutoUpdateEnable() {
+		return $this->autoUpdateEnable;
 	}
 	
 	/**

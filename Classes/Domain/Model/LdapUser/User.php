@@ -384,6 +384,14 @@ class User extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \Ps
 		}
 
 		if ($updateUser) {
+			// Enable user if configured
+			if (($this->userRules->getAutoUpdateEnable()) && ($this->user->getIsDisabled())) {
+				$this->user->setIsDisabled(FALSE);
+				$msg = 'User record has been enabled "' . $username . '" (DN: ' . $this->dn . ')';
+				if ($this->ldapConfig->logLevel >= 2) {
+					$this->logger->debug($msg);
+				}
+			}
 			$this->userRepository->update($this->user);
 			$msg = 'Update user record "' . $username . '" (DN: ' . $this->dn . ')';
 			if ($this->ldapConfig->logLevel >= 3) {
