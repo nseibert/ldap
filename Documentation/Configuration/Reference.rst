@@ -58,7 +58,8 @@ Mandatory properties are printed bold.
 +----------------------------------+---------------+----------------------------------------------------------------------------------------------------+----------------+
 | --> .autoImport                  | boolean       | If set users will be imported/updated automatically after successful DAP authentication            | 0              |
 +----------------------------------+---------------+----------------------------------------------------------------------------------------------------+----------------+
-| --> .autoEnable                  | boolean       | If set users will be enabled automatically after login if they have been disabled in TYPO3         | 0              |
+| --> .autoEnable                  | boolean       | If set users will be enabled automatically after login if they have been disabled in TYPO3         | 0              |+----------------------------------+---------------+----------------------------------------------------------------------------------------------------+----------------+
+| --> .autoUpdateEnable            | boolean       | If set users will be enabled automatically during update if they have been disabled in TYPO3       | 0              |
 +----------------------------------+---------------+----------------------------------------------------------------------------------------------------+----------------+
 | --> **.mapping.**                | array / COA   | Configures the TYPO3 user table fields, the basic syntax is::                                      |                |
 |                                  |               |                                                                                                    |                |

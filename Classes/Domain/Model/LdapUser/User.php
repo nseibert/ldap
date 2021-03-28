@@ -301,6 +301,14 @@ class User extends \NormanSeibert\Ldap\Domain\Model\LdapUser\LdapEntity implemen
         }
 
         if ($updateUser) {
+            // Enable user if configured
+            if (($this->userRules->getAutoUpdateEnable()) && ($this->user->getIsDisabled())) {
+                $this->user->setIsDisabled(false);
+                $msg = 'User record has been enabled "'.$username.'" (DN: '.$this->dn.')';
+                if ($this->ldapConfig->logLevel >= 2) {
+                    $this->logger->debug($msg);
+                }
+            }
             $this->userRepository->update($this->user);
             $msg = 'Update user record "'.$username.'" (DN: '.$this->dn.')';
             if ($this->ldapConfig->logLevel >= 3) {
