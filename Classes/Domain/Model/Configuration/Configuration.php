@@ -68,6 +68,7 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
     {
         $this->configOK = 1;
         $this->objectManager = $objectManager;
+        $this->logger = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Log\LogManager::class)->getLogger(__CLASS__);
         $this->config = $this->loadConfiguration();
         $this->checkLdapExtension();
         $this->allLdapServers = $this->getLdapServersFromFile();
@@ -222,7 +223,6 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
                         ->setFilter($server['fe_users.']['filter'])
                         ->setAutoImport($server['fe_users.']['autoImport'])
                         ->setAutoEnable($server['fe_users.']['autoEnable'])
-                        ->setAutoUpdateEnable($server['fe_users.']['autoUpdateEnable'])
                         ->setOnlyUsersWithGroup($server['fe_users.']['onlyUsersWithGroup'])
                         ->setMapping($server['fe_users.']['mapping.'])
                         ->setGroupRules($groupRuleFE)
@@ -250,7 +250,6 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
                         ->setFilter($server['be_users.']['filter'])
                         ->setAutoImport($server['be_users.']['autoImport'])
                         ->setAutoEnable($server['be_users.']['autoEnable'])
-                        ->setAutoUpdateEnable($server['be_users.']['autoUpdateEnable'])
                         ->setOnlyUsersWithGroup($server['be_users.']['onlyUsersWithGroup'])
                         ->setMapping($server['be_users.']['mapping.'])
                         ->setGroupRules($groupRuleBE)
@@ -278,9 +277,9 @@ class Configuration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity imple
                 $serverRecord = $this->objectManager->get('NormanSeibert\\Ldap\\Domain\\Model\\LdapServer\\Server');
                 $serverRecord->setConfiguration($serverConfiguration);
             } else {
-                $msg = 'LDAP server configuration invalid for "'.$server['uid'].'":';
+                $msg = 'LDAP server configuration invalid for "'.$server['uid'].'". ';
                 $this->logger->warning($msg, $errors);
-                $msg .= '<ul><li>'.implode('</li><li>', $errors).'</li></ul>';
+                $msg .= implode(' | ', $errors).'.';
                 Helpers::addError(FlashMessage::WARNING, $msg, $server['uid']);
                 $this->configOK = false;
             }

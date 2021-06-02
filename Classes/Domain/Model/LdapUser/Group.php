@@ -53,6 +53,7 @@ class Group extends \NormanSeibert\Ldap\Domain\Model\LdapUser\LdapEntity impleme
     public function __construct()
     {
         parent::__construct();
+        $this->logger = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Log\LogManager::class)->getLogger(__CLASS__);
     }
 
     public function setGroup(\NormanSeibert\Ldap\Domain\Model\Typo3User\UserGroupInterface $group)

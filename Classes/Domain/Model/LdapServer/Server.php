@@ -100,6 +100,7 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \
      */
     public function __construct(Configuration $ldapConfig, FrontendUserGroupRepository $feUsergroupRepository, BackendUserGroupRepository $beUsergroupRepository, ObjectManager $objectManager, Dispatcher $signalSlotDispatcher)
     {
+        $this->logger = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Log\LogManager::class)->getLogger(__CLASS__);
         $this->ldapConfig = $ldapConfig;
         $this->feUsergroupRepository = $feUsergroupRepository;
         $this->beUsergroupRepository = $beUsergroupRepository;

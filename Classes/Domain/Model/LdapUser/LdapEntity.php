@@ -71,6 +71,7 @@ class LdapEntity extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implemen
     public function __construct()
     {
         $this->objectManager = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\Object\\ObjectManager');
+        $this->logger = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Log\LogManager::class)->getLogger(__CLASS__);
         $this->ldapConfig = $this->objectManager->get('NormanSeibert\\Ldap\\Domain\\Model\\Configuration\\Configuration');
         $this->cObj = $this->objectManager->get('NormanSeibert\\Ldap\\Utility\\ContentRendererLight');
     }
