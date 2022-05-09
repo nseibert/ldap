@@ -191,7 +191,7 @@ class BackendUser extends \TYPO3\CMS\Extbase\Domain\Model\BackendUser implements
      */
     public function getUsername()
     {
-        return $this->userName;
+        return $this->username;
     }
 
     /**
@@ -201,7 +201,7 @@ class BackendUser extends \TYPO3\CMS\Extbase\Domain\Model\BackendUser implements
      */
     public function setUsername($username)
     {
-        $this->userName = $username;
+        $this->username = $username;
     }
 
     /**
