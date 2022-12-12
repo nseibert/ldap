@@ -27,6 +27,7 @@ namespace NormanSeibert\Ldap\Service;
  */
 
 use Psr\Log\LoggerAwareTrait;
+use TYPO3\CMS\Core\Authentication\AbstractUserAuthentication;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\Restriction\DefaultRestrictionContainer;
 use TYPO3\CMS\Core\Database\Query\Restriction\DeletedRestriction;
@@ -90,10 +91,11 @@ class LdapAuthService extends \TYPO3\CMS\Core\Authentication\AuthenticationServi
      * @param string $subType                   Subtype of the service which is used to call the service
      * @param array  $loginData                 Submitted login form data
      * @param array  $authenticationInformation Information array. Holds submitted form data etc.
-     * @param object $parentObject              Parent object
+     * @param AbstractUserAuthentication $parentObject Parent object
      */
     public function initAuth($subType, $loginData, $authenticationInformation, $parentObject)
     {
+        parent::initAuth($subType, $loginData, $authenticationInformation, $parentObject);
         $this->objectManager = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\Object\\ObjectManager');
         $this->signalSlotDispatcher = $this->objectManager->get('TYPO3\\CMS\\Extbase\\SignalSlot\\Dispatcher');
         $this->persistenceManager = $this->objectManager->get('TYPO3\\CMS\\Extbase\\Persistence\\PersistenceManagerInterface');
