@@ -26,17 +26,15 @@ namespace NormanSeibert\Ldap\Domain\Model\LdapUser;
  * @copyright 2020 Norman Seibert
  */
 
-use NormanSeibert\Ldap\Domain\Model\Configuration\Configuration;
-use NormanSeibert\Ldap\Utility\ContentRendererLight;
-use Psr\Log\LoggerAwareTrait;
-use TYPO3\CMS\Extbase\Object\ObjectManager;
+use Psr\Log\LoggerInterface;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
  * Model for objects read from LDAP server.
  */
-class LdapEntity extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \Psr\Log\LoggerAwareInterface
+class LdapEntity extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
 {
-    use LoggerAwareTrait;
+    private LoggerInterface $logger;
 
     /**
      * @var string
@@ -54,25 +52,19 @@ class LdapEntity extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implemen
     protected $ldapServer;
 
     /**
-     * @var Configuration
+     * @var int
      */
-    protected $ldapConfig;
+    protected $logLevel;
 
-    /**
-     * @var ObjectManager
-     */
-    protected $objectManager;
-
-    /**
-     * @var ContentRendererLight
-     */
-    protected $cObj;
-
-    public function __construct()
+    public function __construct(LoggerInterface $logger)
     {
-        $this->objectManager = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\Object\\ObjectManager');
-        $this->ldapConfig = $this->objectManager->get('NormanSeibert\\Ldap\\Domain\\Model\\Configuration\\Configuration');
-        $this->cObj = $this->objectManager->get('NormanSeibert\\Ldap\\Utility\\ContentRendererLight');
+        // $this->logger = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Log\LogManager::class)->getLogger(__CLASS__);
+        $this->logger = $logger;
+    }
+
+    public function setLoglevel(int $logLevel)
+    {
+        $this->logLevel = $logLevel;
     }
 
     /**
@@ -148,12 +140,16 @@ class LdapEntity extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implemen
      */
     protected function getAttributeMapping($mapping, $key, $data)
     {
+        $ldapData = array();
+        
         // stdWrap does no longer handle arrays, therefore we have to check and map manually
         // values derived from LDAP attribues
         $tmp = explode(':', $mapping[$key.'.']['data']);
         if (is_array($tmp)) {
             $attrName = $tmp[1];
-            $ldapData = $data[$attrName];
+            if (isset($data[$attrName])) {
+                $ldapData = $data[$attrName];
+            }
 
             $msg = 'Mapping attributes';
             $logArray = [
@@ -161,7 +157,7 @@ class LdapEntity extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implemen
                 'Rules' => $mapping,
                 'Data' => $data,
             ];
-            if (3 == $this->ldapConfig->logLevel) {
+            if (3 == $this->logLevel) {
                 $this->logger->debug($msg, $logArray);
             }
         }
@@ -181,17 +177,12 @@ class LdapEntity extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implemen
     {
         $ldapData = $this->getAttributeMapping($mapping, $key, $data);
 
-        $stdWrap = $mapping[$key.'.']['stdWrap.'];
-        if (is_array($mapping[$key.'.']['stdWrap.'])) {
-            unset($mapping[$key.'.']['stdWrap.']);
-        }
-
-        if (is_array($ldapData)) {
+        if (isset($ldapData) && is_array($ldapData)) {
             unset($ldapData['count']);
             $ldapDataList = implode(',', $ldapData);
-            $result = $this->cObj->stdWrap($ldapDataList, $stdWrap);
+            $result = $ldapDataList;
         } else {
-            $result = $this->cObj->stdWrap($ldapData, $stdWrap);
+            $result = $ldapData;
         }
 
         $msg = 'Mapping for attribute "'.$key.'"';
@@ -199,16 +190,18 @@ class LdapEntity extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implemen
             'LDAP attribute value' => $ldapData,
             'Mapping result' => $result,
         ];
-        if (3 == $this->ldapConfig->logLevel) {
+        if (3 == $this->logLevel) {
             $this->logger->debug($msg, $logArray);
         }
         // static values, overwrite those from LDAP if set
-        $tmp = $mapping[$key.'.']['value'];
-        if ($tmp) {
-            $result = $tmp;
-            $msg = 'Setting attribute "'.$key.'" to: '.$result;
-            if (3 == $this->ldapConfig->logLevel) {
-                $this->logger->debug($msg);
+        if (isset($mapping[$key.'.']['value'])) {
+            $tmp = $mapping[$key.'.']['value'];
+            if ($tmp) {
+                $result = $tmp;
+                $msg = 'Setting attribute "'.$key.'" to: '.$result;
+                if (3 == $this->logLevel) {
+                    $this->logger->debug($msg);
+                }
             }
         }
 
@@ -240,7 +233,7 @@ class LdapEntity extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implemen
                 'Rules' => $mapping,
                 'Data' => $attributes,
             ];
-            if (3 == $this->ldapConfig->logLevel) {
+            if (3 == $this->logLevel) {
                 $this->logger->debug($msg, $logArray);
             }
 
@@ -255,13 +248,13 @@ class LdapEntity extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implemen
             }
         } else {
             $msg = 'No mapping rules found for type "'.$mappingType.'"';
-            if ($this->ldapConfig->logLevel >= 2) {
+            if ($this->logLevel >= 2) {
                 $this->logger->notice($msg);
             }
         }
 
         $msg = 'Mapped values to insert into or update to DB';
-        if (3 == $this->ldapConfig->logLevel) {
+        if (3 == $this->logLevel) {
             $this->logger->debug($msg, $insertArray);
         }
 

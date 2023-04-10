@@ -25,10 +25,12 @@ namespace NormanSeibert\Ldap\Domain\Repository\Typo3User;
  * @copyright 2020 Norman Seibert
  */
 
+use TYPO3\CMS\Extbase\Persistence\Repository;
+
 /**
  * Repository for TYPO3 frontend usergroups.
  */
-class FrontendUserGroupRepository extends \TYPO3\CMS\Extbase\Domain\Repository\FrontendUserGroupRepository implements \NormanSeibert\Ldap\Domain\Repository\Typo3User\UserGroupRepositoryInterface
+class FrontendUserGroupRepository extends Repository implements UserGroupRepositoryInterface
 {
     /**
      * @return array

@@ -1,6 +1,6 @@
 <?php
 
-namespace NormanSeibert\Ldap\Service;
+namespace NormanSeibert\Ldap\Service\BackendModule;
 
 /*
  * This script is part of the TYPO3 project. The TYPO3 project is
@@ -26,7 +26,9 @@ namespace NormanSeibert\Ldap\Service;
  * @copyright 2020 Norman Seibert
  */
 
-use TYPO3\CMS\Extbase\Object\ObjectManagerInterface;
+
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+use NormanSeibert\Ldap\Domain\Model\BackendModule\ModuleData;
 
 /**
  * Service to store the backend module's configuration.
@@ -39,28 +41,23 @@ class ModuleDataStorageService implements \TYPO3\CMS\Core\SingletonInterface
     const KEY = 'ldap';
 
     /**
-     * @var ObjectManagerInterface
-     */
-    protected $objectManager;
-
-    /**
      * @param
      */
-    public function __construct(ObjectManagerInterface $objectManager)
+    public function __construct()
     {
-        $this->objectManager = $objectManager;
+        
     }
 
     /**
      * Loads module data for user settings or returns a fresh object initially.
      *
-     * @return \NormanSeibert\Ldap\Domain\Model\BackendModule\ModuleData
+     * @return ModuleData
      */
     public function loadModuleData()
     {
         $moduleData = $GLOBALS['BE_USER']->getModuleData(self::KEY);
         if (empty($moduleData) || !$moduleData) {
-            $moduleData = $this->objectManager->get('NormanSeibert\\Ldap\\Domain\\Model\\BackendModule\\ModuleData');
+            $moduleData = GeneralUtility::makeInstance(ModuleData::class);
         } else {
             $moduleData = unserialize($moduleData);
         }
@@ -71,7 +68,7 @@ class ModuleDataStorageService implements \TYPO3\CMS\Core\SingletonInterface
     /**
      * Persists serialized module data to user settings.
      */
-    public function persistModuleData(\NormanSeibert\Ldap\Domain\Model\BackendModule\ModuleData $moduleData)
+    public function persistModuleData(ModuleData $moduleData)
     {
         $GLOBALS['BE_USER']->pushModuleData(self::KEY, serialize($moduleData));
     }

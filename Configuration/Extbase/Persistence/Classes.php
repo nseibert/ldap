@@ -24,6 +24,25 @@ return [
     NormanSeibert\Ldap\Domain\Model\Typo3User\BackendUser::class => [
         'tableName' => 'be_users',
         'properties' => [
+            'isAdministrator' => [
+                'fieldName' => 'admin',
+            ],
+            'isDisabled' => [
+                'fieldName' => 'disable',
+                'fileOperationPermissions' => 'file_permissions',
+            ],
+            'realName' => [
+                'fieldName' => 'realName',
+            ],
+            'startDateAndTime' => [
+                'fieldName' => 'starttime',
+            ],
+            'endDateAndTime' => [
+                'fieldName' => 'endtime',
+            ],
+            'lastLoginDateAndTime' => [
+                'fieldName' => 'lastlogin',
+            ],
             'username' => [
                 'fieldName' => 'username',
             ],
@@ -41,9 +60,6 @@ return [
             ],
             'fileMounts' => [
                 'fieldName' => 'file_mountpoints',
-            ],
-            'isDisabled' => [
-                'fileOperationPermissions' => 'file_permissions',
             ],
             'options' => [
                 'fieldName' => 'options',
@@ -67,6 +83,42 @@ return [
     NormanSeibert\Ldap\Domain\Model\Typo3User\BackendUserGroup::class => [
         'tableName' => 'be_groups',
         'properties' => [
+            'subGroups' => [
+                'fieldName' => 'subgroup',
+            ],
+            'modules' => [
+                'fieldName' => 'groupMods',
+            ],
+            'tablesListening' => [
+                'fieldName' => 'tables_select',
+            ],
+            'tablesModify' => [
+                'fieldName' => 'tables_modify',
+            ],
+            'pageTypes' => [
+                'fieldName' => 'pagetypes_select',
+            ],
+            'allowedExcludeFields' => [
+                'fieldName' => 'non_exclude_fields',
+            ],
+            'explicitlyAllowAndDeny' => [
+                'fieldName' => 'explicit_allowdeny',
+            ],
+            'allowedLanguages' => [
+                'fieldName' => 'allowed_languages',
+            ],
+            'workspacePermission' => [
+                'fieldName' => 'workspace_perms',
+            ],
+            'databaseMounts' => [
+                'fieldName' => 'db_mountpoints',
+            ],
+            'fileOperationPermissions' => [
+                'fieldName' => 'file_permissions',
+            ],
+            'tsConfig' => [
+                'fieldName' => 'TSconfig',
+            ],
             'dn' => [
                 'fieldName' => 'tx_ldap_dn',
             ],

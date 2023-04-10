@@ -1,46 +1,53 @@
+{namespace ldap = NormanSeibert\Ldap\ViewHelpers}
+
 <html xmlns:core="http://typo3.org/ns/TYPO3/CMS/Core/ViewHelpers"
 	xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
-    xmlns:be="http://typo3.org/ns/TYPO3/CMS/Backend/ViewHelpers"
     data-namespace-typo3-fluid="true">
 
-<f:layout name="Backend"/>
+<h1><f:translate key="headline.deleteUsers" /></h1>
 
-<f:section name="content">
+<f:flashMessages queueIdentifier="ldap" />
 
-	<be:moduleLayout.button.shortcutButton displayName="{f:translate(id: 'action.deleteUsers')}" />
-	
-	<h1><f:translate key="headline.deleteUsers" /></h1>
-	
-	<f:flashMessages queueIdentifier="ldap" />
-	
-	<f:comment>
-		Settings section
-	</f:comment>
+<f:comment>
+	Settings section
+</f:comment>
 
-	<f:render partial="Module/ConfigLdapAction" arguments="{action: 'doDeleteUsers', formSettings: formSettings, ldapServers: ldapServers}" />
-	
-	<f:comment>
-		Resulting user records
-	</f:comment>
-	
-	<h3><f:translate key="headline.deleteResults" /></h3>
-	
-	<f:if condition="{formSettings.authenticateFe}">
-		<div class="userlist">
-			<h4><f:translate key="headline.fe_users" /></h4>
-			<f:widget.paginate objects="{fe_users}" as="paginatedUsers" configuration="{itemsPerPage: 10, insertAbove: 1, insertBelow: 1}">
-				<f:render partial="Module/ListTable" arguments="{formSettings: formSettings, users: paginatedUsers, dateFormat: dateFormat, timeFormat: timeFormat, returnUrl: returnUrl}" />
-			</f:widget.paginate>
-		</div>
-	</f:if>
-	
-	<f:if condition="{formSettings.authenticateBe}">
-		<div class="userlist">
-			<h4><f:translate key="headline.be_users" /></h4>
-			<f:widget.paginate objects="{be_users}" as="paginatedUsers" configuration="{itemsPerPage: 10, insertAbove: 1, insertBelow: 1}">
-				<f:render partial="Module/ListTable" arguments="{formSettings: formSettings, users: paginatedUsers, dateFormat: dateFormat, timeFormat: timeFormat, returnUrl: returnUrl}" />
-			</f:widget.paginate>
-		</div>
-	</f:if>
-	
-</f:section>
+<f:render partial="Module/ConfigLdapAction" arguments="{action: 'doDeleteUsers', formSettings: formSettings, ldapServers: ldapServers}" />
+
+<f:if condition="{fe_users -> f:count()} > 0 || {be_users -> f:count()} > 0">
+
+	<f:then>
+
+		<f:comment>
+			Resulting user records
+		</f:comment>
+
+		<h3><f:translate key="headline.deleteResults" /></h3>
+
+		<f:if condition="{formSettings.authenticateFe}">
+			<div class="userlist">
+				<h4><f:translate key="headline.fe_users" /></h4>
+				<ldap:paginate objects="{fe_users}" as="paginatedFEUsers" itemsPerPage="10">
+					<f:render partial="Module/ListTable" arguments="{formSettings: formSettings, users: paginatedFEUsers, dateFormat: dateFormat, timeFormat: timeFormat, returnUrl: returnUrl}" />
+				</ldap:paginate>
+			</div>
+		</f:if>
+
+		<f:if condition="{formSettings.authenticateBe}">
+			<div class="userlist">
+				<h4><f:translate key="headline.be_users" /></h4>
+				<ldap:paginate objects="{be_users}" as="paginatedBEUsers" itemsPerPage="10">
+					<f:render partial="Module/ListTable" arguments="{formSettings: formSettings, users: paginatedBEUsers, dateFormat: dateFormat, timeFormat: timeFormat, returnUrl: returnUrl}" />
+				</ldap:paginate>
+			</div>
+		</f:if>
+
+	</f:then>
+
+	<f:else>
+
+		<f:be.infobox message="{f:translate(key: 'message.no_users_deleted', extensionName: 'ldap')}" state="-1" iconName="info" />
+
+	</f:else>
+
+</f:if>

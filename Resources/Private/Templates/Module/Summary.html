@@ -1,80 +1,71 @@
 <html xmlns:core="http://typo3.org/ns/TYPO3/CMS/Core/ViewHelpers"
 	xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
-    xmlns:be="http://typo3.org/ns/TYPO3/CMS/Backend/ViewHelpers"
     data-namespace-typo3-fluid="true">
 
-<f:layout name="Backend"/>
+<h1><f:translate key="headline.summary" /></h1>
 
-<f:section name="content">
+<f:flashMessages queueIdentifier="ldap" />
 
-	<be:moduleLayout.button.shortcutButton displayName="{f:translate(id: 'action.summary')}" />
-
-	<h1><f:translate key="headline.summary" /></h1>
-
-	<f:flashMessages queueIdentifier="ldap" />
-	
-	<table border="0" class="table table-striped" style="width: 100%">
-		<thead>
-			<tr>
-				<th rowspan="2"></th>
-				<th rowspan="2"><f:translate key="header.uid" /></th>
-				<th rowspan="2"><f:translate key="header.hostPort" /></th>
-				<th colspan="3">FE</th>
-				<th colspan="3">BE</th>
-			</tr>
-			<tr>
-				<th><f:translate key="header.baseDn" /></th>
-				<th><f:translate key="header.filter" /></th>
-				<th><f:translate key="header.users" /></th>
-				<th><f:translate key="header.baseDn" /></th>
-				<th><f:translate key="header.filter" /></th>
-				<th><f:translate key="header.users" /></th>
-			</tr>
-		</thead>
-		<tbody>
-		<f:for each="{ldapServers}" as="serverRecord">
-			<tr>
-				<td>
-					<f:if condition="{serverRecord.status}">
-						<f:then>
-							<span class="t3js-icon icon icon-size-small icon-state-default icon-status-dialog-ok">
-								<span class="icon-markup">
-									<span class="icon-unify"><i class="fa fa-check-circle"></i></span>
-								</span>
+<table border="0" class="table table-striped" style="width: 100%">
+	<thead>
+		<tr>
+			<th rowspan="2"></th>
+			<th rowspan="2"><f:translate key="header.uid" /></th>
+			<th rowspan="2"><f:translate key="header.hostPort" /></th>
+			<th colspan="3">FE</th>
+			<th colspan="3">BE</th>
+		</tr>
+		<tr>
+			<th><f:translate key="header.baseDn" /></th>
+			<th><f:translate key="header.filter" /></th>
+			<th><f:translate key="header.users" /></th>
+			<th><f:translate key="header.baseDn" /></th>
+			<th><f:translate key="header.filter" /></th>
+			<th><f:translate key="header.users" /></th>
+		</tr>
+	</thead>
+	<tbody>
+	<f:for each="{ldapServers}" as="serverRecord">
+		<tr>
+			<td>
+				<f:if condition="{serverRecord.status}">
+					<f:then>
+						<span class="t3js-icon icon icon-size-small icon-state-default icon-status-dialog-ok">
+							<span class="icon-markup">
+								<span class="icon-unify"><i class="fa fa-check-circle"></i></span>
 							</span>
-						</f:then>
-						<f:else>
-							<span class="t3js-icon icon icon-size-small icon-state-default icon-status-dialog-error">
-								<span class="icon-markup">
-									<span class="icon-unify"><i class="fa fa-exclamation-circle"></i></span>
-								</span>
+						</span>
+					</f:then>
+					<f:else>
+						<span class="t3js-icon icon icon-size-small icon-state-default icon-status-dialog-error">
+							<span class="icon-markup">
+								<span class="icon-unify"><i class="fa fa-exclamation-circle"></i></span>
 							</span>
-						</f:else>
-					</f:if>
-				</td>
-				<td>{serverRecord.server.configuration.uid} ({serverRecord.server.configuration.title})</td>
-				<td>{serverRecord.server.configuration.host}:{serverRecord.server.configuration.port}</td>
-				<td>{serverRecord.server.configuration.feUserRules.baseDN}</td>
-				<td>{serverRecord.server.configuration.feUserRules.filter}</td>
-				<td>
-					<f:for each="{serverRecord.feUsers}" as="user">
-						<p>
-							{user.dn}
-						</p>
-					</f:for>
-				</td>
-				<td>{serverRecord.server.configuration.beUserRules.baseDN}</td>
-				<td>{serverRecord.server.configuration.beUserRules.filter}</td>
-				<td>
-					<f:for each="{serverRecord.beUsers}" as="user">
-						<p>
-							{user.dn}
-						</p>
-					</f:for>
-				</td>
-			</tr>
-		</f:for>
-		</tbody>
-	</table>
-	
-</f:section>
+						</span>
+					</f:else>
+				</f:if>
+			</td>
+			<td>{serverRecord.server.uid} ({serverRecord.server.title})</td>
+			<td>{serverRecord.server.host}:{serverRecord.server.port}</td>
+			<td>{serverRecord.server.feUserRules.baseDN}</td>
+			<td>{serverRecord.server.feUserRules.filter}</td>
+			<td>
+				<f:for each="{serverRecord.feUsers}" as="user">
+					<p>
+						{user.dn}
+					</p>
+				</f:for>
+			</td>
+			<td>{serverRecord.server.beUserRules.baseDN}</td>
+			<td>{serverRecord.server.beUserRules.filter}</td>
+			<td>
+				<f:for each="{serverRecord.beUsers}" as="user">
+					<p>
+						{user.dn}
+					</p>
+				</f:for>
+			</td>
+		</tr>
+	</f:for>
+	</tbody>
+</table>

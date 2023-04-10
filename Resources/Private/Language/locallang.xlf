@@ -6,6 +6,15 @@
 			<generator>LFEditor</generator>
 		</header>
 		<body>
+		<trans-unit id="message.no_users_imported" xml:space="preserve">
+			<source>No users imported.</source>
+		</trans-unit>
+		<trans-unit id="message.no_users_updated" xml:space="preserve">
+			<source>No users updated.</source>
+		</trans-unit>
+		<trans-unit id="message.no_users_deleted" xml:space="preserve">
+			<source>No users deleted.</source>
+		</trans-unit>
 		<trans-unit id="action.check" xml:space="preserve">
 			<source>Check configuration</source>
 		</trans-unit>

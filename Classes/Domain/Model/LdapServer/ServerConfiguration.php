@@ -86,19 +86,19 @@ class ServerConfiguration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
     protected $longName;
 
     /**
-     * @var \NormanSeibert\Ldap\Domain\Model\LdapServer\ServerConfigurationUsers
+     * @var ServerConfigurationUsers
      */
     protected $feUserRules;
 
     /**
-     * @var \NormanSeibert\Ldap\Domain\Model\LdapServer\ServerConfigurationUsers
+     * @var ServerConfigurationUsers
      */
     protected $beUserRules;
 
     /**
      * @param string $uid
      *
-     * @return \NormanSeibert\Ldap\Domain\Model\LdapServer\ServerConfiguration
+     * @return ServerConfiguration
      */
     public function setUid($uid)
     {
@@ -118,7 +118,7 @@ class ServerConfiguration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
     /**
      * @param string $title
      *
-     * @return \NormanSeibert\Ldap\Domain\Model\LdapServer\ServerConfiguration
+     * @return ServerConfiguration
      */
     public function setTitle($title)
     {
@@ -138,7 +138,7 @@ class ServerConfiguration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
     /**
      * @param bool $disable
      *
-     * @return \NormanSeibert\Ldap\Domain\Model\LdapServer\ServerConfiguration
+     * @return ServerConfiguration
      */
     public function setDisable($disable)
     {
@@ -166,7 +166,7 @@ class ServerConfiguration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
     /**
      * @param string $host
      *
-     * @return \NormanSeibert\Ldap\Domain\Model\LdapServer\ServerConfiguration
+     * @return ServerConfiguration
      */
     public function setHost($host)
     {
@@ -186,7 +186,7 @@ class ServerConfiguration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
     /**
      * @param int $port
      *
-     * @return \NormanSeibert\Ldap\Domain\Model\LdapServer\ServerConfiguration
+     * @return ServerConfiguration
      */
     public function setPort($port)
     {
@@ -206,7 +206,7 @@ class ServerConfiguration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
     /**
      * @param bool $force
      *
-     * @return \NormanSeibert\Ldap\Domain\Model\LdapServer\ServerConfiguration
+     * @return ServerConfiguration
      */
     public function setForceTLS($force)
     {
@@ -226,7 +226,7 @@ class ServerConfiguration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
     /**
      * @param int $version
      *
-     * @return \NormanSeibert\Ldap\Domain\Model\LdapServer\ServerConfiguration
+     * @return ServerConfiguration
      */
     public function setVersion($version)
     {
@@ -246,7 +246,7 @@ class ServerConfiguration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
     /**
      * @param string $auth
      *
-     * @return \NormanSeibert\Ldap\Domain\Model\LdapServer\ServerConfiguration
+     * @return ServerConfiguration
      */
     public function setAuthenticate($auth)
     {
@@ -266,7 +266,7 @@ class ServerConfiguration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
     /**
      * @param string $user
      *
-     * @return \NormanSeibert\Ldap\Domain\Model\LdapServer\ServerConfiguration
+     * @return ServerConfiguration
      */
     public function setUser($user)
     {
@@ -286,7 +286,7 @@ class ServerConfiguration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
     /**
      * @param string $pwd
      *
-     * @return \NormanSeibert\Ldap\Domain\Model\LdapServer\ServerConfiguration
+     * @return ServerConfiguration
      */
     public function setPassword($pwd)
     {
@@ -305,9 +305,9 @@ class ServerConfiguration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
 
     /**
      * @param string                                                               $table
-     * @param \NormanSeibert\Ldap\Domain\Model\LdapServer\ServerConfigurationUsers $rules
+     * @param ServerConfigurationUsers $rules
      *
-     * @return \NormanSeibert\Ldap\Domain\Model\LdapServer\ServerConfiguration
+     * @return ServerConfiguration
      */
     public function setUserRules($table, ServerConfigurationUsers $rules)
     {
@@ -323,7 +323,7 @@ class ServerConfiguration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
     /**
      * @param string $table
      *
-     * @return \NormanSeibert\Ldap\Domain\Model\LdapServer\ServerConfigurationUsers
+     * @return ServerConfigurationUsers
      */
     public function getUserRules($table)
     {
@@ -337,9 +337,9 @@ class ServerConfiguration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
     }
 
     /**
-     * @param \NormanSeibert\Ldap\Domain\Model\LdapServer\ServerConfigurationUsers $rules
+     * @param ServerConfigurationUsers $rules
      *
-     * @return \NormanSeibert\Ldap\Domain\Model\LdapServer\ServerConfiguration
+     * @return ServerConfiguration
      */
     public function setFeUserRules(ServerConfigurationUsers $rules)
     {
@@ -349,7 +349,7 @@ class ServerConfiguration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
     }
 
     /**
-     * @return \NormanSeibert\Ldap\Domain\Model\LdapServer\ServerConfigurationUsers
+     * @return ServerConfigurationUsers
      */
     public function getFeUserRules()
     {
@@ -357,9 +357,9 @@ class ServerConfiguration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
     }
 
     /**
-     * @param \NormanSeibert\Ldap\Domain\Model\LdapServer\ServerConfigurationUsers $rules
+     * @param ServerConfigurationUsers $rules
      *
-     * @return \NormanSeibert\Ldap\Domain\Model\LdapServer\ServerConfiguration
+     * @return ServerConfiguration
      */
     public function setBeUserRules(ServerConfigurationUsers $rules)
     {
@@ -369,7 +369,7 @@ class ServerConfiguration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
     }
 
     /**
-     * @return \NormanSeibert\Ldap\Domain\Model\LdapServer\ServerConfigurationUsers
+     * @return ServerConfigurationUsers
      */
     public function getBeUserRules()
     {

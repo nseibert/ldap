@@ -28,7 +28,7 @@ namespace NormanSeibert\Ldap\Domain\Repository\Typo3User;
 /**
  * Repository for TYPO3 backend usergroups.
  */
-interface UserGroupRepositoryInterface extends \TYPO3\CMS\Extbase\Persistence\RepositoryInterface
+interface UserGroupRepositoryInterface
 {
     /**
      * @return array

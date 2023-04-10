@@ -26,3 +26,27 @@ services:
     tags:
       - name: 'console.command'
         command: 'ldap:deleteUsers'
+
+  NormanSeibert\Ldap\Service\LdapAuthService:
+    public: true
+
+  NormanSeibert\Ldap\Service\LdapImporter:
+    public: true
+
+  NormanSeibert\Ldap\Domain\Model\Configuration\LdapConfiguration:
+    public: true
+
+  NormanSeibert\Ldap\Domain\Model\LdapServer\LdapServer:
+    public: true
+
+  NormanSeibert\Ldap\Domain\Model\LdapUser\FeUser:
+    public: true
+
+  NormanSeibert\Ldap\Domain\Model\LdapUser\FeGroup:
+    public: true
+
+  NormanSeibert\Ldap\Domain\Model\LdapUser\BeUser:
+    public: true
+
+  NormanSeibert\Ldap\Domain\Model\LdapUser\BeGroup:
+    public: true

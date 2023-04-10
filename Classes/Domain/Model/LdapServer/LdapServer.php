@@ -26,19 +26,32 @@ namespace NormanSeibert\Ldap\Domain\Model\LdapServer;
  * @copyright 2020 Norman Seibert
  */
 
-use NormanSeibert\Ldap\Domain\Model\Configuration\Configuration;
 use NormanSeibert\Ldap\Domain\Repository\Typo3User\BackendUserGroupRepository;
 use NormanSeibert\Ldap\Domain\Repository\Typo3User\FrontendUserGroupRepository;
-use Psr\Log\LoggerAwareTrait;
-use TYPO3\CMS\Extbase\Object\ObjectManager;
-use TYPO3\CMS\Extbase\SignalSlot\Dispatcher;
+// use Psr\EventDispatcher\EventDispatcherInterface;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+use NormanSeibert\Ldap\Domain\Model\LdapUser\BeUser;
+use NormanSeibert\Ldap\Domain\Model\LdapUser\FeUser;
+use NormanSeibert\Ldap\Domain\Model\LdapServer\ServerConfiguration;
+use NormanSeibert\Ldap\Domain\Model\Typo3User\UserGroupInterface;
+use NormanSeibert\Ldap\Domain\Model\Configuration\LdapConfiguration;
+use NormanSeibert\Ldap\Utility\Helpers;
+use SplObjectStorage;
+use Psr\Log\LoggerInterface;
+
 
 /**
  * Model for an LDAP server.
  */
-class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \Psr\Log\LoggerAwareInterface
+class LdapServer extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
 {
-    use LoggerAwareTrait;
+    private LoggerInterface $logger;
+
+    const ERROR = 2;
+    const WARNING = 1;
+    const OK = 0;
+    const INFO = -1;
+    const NOTICE = -2;
 
     /**
      * @var string
@@ -51,15 +64,34 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \
     protected $limitLdapResults = 0;
 
     /**
-     * @var Configuration
+     * @var ServerConfiguration
      */
-    protected $ldapConfig;
+    protected $serverConfiguration;
 
     /**
-     * @var \NormanSeibert\Ldap\Domain\Model\LdapServer\ServerConfiguration
+     * @var LdapConfiguration
      */
-    protected $configuration;
+    protected $ldapConfiguration;
 
+    /**
+     * @var array
+     */
+    protected $allBeGroups = [];
+
+    /**
+     * @var array
+     */
+    protected $allFeGroups = [];
+
+    /**
+     * @var int
+     */
+    protected $uid;
+
+    /**
+     * @var int
+     */
+    protected $logLevel;
     /**
      * @var FrontendUserGroupRepository
      */
@@ -71,44 +103,388 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \
     protected $beUsergroupRepository;
 
     /**
-     * @var \NormanSeibert\Ldap\Domain\Model\Typo3User\BackendUserGroup
+     * @var EventDispatcherInterface
      */
-    protected $allBeGroups;
-
-    /**
-     * @var \NormanSeibert\Ldap\Domain\Model\Typo3User\FrontendUserGroup
-     */
-    protected $allFeGroups;
-
-    /**
-     * @var int
-     */
-    protected $uid;
-
-    /**
-     * @var ObjectManager
-     */
-    protected $objectManager;
-
-    /**
-     * @var Dispatcher
-     */
-    protected $signalSlotDispatcher;
-
-    /**
-     * @param Configuration ldapConfig
-     */
-    public function __construct(Configuration $ldapConfig, FrontendUserGroupRepository $feUsergroupRepository, BackendUserGroupRepository $beUsergroupRepository, ObjectManager $objectManager, Dispatcher $signalSlotDispatcher)
+    // protected $eventDispatcher;
+    
+/*
+    public function injectEventDispatcherInterface(EventDispatcherInterface $eventDispatcher)
     {
-        $this->ldapConfig = $ldapConfig;
-        $this->feUsergroupRepository = $feUsergroupRepository;
-        $this->beUsergroupRepository = $beUsergroupRepository;
-        $this->objectManager = $objectManager;
-        $this->signalSlotDispatcher = $signalSlotDispatcher;
+        $this->eventDispatcher = $eventDispatcher;
+    }
+*/
+
+    public function __construct(LoggerInterface $logger)
+    {
+        $this->feUsergroupRepository = Generalutility::makeInstance(FrontendUserGroupRepository::class);
+        $this->beUsergroupRepository = Generalutility::makeInstance(BackendUserGroupRepository::class);
+        $this->ldapConfiguration = Generalutility::makeInstance(LdapConfiguration::class);
+        $this->logger = $logger;
     }
 
     /**
-     * @return \NormanSeibert\Ldap\Domain\Model\LdapServer\Server
+     * checks an LDAP server's definition on syntactical correctness.
+     *
+     * @param array $server
+     *
+     * @return array
+     */
+    private function checkServerConfiguration($server)
+    {
+        $errors = [];
+
+        if (isset($server['pid'])) {
+            $res = Helpers::checkValue($server['pid'], 'int');
+            if (isset($res['error'])) {
+                $errors[] = 'Attribute "pid": '.$res['error'];
+            }
+        }
+
+        if (isset($server['port'])) {
+            $res = Helpers::checkValue($server['port'], 'int+');
+            if (isset($res['error'])) {
+                $errors[] = 'Attribute "port": '.$res['error'];
+            }
+        } else {
+            $errors[] = 'Attribute "port": This value is required';
+        }
+
+        if (!isset($server['port'])) {
+            $errors[] = 'Attribute "host": This value is required';
+        } 
+
+        $res = Helpers::checkValue($server['version'], 'list', '1,2,3');
+        if (isset($res['error'])) {
+            $errors[] = 'Attribute "version": '.$res['error'];
+        }
+
+        $res = Helpers::checkValue(strtolower($server['authenticate']), 'list', 'fe,be,both');
+        if (isset($res['error'])) {
+            $errors[] = 'Attribute "auhenticate": '.$res['error'];
+        }
+
+        $server['authenticate'] = strtolower($server['authenticate']);
+
+        if (isset($server['authenticate'])) {
+
+            if (('fe' == $server['authenticate']) || ('both' == $server['authenticate'])) {
+                $res = Helpers::checkValue($server['fe_users.']['pid'], 'required,int');
+                if (isset($res['error'])) {
+                    $errors[] = 'Attribute "fe_users.pid": '.$res['error'];
+                }
+
+                $res = Helpers::checkValue($server['fe_users.']['filter'], 'required');
+                if (isset($res['error'])) {
+                    $errors[] = 'Attribute "fe_users.filter": '.$res['error'];
+                }
+
+                $res = Helpers::checkValue($server['fe_users.']['baseDN'], 'required');
+                if (isset($res['error'])) {
+                    $errors[] = 'Attribute "fe_users.baseDN": '.$res['error'];
+                }
+
+                /*
+
+                if (is_array($server['fe_users.']['mapping.'])) {
+                    $newObj = GeneralUtility::makeInstance(FrontendUser::class);
+                    foreach ($server['fe_users.']['mapping.'] as $fld => $mapping) {
+                        if ('.' == substr($fld, strlen($fld) - 1, 1)) {
+                            $fld = substr($fld, 0, strlen($fld) - 1);
+                        }
+                        $ret = $newObj->_hasProperty($fld);
+                        if (!$ret) {
+                            $errors[] = 'Property "fe_users.'.$fld.'" is unknown to Extbase.';
+                        }
+                    }
+                    $newObj = null;
+                }
+
+                */
+
+                if (isset($server['fe_users.']['usergroups.']['pid'])) {
+                    $res = Helpers::checkValue($server['fe_users.']['usergroups.']['pid'], 'int');
+                    if (isset($res['error'])) {
+                        $errors[] = 'Attribute "fe_users.usergroups.pid": '.$res['error'];
+                    }
+                }
+
+                /*
+
+                if (is_array($server['fe_users.']['usergroups.']['mapping.'])) {
+                    $newObj = GeneralUtility::makeInstance(FrontendUserGroup::class);
+                    foreach ($server['fe_users.']['usergroups.']['mapping.'] as $fld => $mapping) {
+                        if ('.' == substr($fld, strlen($fld) - 1, 1)) {
+                            $fld = substr($fld, 0, strlen($fld) - 1);
+                        }
+                        if ('field' != $fld) {
+                            $ret = $newObj->_hasProperty($fld);
+                            if (!$ret) {
+                                $errors[] = 'Property "fe_groups.'.$fld.'" is unknown to Extbase.';
+                            }
+                        }
+                    }
+                    $newObj = null;
+                }
+
+                */
+
+                if (!isset($server['fe_users.']['mapping.']['username.']['data'])) {
+                    $errors[] = 'Attribute "fe_users.mapping.userName.data": This value is required';
+                }
+            }
+
+            if (('be' == $server['authenticate']) || ('both' == $server['authenticate'])) {
+                $res = Helpers::checkValue($server['be_users.']['filter'], 'required');
+                if (isset($res['error'])) {
+                    $errors[] = 'Attribute "be_users.filter": '.$res['error'];
+                }
+
+                $res = Helpers::checkValue($server['be_users.']['baseDN'], 'required');
+                if (isset($res['error'])) {
+                    $errors[] = 'Attribute "be_users.baseDN": '.$res['error'];
+                }
+
+                /*
+
+                if (is_array($server['be_users.']['mapping.'])) {
+                    $newObj = GeneralUtility::makeInstance(BackendUser::class);
+                    foreach ($server['be_users.']['mapping.'] as $fld => $mapping) {
+                        if ('.' == substr($fld, strlen($fld) - 1, 1)) {
+                            $fld = substr($fld, 0, strlen($fld) - 1);
+                        }
+                        $ret = $newObj->_hasProperty($fld);
+                        if (!$ret) {
+                            $errors[] = 'Property "be_users.'.$fld.'" is unknown to Extbase.';
+                        }
+                    }
+                    $newObj = null;
+                }
+                if (is_array($server['be_users.']['usergroups.']['mapping.'])) {
+                    $newObj = GeneralUtility::makeInstance(BackendUserGroup::class);
+                    foreach ($server['be_users.']['usergroups.']['mapping.'] as $fld => $mapping) {
+                        if ('.' == substr($fld, strlen($fld) - 1, 1)) {
+                            $fld = substr($fld, 0, strlen($fld) - 1);
+                        }
+                        if ('field' != $fld) {
+                            $ret = $newObj->_hasProperty($fld);
+                            if (!$ret) {
+                                $errors[] = 'Property "be_groups.'.$fld.'" is unknown to Extbase.';
+                            }
+                        }
+                    }
+                    $newObj = null;
+                }
+                
+                */
+
+                $res = Helpers::checkValue($server['be_users.']['mapping.']['username.']['data'], 'required');
+                if (isset($res['error'])) {
+                    $errors[] = 'Attribute "be_users.mapping.userName.data": '.$res['error'];
+                }
+            }
+        }
+
+        return $errors;
+    }
+
+    /**
+     * @return LdapServer
+     */
+    public function initializeServer(int $uid)
+    {
+        $allLdapServers = $this->ldapConfiguration->getLdapServersFromFile();
+        $server = $allLdapServers[$uid . "."];
+        if (!is_array($server)) {
+            $server = $this->allLdapServers[$uid];
+        }
+        if (is_array($server)) {
+            $errors = $this->checkServerConfiguration($server);
+
+            if (0 == count($errors)) {
+                $msg = 'Configuration for server "' . rtrim($uid, '.') . '" loaded successfully';
+                if ($this->logLevel >= 2) {
+                    $this->logger->debug($msg);
+                }
+                $msg = 'Configuration for server "' . $uid . '"';
+                if (3 == $this->logLevel) {
+                    $this->logger->debug($msg, $server);
+                }
+
+                $groupRuleFE = GeneralUtility::makeInstance(ServerConfigurationGroups::class);
+                $userRuleFE = GeneralUtility::makeInstance(ServerConfigurationUsers::class);
+                if (isset($server['fe_users.']) && is_array($server['fe_users.'])) {
+                    if (isset($server['fe_users.']['usergroups.']['pid'])) {
+                        $groupRuleFE->setPid($server['fe_users.']['usergroups.']['pid']);
+                    } elseif (isset($server['fe_users.']['pid'])) {
+                        $groupRuleFE->setPid($server['fe_users.']['pid']);
+                    }
+                    if (isset($server['fe_users.']['usergroups.']['importGroups'])) {
+                        $groupRuleFE->setImportGroups($server['fe_users.']['usergroups.']['importGroups']);
+                    }
+                    if (isset($server['fe_users.']['usergroups.']['mapping.'])) {
+                        $groupRuleFE->setMapping($server['fe_users.']['usergroups.']['mapping.']);
+                    }
+                    if (isset($server['fe_users.']['usergroups.']['reverseMapping'])) {
+                        $groupRuleFE->setReverseMapping($server['fe_users.']['usergroups.']['reverseMapping']);
+                    }
+                    if (isset($server['fe_users.']['usergroups.']['baseDN'])) {
+                        $groupRuleFE->setBaseDN($server['fe_users.']['usergroups.']['baseDN']);
+                    }
+                    if (isset($server['fe_users.']['usergroups.']['filter'])) {
+                        $groupRuleFE->setFilter($server['fe_users.']['usergroups.']['filter']);
+                    }
+                    if (isset($server['fe_users.']['usergroups.']['searchAttribute'])) {
+                        $groupRuleFE->setSearchAttribute($server['fe_users.']['usergroups.']['searchAttribute']);
+                    }
+                    if (isset($server['fe_users.']['usergroups.']['addToGroups'])) {
+                        $groupRuleFE->setAddToGroups($server['fe_users.']['usergroups.']['addToGroups']);
+                    }
+                    if (isset($server['fe_users.']['usergroups.']['restrictToGroups'])) {
+                        $groupRuleFE->setRestrictToGroups($server['fe_users.']['usergroups.']['restrictToGroups']);
+                    }
+                    if (isset($server['fe_users.']['usergroups.']['preserveNonLdapGroups'])) {
+                        $groupRuleFE->setPreserveNonLdapGroups($server['fe_users.']['usergroups.']['preserveNonLdapGroups']);
+                    }
+
+                    if (isset($server['fe_users.']['pid'])) {
+                        $userRuleFE->setPid($server['fe_users.']['pid']);
+                    }
+                    if (isset($server['fe_users.']['baseDN'])) {
+                        $userRuleFE->setBaseDN($server['fe_users.']['baseDN']);
+                    }
+                    if (isset($server['fe_users.']['filter'])) {
+                        $userRuleFE->setFilter($server['fe_users.']['filter']);
+                    }
+                    if (isset($server['fe_users.']['autoImport'])) {
+                        $userRuleFE->setAutoImport($server['fe_users.']['autoImport']);
+                    }
+                    if (isset($server['fe_users.']['autoEnable'])) {
+                        $userRuleFE->setAutoEnable($server['fe_users.']['autoEnable']);
+                    }
+                    if (isset($server['fe_users.']['onlyUsersWithGroup'])) {
+                        $userRuleFE->setOnlyUsersWithGroup($server['fe_users.']['onlyUsersWithGroup']);
+                    }
+                    if (isset($server['fe_users.']['mapping.'])) {
+                        $userRuleFE->setMapping($server['fe_users.']['mapping.']);
+                    }
+                    if (isset($groupRuleFE)) {
+                        $userRuleFE->setGroupRules($groupRuleFE);
+                    }
+                }
+
+                $groupRuleBE = GeneralUtility::makeInstance(ServerConfigurationGroups::class);
+                $userRuleBE = GeneralUtility::makeInstance(ServerConfigurationUsers::class);
+                if (isset($server['be_users.']) && is_array($server['be_users.'])) {
+                    if (isset($server['be_users.']['usergroups.']['importGroups'])) {
+                        $groupRuleBE->setImportGroups($server['be_users.']['usergroups.']['importGroups']);
+                    }
+                    if (isset($server['be_users.']['usergroups.']['mapping'])) {
+                        $groupRuleBE->setMapping($server['be_users.']['usergroups.']['mapping.']);
+                    }
+                    if (isset($server['be_users.']['usergroups.']['reverseMapping'])) {
+                        $groupRuleBE->setReverseMapping($server['be_users.']['usergroups.']['reverseMapping']);
+                    }
+                    if (isset($server['be_users.']['usergroups.']['baseDN'])) {
+                        $groupRuleBE->setBaseDN($server['be_users.']['usergroups.']['baseDN']);
+                    }
+                    if (isset($server['be_users.']['usergroups.']['filter'])) {
+                        $groupRuleBE->setFilter($server['be_users.']['usergroups.']['filter']);
+                    }
+                    if (isset($server['be_users.']['usergroups.']['searchAttribute'])) {
+                        $groupRuleBE->setSearchAttribute($server['be_users.']['usergroups.']['searchAttribute']);
+                    }
+                    if (isset($server['be_users.']['usergroups.']['addToGroups'])) {
+                        $groupRuleBE->setAddToGroups($server['be_users.']['usergroups.']['addToGroups']);
+                    }
+                    if (isset($server['be_users.']['usergroups.']['restrictToGroups'])) {
+                        $groupRuleBE->setRestrictToGroups($server['be_users.']['usergroups.']['restrictToGroups']);
+                    }
+                    if (isset($server['be_users.']['usergroups.']['preserveNonLdapGroups'])) {
+                        $groupRuleBE->setPreserveNonLdapGroups($server['be_users.']['usergroups.']['preserveNonLdapGroups']);
+                    }
+                    $groupRuleBE->setPid(0);
+
+                    if (isset($server['be_users.']['baseDN'])) {
+                        $userRuleBE->setBaseDN($server['be_users.']['baseDN']);
+                    }
+                    if (isset($server['be_users.']['filter'])) {
+                        $userRuleBE->setFilter($server['be_users.']['filter']);
+                    }
+                    if (isset($server['be_users.']['autoImport'])) {
+                        $userRuleBE->setAutoImport($server['be_users.']['autoImport']);
+                    }
+                    if (isset($server['be_users.']['autoEnable'])) {
+                        $userRuleBE->setAutoEnable($server['be_users.']['autoEnable']);
+                    }
+                    if (isset($server['be_users.']['onlyUsersWithGroup'])) {
+                        $userRuleBE->setOnlyUsersWithGroup($server['be_users.']['onlyUsersWithGroup']);
+                    }
+                    if (isset($server['be_users.']['mapping.'])) {
+                        $userRuleBE->setMapping($server['be_users.']['mapping.']);
+                    }
+                    $userRuleBE->setGroupRules($groupRuleBE);
+                    $userRuleBE->setPid(0);
+                }
+
+                $serverConfiguration = GeneralUtility::makeInstance(ServerConfiguration::class);
+                
+                if (isset($server['uid'])) {
+                    $serverConfiguration->setUid($server['uid']);
+                }
+                if (isset($server['title'])) {
+                    $serverConfiguration->setTitle($server['title']);
+                }
+                if (isset($server['host'])) {
+                    $serverConfiguration->setHost($server['host']);
+                }
+                if (isset($server['port'])) {
+                    $serverConfiguration->setPort($server['port']);
+                }
+                if (isset($server['forcetls'])) {
+                    $serverConfiguration->setForceTLS($server['forcetls']);
+                }
+                if (isset($server['authenticate'])) {
+                    $serverConfiguration->setAuthenticate($server['authenticate']);
+                }
+                if (isset($server['user'])) {
+                    $serverConfiguration->setUser($server['user']);
+                }
+                if (isset($server['password'])) {
+                    $serverConfiguration->setPassword($server['password']);
+                }
+                if (isset($userRuleFE)) {
+                    $serverConfiguration->setFeUserRules($userRuleFE);
+                }
+                if (isset($userRuleBE)) {
+                    $serverConfiguration->setBeUserRules($userRuleBE);
+                }
+
+                if (isset($server['version'])) {
+                    $serverConfiguration->setVersion($server['version']);
+                }
+
+                $conf = GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Configuration\\ExtensionConfiguration')->get('ldap');
+                $this->logLevel = $conf['logLevel'];
+                $this->setConfiguration($serverConfiguration);
+            } else {
+                $msg = 'LDAP server configuration invalid for "' . $server['uid'] . '". ';
+                $this->logger->warning($msg, $errors);
+                $msg .= implode(' | ', $errors).'.';
+                Helpers::addError(self::WARNING, $msg, $server['uid']);
+                $this->configOK = false;
+            }
+        } else {
+            $msg = 'LDAP server not found: uid = "' . rtrim($uid, '.') . '":';
+            $this->logger->warning($msg);
+            Helpers::addError(self::WARNING, $msg, $uid);
+            $this->configOK = false;
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return LdapServer
      */
     public function setUid(int $uid)
     {
@@ -125,25 +501,30 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \
         return $this->uid;
     }
 
+    public function setLoglevel(int $logLevel)
+    {
+        $this->logLevel = $logLevel;
+    }
+
     /**
-     * @param \NormanSeibert\Ldap\Domain\Model\LdapServer\ServerConfiguration $config
+     * @param ServerConfiguration $config
      *
-     * @return \NormanSeibert\Ldap\Domain\Model\LdapServer\Server
+     * @return LdapServer
      */
     public function setConfiguration(ServerConfiguration $config)
     {
-        $this->configuration = $config;
+        $this->serverConfiguration = $config;
         $this->uid = $config->getUid();
 
         return $this;
     }
 
     /**
-     * @return \NormanSeibert\Ldap\Domain\Model\LdapServer\ServerConfiguration
+     * @return ServerConfiguration
      */
     public function getConfiguration()
     {
-        return $this->configuration;
+        return $this->serverConfiguration;
     }
 
     /**
@@ -152,7 +533,7 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \
      * @param string $findname
      * @param bool   $doSanitize
      *
-     * @return array
+     * @return SplObjectStorage
      */
     public function getUsers($findname = '*', $doSanitize = false)
     {
@@ -173,6 +554,9 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \
 
         if (!empty($filter) && !empty($baseDN)) {
             $connect = $this->connect();
+        } else {
+            $msg = 'No baseDN or no filter given.';
+            $this->logger->notice($msg);
         }
 
         if ($connect) {
@@ -185,7 +569,7 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \
 
         if ($bind) {
             $parsedFilter = str_replace('<search>', $findname, $filter);
-            if (3 == $this->ldapConfig->logLevel) {
+            if (3 == $this->logLevel) {
                 $msg = 'Query server "'.$this->getConfiguration()->getUid();
                 $logArray = [
                     'baseDN' => $baseDN,
@@ -195,9 +579,12 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \
             }
 
             $info = $this->search($connect, $baseDN, $parsedFilter, 'sub');
+        } else {
+            $msg = 'Bind failed.';
+            $this->logger->notice($msg);
         }
 
-        if ($info['count'] >= 0) {
+        if (isset($info['count']) && ($info['count'] >= 0)) {
             $parameters = [
                 'server' => $this,
                 'find' => $findname,
@@ -205,27 +592,32 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \
                 'type' => 'list',
                 'result' => $info,
             ];
-            $this->signalSlotDispatcher->dispatch(__CLASS__, 'getUsersResults', $parameters);
+            // $this->eventDispatcher->dispatch(__CLASS__, 'getUsersResults', $parameters);
 
-            $users = [];
+            $users = new SplObjectStorage();
             for ($i = 0; $i < $info['count']; ++$i) {
                 if ('be_users' == $this->table) {
-                    $user = $this->objectManager->get('NormanSeibert\\Ldap\\Domain\\Model\\LdapUser\\BeUser');
+                    $user = new BeUser($this->logger);
                 } else {
-                    $user = $this->objectManager->get('NormanSeibert\\Ldap\\Domain\\Model\\LdapUser\\FeUser');
+                    $user = new FeUser($this->logger);
                 }
                 $user
                     ->setDN($info[$i]['dn'])
                     ->setAttributes($info[$i])
                     ->setLdapServer($this)
                 ;
-                $users[] = $user;
+                $users->attach($user);
             }
-        }
 
-        $msg = 'Found '.$info['count'].' records';
-        if (3 == $this->ldapConfig->logLevel) {
-            $this->logger->debug($msg);
+            $msg = 'Found '.$info['count'].' records';
+            if (3 == $this->logLevel) {
+                $this->logger->debug($msg);
+            }
+        } else {
+            $msg = 'Invalid LDAP query result';
+            if (3 == $this->logLevel) {
+                $this->logger->debug($msg);
+            }
         }
 
         return $users;
@@ -269,6 +661,8 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \
             $filter = $this->getConfiguration()->getUserRules($this->table)->getFilter();
             $parsedFilter = str_replace('<search>', '*', $filter);
             $info = $this->search($connect, $distinguishedName, $parsedFilter, 'base');
+        } else {
+
         }
 
         $parameters = [
@@ -278,13 +672,13 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \
             'type' => 'single',
             'result' => $info,
         ];
-        $this->signalSlotDispatcher->dispatch(__CLASS__, 'getUserResults', $parameters);
+        //$this->eventDispatcher->dispatch(__CLASS__, 'getUserResults', $parameters);
 
         if (1 == $info['count']) {
             if ('be_users' == $this->table) {
-                $user = $this->objectManager->get('NormanSeibert\\Ldap\\Domain\\Model\\LdapUser\\BeUser');
+                $user = GeneralUtility::makeInstance(BeUser::class);
             } else {
-                $user = $this->objectManager->get('NormanSeibert\\Ldap\\Domain\\Model\\LdapUser\\FeUser');
+                $user = GeneralUtility::makeInstance(FeUser::class);
             }
         }
 
@@ -296,12 +690,12 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \
             ;
 
             $msg = 'Found record: '.$distinguishedName;
-            if ($this->ldapConfig->logLevel >= 2) {
+            if ($this->logLevel >= 2) {
                 $this->logger->info($msg);
             }
         } else {
             $msg = 'Did not find a unique record for the user DN='.$dn.', but found '.$info['count'].' records instead.';
-            if ($this->ldapConfig->logLevel >= 2) {
+            if ($this->logLevel >= 2) {
                 $this->logger->notice($msg);
             }
         }
@@ -361,7 +755,7 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \
                 $filter = str_replace('<search>', $findname, $filter);
 
                 $msg = 'Query server: '.$this->getConfiguration()->getUid().' with filter: '.$filter;
-                if (3 == $this->ldapConfig->logLevel) {
+                if (3 == $this->logLevel) {
                     $this->logger->debug($msg);
                 }
 
@@ -468,20 +862,20 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \
 
         if (!empty($username) && !empty($password)) {
             $connect = $this->connect();
-            $bind = $this->bind($connect, $username, $password, \TYPO3\CMS\Core\Messaging\FlashMessage::INFO);
+            $bind = $this->bind($connect, $username, $password, self::INFO);
 
             if ($bind) {
                 $user = $ldapUser;
-                if ($this->ldapConfig->logLevel >= 2) {
+                if ($this->logLevel >= 2) {
                     $msg = 'User '.$username.' retrieved from LDAP directory (Server: '.$serverUid.')';
                     $this->logger->debug($msg);
                 }
             } else {
                 $msg = 'LDAP server denies authentication (Server: '.$serverUid.', User: '.$username.')';
-                if ($this->ldapConfig->logLevel >= 1) {
+                if ($this->logLevel >= 1) {
                     $this->logger->notice($msg);
                 }
-                \NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::WARNING, $msg, $serverUid);
+                \NormanSeibert\Ldap\Utility\Helpers::addError(self::WARNING, $msg, $serverUid);
             }
         }
 
@@ -503,19 +897,19 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \
 
         $ldapUsers = $this->getUsers($loginname);
 
-        if (count($ldapUsers) < 1) {
+        if (isset($ldapUsers) && (count($ldapUsers) < 1)) {
             $msg = 'No user found (Server: '.$serverUid.', User: '.$loginname.')';
-            if ($this->ldapConfig->logLevel >= 1) {
+            if ($this->logLevel >= 1) {
                 $this->logger->notice($msg);
             }
-            \NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::INFO, $msg, $serverUid);
-        } elseif (count($ldapUsers) > 1) {
+            \NormanSeibert\Ldap\Utility\Helpers::addError(self::INFO, $msg, $serverUid);
+        } elseif (isset($ldapUsers) && (count($ldapUsers) > 1)) {
             $msg = 'Found '.count($ldapUsers).' instead of one (Server: '.$serverUid.', User: '.$loginname.')';
-            if ($this->ldapConfig->logLevel >= 1) {
+            if ($this->logLevel >= 1) {
                 $this->logger->notice($msg);
             }
-            \NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::INFO, $msg, $serverUid);
-        } else {
+            \NormanSeibert\Ldap\Utility\Helpers::addError(self::INFO, $msg, $serverUid);
+        } elseif (isset($ldapUsers)) {
             $ldapUser = $ldapUsers[0];
         }
 
@@ -563,7 +957,7 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \
         }
     }
 
-    public function addFeGroup(\NormanSeibert\Ldap\Domain\Model\Typo3User\UserGroupInterface $group)
+    public function addFeGroup(UserGroupInterface $group)
     {
         $this->allFeGroups[] = $group;
     }
@@ -576,7 +970,7 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \
         return $this->allFeGroups;
     }
 
-    public function addBeGroup(\NormanSeibert\Ldap\Domain\Model\Typo3User\UserGroupInterface $group)
+    public function addBeGroup(UserGroupInterface $group)
     {
         $this->allBeGroups[] = $group;
     }
@@ -592,7 +986,7 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \
     /**
      * @param string $type
      */
-    public function addGroup(\NormanSeibert\Ldap\Domain\Model\Typo3User\UserGroupInterface $group, $type)
+    public function addGroup(UserGroupInterface $group, $type)
     {
         if ('NormanSeibert\\Ldap\\Domain\\Model\\Typo3User\\BackendUserGroup' == $type) {
             $this->addBeGroup($group);
@@ -693,9 +1087,8 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \
             $connect = ldap_connect($host, $port);
         } catch (Exception $e) {
             $msg = 'ldap_connect('.$uid.', '.$host.':'.$port.'): Could not connect to LDAP server.';
-            // @extensionScannerIgnoreLine
             $this->logger->error($msg);
-            \NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::ERROR, $msg, $uid);
+            \NormanSeibert\Ldap\Utility\Helpers::addError(self::ERROR, $msg, $uid);
         }
 
         if ($connect) {
@@ -704,9 +1097,8 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \
                     ldap_set_option($connect, LDAP_OPT_PROTOCOL_VERSION, 3);
                 } catch (Exception $e) {
                     $msg = 'Protocol version cannot be set to 3.';
-                    // @extensionScannerIgnoreLine
                     $this->logger->error($msg);
-                    \NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::ERROR, $msg);
+                    \NormanSeibert\Ldap\Utility\Helpers::addError(self::ERROR, $msg);
                 }
             }
             if ($forceTLS) {
@@ -715,15 +1107,13 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \
                         ldap_start_tls($connect);
                     } catch (Exception $e) {
                         $msg = 'function_exists("ldap_start_tls"): Function ldap_start_tls not available.';
-                        // @extensionScannerIgnoreLine
                         $this->logger->error($msg);
-                        \NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::ERROR, $msg);
+                        \NormanSeibert\Ldap\Utility\Helpers::addError(self::ERROR, $msg);
                     }
                 } else {
                     $msg = 'function_exists("ldap_start_tls"): Function ldap_start_tls not available.';
-                    // @extensionScannerIgnoreLine
                     $this->logger->error($msg);
-                    \NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::ERROR, $msg);
+                    \NormanSeibert\Ldap\Utility\Helpers::addError(self::ERROR, $msg);
                 }
             }
 
@@ -731,15 +1121,13 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \
                 ldap_set_option($connect, LDAP_OPT_REFERRALS, 0);
             } catch (Exception $e) {
                 $msg = 'ldap_connect('.$uid.', '.$host.':'.$port.'): Could not connect to LDAP server.';
-                // @extensionScannerIgnoreLine
                 $this->logger->error($msg);
-                \NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::ERROR, $msg, $uid);
+                \NormanSeibert\Ldap\Utility\Helpers::addError(self::ERROR, $msg, $uid);
             }
         } else {
             $msg = 'ldap_connect('.$uid.', '.$host.':'.$port.'): Could not connect to LDAP server.';
-            // @extensionScannerIgnoreLine
             $this->logger->error($msg);
-            \NormanSeibert\Ldap\Utility\Helpers::addError(\TYPO3\CMS\Core\Messaging\FlashMessage::ERROR, $msg, $uid);
+            \NormanSeibert\Ldap\Utility\Helpers::addError(self::ERROR, $msg, $uid);
         }
 
         return $connect;
@@ -755,7 +1143,7 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \
      *
      * @return resource
      */
-    private function bind($conn, $user = '', $pass = '', $warnLevel = \TYPO3\CMS\Core\Messaging\FlashMessage::ERROR)
+    private function bind($conn, $user = '', $pass = '', $warnLevel = self::ERROR)
     {
         $bind = null;
         $uid = $this->getConfiguration()->getUid();
@@ -770,13 +1158,11 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \
                 $bind = @ldap_bind($conn);
             }
         } catch (Exception $e) {
-            if ($this->ldapConfig->logLevel >= 2) {
+            if ($this->logLevel >= 2) {
                 $msg = 'ldap_bind('.$host.':'.$port.', '.$user.', '.$pass.'): Could not bind to LDAP server.';
-                // @extensionScannerIgnoreLine
                 $this->logger->error($msg);
             } else {
                 $msg = 'ldap_bind('.$host.':'.$port.', '.$user.', ***): Could not bind to LDAP server.';
-                // @extensionScannerIgnoreLine
                 $this->logger->error($msg);
             }
             $msg = 'ldap_bind('.$host.':'.$port.', '.$user.', ***): Could not bind to LDAP server.';
@@ -784,12 +1170,11 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \
         }
 
         if (!$bind) {
-            if ($this->ldapConfig->logLevel >= 2) {
+            if ($this->logLevel >= 2) {
                 $msg = 'ldap_bind('.$host.':'.$port.', '.$user.', '.$pass.'): Could not bind to LDAP server.';
             } else {
                 $msg = 'ldap_bind('.$host.':'.$port.', '.$user.', ***): Could not bind to LDAP server.';
             }
-            // @extensionScannerIgnoreLine
             $this->logger->error($msg);
             \NormanSeibert\Ldap\Utility\Helpers::addError($warnLevel, $msg, $uid);
         }
@@ -825,8 +1210,7 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \
                     $search = @ldap_read($ds, $baseDN, $filter);
                 } catch (Exception $e) {
                     $msg = '"ldap_read" failed';
-                    if ($this->ldapConfig->logLevel) {
-                        // @extensionScannerIgnoreLine
+                    if ($this->logLevel) {
                         $this->logger->error($msg);
                     }
                 }
@@ -838,8 +1222,7 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \
                     $search = @ldap_list($ds, $baseDN, $filter);
                 } catch (Exception $e) {
                     $msg = '"ldap_list" failed';
-                    if ($this->ldapConfig->logLevel) {
-                        // @extensionScannerIgnoreLine
+                    if ($this->logLevel) {
                         $this->logger->error($msg);
                     }
                 }
@@ -852,8 +1235,7 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \
                     $search = @ldap_search($ds, $baseDN, $filter);
                 } catch (Exception $e) {
                     $msg = '"ldap_search" failed';
-                    if ($this->ldapConfig->logLevel) {
-                        // @extensionScannerIgnoreLine
+                    if ($this->logLevel) {
                         $this->logger->error($msg);
                     }
                 }
@@ -879,8 +1261,7 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \
                 'BaseDN' => $baseDN,
                 'Filter' => $filter,
             ];
-            if ($this->ldapConfig->logLevel) {
-                // @extensionScannerIgnoreLine
+            if ($this->logLevel) {
                 $this->logger->error($msg, $logArray);
             }
         } else {
@@ -914,11 +1295,11 @@ class Server extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity implements \
                     ++$i;
                 }
             }
+
+            @ldap_free_result($search);
         }
 
         $ret['count'] = $i;
-
-        @ldap_free_result($search);
 
         return $ret;
     }

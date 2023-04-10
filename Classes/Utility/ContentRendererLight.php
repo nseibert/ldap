@@ -35,9 +35,9 @@ use TYPO3\CMS\Core\Utility\MathUtility;
 /**
  *  Functions copied from TYPO3 CMS ContentRendererObject.
  */
-class ContentRendererLight implements \Psr\Log\LoggerAwareInterface
+class ContentRendererLight
 {
-    use LoggerAwareTrait;
+    private LoggerInterface $logger;
 
     /**
      * Indicates that object type is USER.

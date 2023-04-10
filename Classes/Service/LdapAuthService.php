@@ -26,7 +26,6 @@ namespace NormanSeibert\Ldap\Service;
  * @copyright 2020 Norman Seibert
  */
 
-use Psr\Log\LoggerAwareTrait;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\Restriction\DefaultRestrictionContainer;
 use TYPO3\CMS\Core\Database\Query\Restriction\DeletedRestriction;
@@ -36,15 +35,15 @@ use TYPO3\CMS\Core\Database\Query\Restriction\QueryRestrictionContainerInterface
 use TYPO3\CMS\Core\Database\Query\Restriction\RootLevelRestriction;
 use TYPO3\CMS\Core\Database\Query\Restriction\StartTimeRestriction;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager;
+use NormanSeibert\Ldap\Domain\Model\Configuration\LdapConfiguration;
+use NormanSeibert\Ldap\Domain\Model\LdapServer\LdapServer;
 
 /**
  * Service to authenticate users against LDAP directory.
  */
-// @extensionScannerIgnoreLine
-class LdapAuthService extends \TYPO3\CMS\Core\Authentication\AuthenticationService implements \Psr\Log\LoggerAwareInterface
+class LdapAuthService extends \TYPO3\CMS\Core\Authentication\AuthenticationService
 {
-    use LoggerAwareTrait;
-
     /**
      * Enable field columns of user table.
      */
@@ -58,31 +57,64 @@ class LdapAuthService extends \TYPO3\CMS\Core\Authentication\AuthenticationServi
     ];
 
     /**
-     * Table in database with user data.
+     * @var string
      */
     public $user_table = '';
 
+    /**
+     * @var Configuration
+     */
     protected $ldapConfig;
 
-    protected $objectManager;
+    /**
+     * @var Dispatcher
+     */
+    // protected $signalSlotDispatcher;
 
-    protected $persistenceManager;
-
-    protected $signalSlotDispatcher;
-
+    /**
+     * @var configurationManager
+     */
     protected $configurationManager;
 
+    /**
+     * @var persistenceManager
+     */
+    protected $persistenceManager;
+
+    /**
+     * @var array
+     */
     private $conf;
 
+    /**
+     * @var int
+     */
     private $logLevel;
 
+    /**
+     * @var string
+     */
     private $username = '';
 
+    /**
+     * @var string
+     */
     private $password = '';
 
+    /**
+     * @var array
+     */
     private $loginData = [];
 
+    /**
+     * @var array
+     */
     private $ldapServers;
+
+    public function __construct(PersistenceManager $persistenceManager)
+    {
+        $this->persistenceManager = $persistenceManager;
+    }
 
     /**
      * Initialize authentication service.
@@ -94,13 +126,7 @@ class LdapAuthService extends \TYPO3\CMS\Core\Authentication\AuthenticationServi
      */
     public function initAuth($subType, $loginData, $authenticationInformation, $parentObject)
     {
-        $this->objectManager = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\Object\\ObjectManager');
-        $this->signalSlotDispatcher = $this->objectManager->get('TYPO3\\CMS\\Extbase\\SignalSlot\\Dispatcher');
-        $this->persistenceManager = $this->objectManager->get('TYPO3\\CMS\\Extbase\\Persistence\\PersistenceManagerInterface');
-        $this->ldapConfig = $this->objectManager->get('NormanSeibert\\Ldap\\Domain\\Model\\Configuration\\Configuration');
-        $this->conf = $this->ldapConfig->getConfiguration();
-
-        $this->logLevel = $this->conf['logLevel'];
+        // $this->signalSlotDispatcher =  GeneralUtility::makeInstance(Dispatcher::class);
         $this->loginData = $loginData;
         $this->authInfo = $authenticationInformation;
 
@@ -109,7 +135,18 @@ class LdapAuthService extends \TYPO3\CMS\Core\Authentication\AuthenticationServi
         $this->password = $this->loginData['uident_text'];
 
         $this->user_table = $this->authInfo['db_user']['table'];
-        $this->ldapServers = $this->ldapConfig->getLdapServers('', '', $this->authInfo['loginType'], $this->authInfo['db_user']['checkPidList']);
+
+        $this->ldapConfig = GeneralUtility::makeInstance(LdapConfiguration::class);
+
+        if (isset($this->ldapConfig)) {
+            $this->conf = $this->ldapConfig->getConfiguration();
+            $this->logLevel = $this->conf['logLevel'];
+            $pid = null;
+            if (isset($this->authInfo['db_user']['checkPidList'])) {
+                $pid = $this->authInfo['db_user']['checkPidList'];
+            }
+            $this->ldapServers = $this->ldapConfig->getLdapServers(null, null, $this->authInfo['loginType'], $pid);
+        }
 
         // for testing purposes only!
         // $_SERVER[$this->conf['ssoHeader']] = 'admin@entios.local';
@@ -122,54 +159,24 @@ class LdapAuthService extends \TYPO3\CMS\Core\Authentication\AuthenticationServi
     }
 
     /**
-     * Activates Single Sign On (SSO).
-     */
-    public function activateSSO()
-    {
-        if ($this->conf['ssoHeader'] && ($_SERVER[$this->conf['ssoHeader']])) {
-            $this->username = $_SERVER[$this->conf['ssoHeader']];
-            $this->loginData['status'] = 'login';
-            $this->password = '';
-            $this->authInfo['db_user']['checkPidList'] = '';
-            $this->authInfo['db_user']['check_pid_clause'] = '';
-
-            $slotReturn = $this->signalSlotDispatcher->dispatch(
-                __CLASS__,
-                'beforeSSO',
-                [
-                    'username' => $this->username,
-                ]
-            );
-            // Before TYPO3 6.2 there is no return value!
-            if ($slotReturn) {
-                $this->username = $slotReturn['username'];
-            }
-
-            if ($this->logLevel > 0) {
-                $msg = 'SSO active for user: '.$this->username;
-                $this->logger->info($msg);
-            }
-        }
-    }
-
-    /**
      * Find a TYPO3 user.
      *
-     * @return mixed User array or FALSE
+     * @param int $pid the page id in case of an FE user
+     * 
+     * @return array User array
      */
-    public function getTypo3User()
+    public function getTypo3User($pid = null)
     {
-        $user = $this->getRawUserByName($this->username);
-        if (!is_array($user)) {
-            // Failed login attempt (no user found)
-            $this->writelog(255, 3, 3, 2, 'Login-attempt from %s (%s), username \'%s\' not found!!', [$this->authInfo['REMOTE_ADDR'], $this->authInfo['REMOTE_HOST'], $this->login['uname']]); // Logout written to log
-            // GeneralUtility::sysLog(sprintf('Login-attempt from %s (%s), username \'%s\' not found!', $this->authInfo['REMOTE_ADDR'], $this->authInfo['REMOTE_HOST'], $this->username), 'Core', 0);
-        } else {
+        $user = $this->getRawUserByName($this->username, $pid);
+        if (is_array($user)) {
             if ($this->logLevel >= 1) {
-                $msg = 'TYPO3 user found: '.$this->username;
+                $msg = 'TYPO3 user found: ' . $this->username;
                 $this->logger->debug($msg);
             }
-            unset($user['ldap_authenticated']);
+            $user['ldap_authenticated'] = false;
+        } else {
+            // Failed login attempt (no user found)
+            $this->writelog(255, 3, 3, 2, 'Login-attempt from %s (%s), username \'%s\' not found!!', [$this->authInfo['REMOTE_ADDR'], $this->authInfo['REMOTE_HOST'], $this->username]);
         }
 
         return $user;
@@ -188,22 +195,28 @@ class LdapAuthService extends \TYPO3\CMS\Core\Authentication\AuthenticationServi
         $msg = 'getUser() called, loginType: '.$this->authInfo['loginType'];
         $this->logger->debug($msg);
         // }
-        if ('login' == $this->loginData['status']) {
+        if (isset($this->loginData['status']) && ('login' == $this->loginData['status'])) {
             if ($this->username) {
                 if (2 == $this->logLevel) {
-                    $msg = 'Username: '.$this->username;
+                    $msg = 'Username: ' . $this->username;
                     $this->logger->debug($msg);
                 } elseif (3 == $this->logLevel) {
-                    $msg = 'Username / Password: '.$this->username.' / '.$this->password;
+                    $msg = 'Username / Password: ' . $this->username . ' / ' . $this->password;
                     $this->logger->debug($msg);
                 }
+
                 if ('BE' == $this->authInfo['loginType']) {
                     $pid = 0;
-                } else {
+                } elseif (isset($this->authInfo['db_user']['checkPidList'])) {
                     $pid = $this->authInfo['db_user']['checkPidList'];
+                } else {
+                    $pid = null;
                 }
-                if (count($this->ldapServers)) {
-                    foreach ($this->ldapServers as $server) {
+
+                if (isset($this->ldapServers) && count($this->ldapServers)) {
+                    foreach ($this->ldapServers as $uid) {
+                        $ldapServer = GeneralUtility::makeInstance(LdapServer::class);
+                        $ldapServer->initializeServer($uid);
                         if ($user) {
                             if ($this->logLevel >= 1) {
                                 $msg = 'User already authenticated';
@@ -214,36 +227,33 @@ class LdapAuthService extends \TYPO3\CMS\Core\Authentication\AuthenticationServi
                             // Otherwise every user present in the directory would be imported regardless of the entered password.
 
                             if ($this->logLevel >= 2) {
-                                $msg = 'Try to authenticate with server: '.$server->getUid();
+                                $msg = 'Try to authenticate with server: ' . $uid;
                                 $this->logger->debug($msg);
                             }
 
-                            // @var $server \NormanSeibert\Ldap\Domain\Model\LdapServer\Server
-                            $server->setScope(strtolower($this->authInfo['loginType']), $pid);
-                            $server->loadAllGroups();
+                            $ldapServer->setScope(strtolower($this->authInfo['loginType']), $pid);
+                            $ldapServer->loadAllGroups();
 
                             if ($this->conf['enableSSO'] && $this->conf['ssoHeader'] && ($_SERVER[$this->conf['ssoHeader']])) {
-                                // @var $ldapUser \NormanSeibert\Ldap\Domain\Model\LdapUser\User
-                                $ldapUser = $server->checkUser($this->username);
+                                $ldapUser = $ldapServer->checkUser($this->username);
                                 if ($this->logLevel >= 2) {
-                                    $msg = 'Check SSO user: '.$this->username;
+                                    $msg = 'Check SSO user: ' . $this->username;
                                     $this->logger->debug($msg);
                                 }
                             } else {
-                                // @var $ldapUser \NormanSeibert\Ldap\Domain\Model\LdapUser\User
-                                $ldapUser = $server->authenticateUser($this->username, $this->password);
+                                $ldapUser = $ldapServer->authenticateUser($this->username, $this->password);
                                 if ($this->logLevel >= 2) {
-                                    $msg = 'Authenticate user: '.$this->username;
+                                    $msg = 'Authenticate user: ' . $this->username;
                                     $this->logger->debug($msg);
                                 }
                             }
 
-                            if (is_object($ldapUser)) {
+                            if (isset($ldapUser) && is_object($ldapUser)) {
                                 // Credentials are OK
-                                if ($server->getConfiguration()->getUserRules($this->user_table)->getAutoImport()) {
+                                if ($ldapServer->getConfiguration()->getUserRules($this->user_table)->getAutoImport()) {
                                     // Authenticated users shall be imported/updated
                                     if ($this->logLevel >= 2) {
-                                        $msg = 'Import/update user '.$this->username;
+                                        $msg = 'Import/update user: ' . $this->username;
                                         $this->logger->debug($msg);
                                     }
                                     $ldapUser->loadUser();
@@ -255,14 +265,14 @@ class LdapAuthService extends \TYPO3\CMS\Core\Authentication\AuthenticationServi
                                     }
                                     $this->persistenceManager->persistAll();
                                 }
-                                if ($server->getConfiguration()->getUserRules($this->user_table)->getAutoEnable()) {
+                                if ($ldapServer->getConfiguration()->getUserRules($this->user_table)->getAutoEnable()) {
                                     $ldapUser->loadUser();
                                     $typo3User = $ldapUser->getUser();
                                     if (is_object($typo3User)) {
                                         if ($typo3User->getIsDisabled()) {
                                             // Authenticated users shall be enabled
                                             if ($this->logLevel >= 2) {
-                                                $msg = 'Enable user '.$this->username;
+                                                $msg = 'Enable user: ' . $this->username;
                                                 $this->logger->debug($msg);
                                             }
                                             $ldapUser->enableUser();
@@ -270,11 +280,11 @@ class LdapAuthService extends \TYPO3\CMS\Core\Authentication\AuthenticationServi
                                     }
                                     $this->persistenceManager->persistAll();
                                 }
-                                $user = $this->getTypo3User();
+                                $user = $this->getTypo3User($pid);
                                 $user['ldap_authenticated'] = true;
 
                                 if ($this->logLevel >= 1) {
-                                    $msg = 'User authenticated successfully '.$this->username;
+                                    $msg = 'User authenticated successfully: ' . $this->username;
                                     $this->logger->debug($msg);
                                 }
                             } else {
@@ -334,7 +344,7 @@ class LdapAuthService extends \TYPO3\CMS\Core\Authentication\AuthenticationServi
             }
             $ok = $ok ? 200 : ($this->conf['onlyLDAP'] ? 0 : 100);
         }
-        if ($ok && $user['lockToDomain'] && $user['lockToDomain'] != $this->authInfo['HTTP_HOST']) {
+        if ($ok && isset($user['lockToDomain']) && $user['lockToDomain'] != $this->authInfo['HTTP_HOST']) {
             // Lock domain didn't match, so error:
             if ($this->writeAttemptLog) {
                 $this->writelog(255, 3, 3, 1, "Login-attempt from %s (%s), username '%s', locked domain '%s' did not match '%s'!", [$this->authInfo['REMOTE_ADDR'], $this->authInfo['REMOTE_HOST'], $user[$this->authInfo['db_user']['username_column']], $user['lockToDomain'], $this->authInfo['HTTP_HOST']]);
@@ -348,7 +358,7 @@ class LdapAuthService extends \TYPO3\CMS\Core\Authentication\AuthenticationServi
             'user' => $user,
             'status' => $ok,
         ];
-        $this->signalSlotDispatcher->dispatch(__CLASS__, 'beforeAuthentication', $parameters);
+        // $this->signalSlotDispatcher->dispatch(__CLASS__, 'beforeAuthentication', $parameters);
 
         if ($this->logLevel >= 1) {
             $msg = 'function "authUser" returns: '.$ok;
@@ -362,6 +372,7 @@ class LdapAuthService extends \TYPO3\CMS\Core\Authentication\AuthenticationServi
      * Fetching raw user record with username=$name.
      *
      * @param string $name the username to look up
+     * @param int $pid the page id in case of an FE user
      *
      * @return array user record or FALSE
      *
@@ -369,13 +380,22 @@ class LdapAuthService extends \TYPO3\CMS\Core\Authentication\AuthenticationServi
      *
      * @internal
      */
-    public function getRawUserByName($name)
+    public function getRawUserByName($name, $pid = null)
     {
         $query = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable($this->user_table);
+
+        if ($pid) {
+            $where = $query->expr()->eq('username', $query->createNamedParameter($name, \PDO::PARAM_STR))
+                     . ' AND '
+                     . $query->expr()->eq('pid', $query->createNamedParameter($pid, \PDO::PARAM_STR));
+        } else {
+            $where = $query->expr()->eq('username', $query->createNamedParameter($name, \PDO::PARAM_STR));
+        }
+
         $query->setRestrictions($this->userConstraints());
         $query->select('*')
             ->from($this->user_table)
-            ->where($query->expr()->eq('username', $query->createNamedParameter($name, \PDO::PARAM_STR)))
+            ->where($where)
         ;
 
         return $query->execute()->fetch();

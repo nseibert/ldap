@@ -26,19 +26,18 @@ namespace NormanSeibert\Ldap\Service;
  * @copyright 2020 Norman Seibert
  */
 
-use NormanSeibert\Ldap\Domain\Model\Configuration\Configuration;
-use NormanSeibert\Ldap\Domain\Model\LdapServer\Server;
+use NormanSeibert\Ldap\Domain\Model\Configuration\LdapConfiguration;
+use NormanSeibert\Ldap\Domain\Model\LdapServer\LdapServer;
 use NormanSeibert\Ldap\Domain\Repository\Typo3User\BackendUserRepository;
 use NormanSeibert\Ldap\Domain\Repository\Typo3User\FrontendUserRepository;
-use Psr\Log\LoggerAwareTrait;
-use TYPO3\CMS\Extbase\Object\ObjectManager;
+use Psr\Log\LoggerInterface;
 
 /**
  * Service to import users from LDAP directory to TYPO3 database.
  */
-class LdapImporter implements \Psr\Log\LoggerAwareInterface
+class LdapImporter
 {
-    use LoggerAwareTrait;
+    private LoggerInterface $logger;
 
     /**
      * @var string
@@ -46,12 +45,12 @@ class LdapImporter implements \Psr\Log\LoggerAwareInterface
     protected $table;
 
     /**
-     * @var Configuration
+     * @var LdapConfiguration
      */
     protected $ldapConfig;
 
     /**
-     * @var Server
+     * @var LdapServer
      */
     protected $ldapServer;
 
@@ -66,31 +65,31 @@ class LdapImporter implements \Psr\Log\LoggerAwareInterface
     protected $beUserRepository;
 
     /**
-     * @var ObjectManager
-     */
-    protected $objectManager;
-
-    /**
      * @param
      */
-    public function __construct(Configuration $ldapConfig, Server $ldapServer, FrontendUserRepository $feUserRepository, BackendUserRepository $beUserRepository, ObjectManager $objectManager)
+    public function __construct(
+        LdapConfiguration $ldapConfig,
+        LdapServer $ldapServer,
+        FrontendUserRepository $feUserRepository,
+        BackendUserRepository $beUserRepository,
+        LoggerInterface $logger)
     {
         $this->ldapConfig = $ldapConfig;
         $this->ldapServer = $ldapServer;
         $this->feUserRepository = $feUserRepository;
         $this->beUserRepository = $beUserRepository;
-        $this->objectManager = $objectManager;
+        $this->logger = $logger;
     }
 
     /**
      * initializes the importer.
      *
-     * @param \NormanSeibert\Ldap\Domain\Model\LdapServer\Server $server
-     * @param string                                             $scope
+     * @param int $uid
+     * @param string $scope
      */
-    public function init(Server $server = null, $scope)
+    public function init($uid, $scope)
     {
-        $this->ldapServer = $server;
+        $server = $this->ldapServer->initializeServer($uid);
         if (is_object($server)) {
             $this->ldapServer->setScope($scope);
         }
@@ -168,7 +167,7 @@ class LdapImporter implements \Psr\Log\LoggerAwareInterface
         $tmpServer = null;
         $removeUsers = [];
         foreach ($users as $user) {
-            // @var $user \NormanSeibert\Ldap\Domain\Model\Typo3User\UserInterface
+            $user->setLoglevel($this->ldapConfig->logLevel);
             if ($user->getServerUid()) {
 				// note the . behind the uid as it comes from the DB
 				$server = $this->ldapConfig->getLdapServer($user->getServerUid().".");
@@ -218,7 +217,7 @@ class LdapImporter implements \Psr\Log\LoggerAwareInterface
     private function storeNewUsers($runIdentifier, $ldapUsers)
     {
         foreach ($ldapUsers as $user) {
-            // @var $user \NormanSeibert\Ldap\Domain\Model\LdapUser\User
+            $user->setLoglevel($this->ldapConfig->logLevel);
             $user->loadUser();
             $typo3User = $user->getUser();
             if (!is_object($typo3User)) {
@@ -236,7 +235,7 @@ class LdapImporter implements \Psr\Log\LoggerAwareInterface
     private function updateUsers($runIdentifier, $ldapUsers)
     {
         foreach ($ldapUsers as $user) {
-            // @var $user \NormanSeibert\Ldap\Domain\Model\LdapUser\User
+            $user->setLoglevel($this->ldapConfig->logLevel);
             $user->loadUser();
             $typo3User = $user->getUser();
             if (is_object($typo3User)) {
@@ -275,21 +274,16 @@ class LdapImporter implements \Psr\Log\LoggerAwareInterface
     private function getUsers($runIdentifier, $command, $search = '*')
     {
         $ldapUsers = $this->ldapServer->getUsers($search, false);
-        if (is_array($ldapUsers)) {
+        if (is_object($ldapUsers)) {
             switch ($command) {
                 case 'import':
                     $this->storeNewUsers($runIdentifier, $ldapUsers);
-
                     break;
-
                 case 'update':
                     $this->updateUsers($runIdentifier, $ldapUsers);
-
                     break;
-
                 case 'importOrUpdate':
                     $this->storeUsers($runIdentifier, $ldapUsers);
-
                     break;
             }
         } else {

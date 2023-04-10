@@ -27,27 +27,39 @@ namespace NormanSeibert\Ldap\Domain\Model\LdapUser;
  */
 
 use NormanSeibert\Ldap\Domain\Repository\Typo3User\FrontendUserGroupRepository;
+use NormanSeibert\Ldap\Domain\Model\Typo3User\FrontendUserGroup;
+use NormanSeibert\Ldap\Domain\Model\LdapServer\LdapServer;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+use Psr\Log\LoggerInterface;
 
 /**
  * Model for groups read from LDAP server.
  */
 class FeGroup extends \NormanSeibert\Ldap\Domain\Model\LdapUser\Group
 {
+    private LoggerInterface $logger;
+
     /**
-     * @var \NormanSeibert\Ldap\Domain\Repository\Typo3User\FrontendUserGroupRepository
+     * @var FrontendUserGroupRepository
      */
     protected $usergroupRepository;
+    
+    /**
+     * @var FrontendUserGroup
+     */
+    protected $groupObject;
 
     /**
      * @var int
      */
     protected $pid;
 
-    public function __construct(FrontendUserGroupRepository $usergroupRepository)
+    public function __construct(FrontendUserGroup $usergroup, FrontendUserGroupRepository $usergroupRepository, LoggerInterface $logger)
     {
-        parent::__construct();
+        $this->groupObject = $usergroup;
         $this->usergroupRepository = $usergroupRepository;
-        $this->groupObject = 'NormanSeibert\Ldap\Domain\Model\Typo3User\FrontendUserGroup';
+        // $this->logger = GeneralUtility::makeInstance(\TYPO3\CMS\Core\Log\LogManager::class)->getLogger(__CLASS__);
+        $this->logger = $logger;
     }
 
     /**
@@ -55,7 +67,7 @@ class FeGroup extends \NormanSeibert\Ldap\Domain\Model\LdapUser\Group
      *
      * @return \NormanSeibert\Ldap\Domain\Model\LdapUser\FeGroup
      */
-    public function setLdapServer(\NormanSeibert\Ldap\Domain\Model\LdapServer\Server $server)
+    public function setLdapServer(LdapServer $server)
     {
         $this->ldapServer = $server;
         $this->usergroupRules = $this->ldapServer->getConfiguration()->getFeUserRules()->getGroupRules();

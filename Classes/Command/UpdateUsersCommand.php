@@ -26,7 +26,7 @@ namespace NormanSeibert\Ldap\Command;
  * @copyright 2020 Norman Seibert
  */
 
-use NormanSeibert\Ldap\Domain\Model\Configuration\Configuration;
+use NormanSeibert\Ldap\Domain\Model\Configuration\LdapConfiguration;
 use NormanSeibert\Ldap\Domain\Repository\Typo3User\BackendUserRepository;
 use NormanSeibert\Ldap\Domain\Repository\Typo3User\FrontendUserRepository;
 use NormanSeibert\Ldap\Service\LdapImporter;
@@ -36,9 +36,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use TYPO3\CMS\Core\Core\Bootstrap;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Extbase\Object\ObjectManager;
-use TYPO3\CMS\Extbase\Persistence\PersistenceManagerInterface;
+use TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager;
 
 /**
  * Controller for scheduled execution.
@@ -56,7 +54,7 @@ class UpdateUsersCommand extends Command
     protected $beUserRepository;
 
     /**
-     * @var Configuration
+     * @var LdapConfiguration
      */
     protected $ldapConfig;
 
@@ -66,22 +64,20 @@ class UpdateUsersCommand extends Command
     protected $importer;
 
     /**
-     * @var PersistenceManagerInterface
+     * @var PersistenceManager
      */
     protected $persistenceManager;
 
     /**
      * @param
      */
-    public function __construct(FrontendUserRepository $feUserRepository, BackendUserRepository $beUserRepository, Configuration $ldapConfig, LdapImporter $importer)
+    public function __construct(FrontendUserRepository $feUserRepository, BackendUserRepository $beUserRepository, LdapConfiguration $ldapConfig, LdapImporter $importer)
     {
         parent::__construct();
         $this->feUserRepository = $feUserRepository;
         $this->beUserRepository = $beUserRepository;
         $this->ldapConfig = $ldapConfig;
         $this->importer = $importer;
-        $objectManager = GeneralUtility::makeInstance(ObjectManager::class);
-        $this->persistenceManager = $objectManager->get(PersistenceManagerInterface::class);
     }
 
     /**

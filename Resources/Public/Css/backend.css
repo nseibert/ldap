@@ -34,21 +34,3 @@ fieldset {
  	overflow: auto;
  	margin-bottom: 1em;
  }
-
-/**
- * @group: Paginate
- */
-
-.f3-widget-paginator { display: block; float: left; margin: 0 0 10px; }
-
-.f3-widget-paginator li { display: block; float: left; }
-
-.f3-widget-paginator li.current { font-weight: bold; }
-
-.f3-widget-paginator li a { text-decoration: none !important; padding-left: 7px; padding-right: 7px; }
-
-.f3-widget-paginator li.disabled { padding-left: 13px; padding-right: 13px; }
-
-/**
- * @end
- */

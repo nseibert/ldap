@@ -28,39 +28,57 @@ namespace NormanSeibert\Ldap\Domain\Model\LdapUser;
 
 use NormanSeibert\Ldap\Domain\Repository\Typo3User\FrontendUserGroupRepository;
 use NormanSeibert\Ldap\Domain\Repository\Typo3User\FrontendUserRepository;
+use NormanSeibert\Ldap\Domain\Model\LdapServer\LdapServer;
+use NormanSeibert\Ldap\Domain\Model\LdapUser\FeGroup;
+use NormanSeibert\Ldap\Domain\Model\Typo3User\FrontendUser;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+use Psr\Log\LoggerInterface;
 
 /**
  * Model for users read from LDAP server.
  */
 class FeUser extends \NormanSeibert\Ldap\Domain\Model\LdapUser\User
 {
+    private LoggerInterface $logger;
+    
     /**
-     * @var \NormanSeibert\Ldap\Domain\Repository\Typo3User\FrontendUserRepository
+     * @var FrontendUserRepository
      */
     protected $userRepository;
 
     /**
-     * @var \NormanSeibert\Ldap\Domain\Repository\Typo3User\FrontendUserGroupRepository
+     * @var FrontendUserGroupRepository
      */
     protected $usergroupRepository;
 
     /**
-     * @var \NormanSeibert\Ldap\Domain\Model\LdapUser\FeGroup
+     * @var FeGroup
      */
     protected $groupObject;
 
     /**
-     * @var \NormanSeibert\Ldap\Domain\Model\Typo3User\FrontendUser
+     * @var FrontendUser
      */
     protected $user;
 
-    public function __construct(FeGroup $groupObject, FrontendUserRepository $userRepository, FrontendUserGroupRepository $usergroupRepository)
+    /**
+     * @var int
+     */
+    protected $logLevel;
+
+    public function __construct(LoggerInterface $logger)
     {
-        parent::__construct();
-        $this->groupObject = $groupObject;
-        $this->userRepository = $userRepository;
-        $this->usergroupRepository = $usergroupRepository;
         $this->userObject = 'NormanSeibert\Ldap\Domain\Model\Typo3User\FrontendUser';
+        $this->groupObject = GeneralUtility::makeInstance(FeGroup::class);
+        $this->userRepository = GeneralUtility::makeInstance(FrontendUserRepository::class);
+        $this->usergroupRepository = GeneralUtility::makeInstance(FrontendUserGroupRepository::class);
+        // $this->logger = GeneralUtility::makeInstance(\TYPO3\CMS\Core\Log\LogManager::class)->getLogger(__CLASS__);
+        $this->logger = $logger;
+    }
+
+    public function setLoglevel(int $logLevel)
+    {
+        $this->logLevel = $logLevel;
     }
 
     /**
@@ -68,7 +86,7 @@ class FeUser extends \NormanSeibert\Ldap\Domain\Model\LdapUser\User
      *
      * @return \NormanSeibert\Ldap\Domain\Model\LdapUser\FeUser
      */
-    public function setLdapServer(\NormanSeibert\Ldap\Domain\Model\LdapServer\Server $server)
+    public function setLdapServer(LdapServer $server)
     {
         $this->ldapServer = $server;
         $this->groupObject->setLdapServer($server);

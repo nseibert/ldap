@@ -1,7 +1,8 @@
 {namespace ldap = NormanSeibert\Ldap\ViewHelpers}
 
-<f:form action="{action}" controller="Module" objectName="formSettings" object="{formSettings}">
+<div class="col-6">
 
+	<f:form action="{action}" controller="Module" objectName="formSettings" object="{formSettings}">
 
 		<f:if condition="{0:action} == {0:'doDeleteUsers'}">
 			<f:then>
@@ -13,10 +14,11 @@
 			</f:then>
 			<f:else>
 				<fieldset>
-					<div>
+					<div class="form-group">
 						<label><f:translate key="form.useServers" /></label>
 						<f:form.select
 							id="useServers"
+							class="form-control"
 							property="useServers"
 							options="{ldapServers}"
 							optionValueField="uid"
@@ -30,42 +32,52 @@
 		</f:if>
 		
 		<fieldset>
-			<div>
+			<div class="form-group">
 				<label><f:translate key="form.frontend" /></label>
-				<f:form.checkbox
-					id="authenticateFe"
-					property="authenticateFe"
-					value="1"
-				/>
+				<div class="form-check form-toggle">
+					<f:form.checkbox
+						id="authenticateFe"
+						property="authenticateFe"
+						value="1"
+					/>
+				</div>
 			</div>
-			<div>
+			<div class="form-group">
 				<label><f:translate key="form.backend" /></label>
-				<f:form.checkbox
-					id="authenticateBe"
-					property="authenticateBe"
-					value="1"
-				/>
+				<div class="form-check form-toggle">
+					<f:form.checkbox
+						id="authenticateBe"
+						property="authenticateBe"
+						value="1"
+					/>
+				</div>
 			</div>
 		</fieldset>
 		
 		<f:if condition="{0:action} == {0:'doDeleteUsers'}">
 			<f:then>
 				<fieldset>
-					<div>
+					<div class="form-group">
 						<label><f:translate key="form.deactivate" /></label>
-						<f:form.checkbox
-							id="hideNotDelete"
-							property="hideNotDelete"
-							value="1"
-						/>
+						<div class="form-check form-toggle">
+							<f:form.checkbox
+								id="hideNotDelete"
+								class="form-control"
+								property="hideNotDelete"
+								value="1"
+							/>
+						</div>
 					</div>
-					<div>
+					<div class="form-group">
 						<label><f:translate key="form.deleteNonLdapUsers" /></label>
-						<f:form.checkbox
-							id="deleteNonLdapUsers"
-							property="deleteNonLdapUsers"
-							value="1"
-						/>
+						<div class="form-check form-toggle"></div>
+							<f:form.checkbox
+								id="deleteNonLdapUsers"
+								class="form-control"
+								property="deleteNonLdapUsers"
+								value="1"
+							/>
+						</div>
 					</div>
 				</fieldset>
 			</f:then>
@@ -82,10 +94,11 @@
 				/>
 			</f:else>
 		</f:if>
-	
 
-	<div class="btn-group">
-		<f:form.submit value="{f:translate(key: 'form.start')}" class="btn btn-default" />
-	</div>
+		<div class="btn-group">
+			<f:form.submit value="{f:translate(key: 'form.start')}" class="btn btn-default" />
+		</div>
 		
-</f:form>
+	</f:form>
+
+</div>

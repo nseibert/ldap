@@ -25,10 +25,12 @@ namespace NormanSeibert\Ldap\Domain\Repository\Typo3User;
  * @copyright 2020 Norman Seibert
  */
 
+ use TYPO3\CMS\Extbase\Persistence\Repository;
+
 /**
  * Repository for TYPO3 frontend users.
  */
-class FrontendUserRepository extends \TYPO3\CMS\Extbase\Domain\Repository\FrontendUserRepository implements \NormanSeibert\Ldap\Domain\Repository\Typo3User\UserRepositoryInterface
+class FrontendUserRepository extends Repository implements UserRepositoryInterface
 {
     /**
      * @return \TYPO3\CMS\Extbase\Persistence\QueryResultInterface

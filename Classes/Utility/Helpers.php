@@ -28,10 +28,6 @@ namespace NormanSeibert\Ldap\Utility;
 
 // Various helper functions
 
-use TYPO3\CMS\Core\Context\Context;
-use TYPO3\CMS\Core\Core\Environment;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
-
 class Helpers
 {
     /**
@@ -42,28 +38,23 @@ class Helpers
      * @param int    $server
      * @param array  $data
      */
-    public static function addError($severity = \TYPO3\CMS\Core\Messaging\FlashMessage::INFO, $message = '', $server = '', $data = null)
+    public static function addError($severity = \TYPO3\CMS\Core\Type\ContextualFeedbackSeverity::INFO, $message = '', $server = '', $data = null)
     {
-        // only when not called from a command controller
-        $context = GeneralUtility::makeInstance(Context::class);
-        $beUserId = $context->getPropertyFromAspect('backend.user', 'id');
-        $languageId = $context->getPropertyFromAspect('language', 'id');
-        if (($beUserId) && (!Environment::isCli()) && !isset($languageId)) {
-            $msg = $message;
-            if ($data) {
-                $msg .= '<br/>'.\TYPO3\CMS\Core\Utility\ArrayUtility::flatten($data);
-            }
-            $flashMessage = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(
-                'TYPO3\\CMS\\Core\\Messaging\\FlashMessage',
-                $msg,
-                'LDAP server '.$server,
-                $severity,
-                true
-            );
-            $messageQueue = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Messaging\\FlashMessageQueue', 'ldap');
-            // @extensionScannerIgnoreLine
-            $messageQueue->addMessage($flashMessage);
+        $msg = $message;
+        if ($data) {
+            $msg .= '<br/>'.\TYPO3\CMS\Core\Utility\ArrayUtility::flatten($data);
         }
+        $flashMessage = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(
+            \TYPO3\CMS\Core\Messaging\FlashMessage::class,
+            $msg,
+            'LDAP server '.$server,
+            $severity,
+            false
+        );
+        $flashMessageService = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Messaging\FlashMessageService::class);
+        // $messageQueue = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Messaging\\FlashMessageQueue', 'ldap');
+        $messageQueue = $flashMessageService->getMessageQueueByIdentifier('ldap');
+        $messageQueue->addMessage($flashMessage);
     }
 
     /**
@@ -203,11 +194,7 @@ class Helpers
      */
     public static function setRespectEnableFieldsToFalse($query)
     {
-        if (function_exists($query->getQuerySettings()->setRespectEnableFields)) {
-            $query->getQuerySettings()->setRespectEnableFields(false);
-        } else {
-            $query->getQuerySettings()->setIgnoreEnableFields(true);
-        }
+        $query->getQuerySettings()->setIgnoreEnableFields(true);
     }
 
     /**

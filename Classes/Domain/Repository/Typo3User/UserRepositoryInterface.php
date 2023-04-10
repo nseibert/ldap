@@ -24,7 +24,7 @@ namespace NormanSeibert\Ldap\Domain\Repository\Typo3User;
  * @author	  Norman Seibert <seibert@entios.de>
  * @copyright 2020 Norman Seibert
  */
-interface UserRepositoryInterface extends \TYPO3\CMS\Extbase\Persistence\RepositoryInterface
+interface UserRepositoryInterface
 {
     /**
      * @param string $dn
