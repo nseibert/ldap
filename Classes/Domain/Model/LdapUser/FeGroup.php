@@ -56,6 +56,7 @@ class FeGroup extends \NormanSeibert\Ldap\Domain\Model\LdapUser\Group
 
     public function __construct(FrontendUserGroup $usergroup, FrontendUserGroupRepository $usergroupRepository, LoggerInterface $logger)
     {
+        parent::__construct($logger);
         $this->groupObject = $usergroup;
         $this->usergroupRepository = $usergroupRepository;
         // $this->logger = GeneralUtility::makeInstance(\TYPO3\CMS\Core\Log\LogManager::class)->getLogger(__CLASS__);

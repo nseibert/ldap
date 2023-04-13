@@ -68,6 +68,7 @@ class FeUser extends \NormanSeibert\Ldap\Domain\Model\LdapUser\User
 
     public function __construct(LoggerInterface $logger)
     {
+        parent::__construct($logger);
         $this->userObject = 'NormanSeibert\Ldap\Domain\Model\Typo3User\FrontendUser';
         $this->groupObject = GeneralUtility::makeInstance(FeGroup::class);
         $this->userRepository = GeneralUtility::makeInstance(FrontendUserRepository::class);

@@ -69,6 +69,7 @@ class BeUser extends \NormanSeibert\Ldap\Domain\Model\LdapUser\User
 
     public function __construct(LoggerInterface $logger)
     {
+        parent::__construct($logger);
         $this->userObject = 'NormanSeibert\Ldap\Domain\Model\Typo3User\BackendUser';
         $this->groupObject = GeneralUtility::makeInstance(BeGroup::class);
         $this->userRepository = GeneralUtility::makeInstance(BackendUserRepository::class);

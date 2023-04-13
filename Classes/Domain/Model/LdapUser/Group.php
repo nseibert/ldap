@@ -60,10 +60,10 @@ class Group extends \NormanSeibert\Ldap\Domain\Model\LdapUser\LdapEntity
      */
     protected $logLevel;
 
-    public function __construct()
+    public function __construct(LoggerInterface $logger)
     {
-        parent::__construct();
-        $this->logger = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Log\LogManager::class)->getLogger(__CLASS__);
+        parent::__construct($logger);
+        $this->logger = $logger;
     }
 
     public function setLoglevel(int $logLevel)

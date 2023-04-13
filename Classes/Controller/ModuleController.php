@@ -36,15 +36,12 @@ use NormanSeibert\Ldap\Service\BackendModule\ModuleDataStorageService;
 use NormanSeibert\Ldap\Domain\Model\BackendModule\ModuleData;
 use NormanSeibert\Ldap\Domain\Model\BackendModule\FormSettings;
 use TYPO3\CMS\Backend\Template\Components\Menu\Menu;
-use TYPO3\CMS\Backend\Template\Components\Menu\MenuItem;
 use TYPO3\CMS\Backend\View\BackendTemplateView;
-use TYPO3\CMS\Core\Messaging\FlashMessage;
 use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
-use TYPO3\CMS\Fluid\View\StandaloneView;
 use TYPO3\CMS\Extbase\Mvc\Web\Routing\UriBuilder;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
-use TYPO3\CMS\Backend\Template\ModuleTemplate;
 use TYPO3\CMS\Backend\Template\ModuleTemplateFactory;
+use NormanSeibert\Ldap\Domain\Repository\LdapServer\LdapServerRepository;
 
 /**
  * Controller for backend module.
@@ -69,9 +66,14 @@ class ModuleController extends ActionController
     protected $beUserRepository;
 
     /**
+     * @var LdapServerRepository
+     */
+    protected $serverRepository;
+
+    /**
      * @var LdapConfiguration
      */
-    protected $ldapConfig;
+    protected $configuration;
 
     /**
      * @var LdapImporter
@@ -98,7 +100,8 @@ class ModuleController extends ActionController
     public function __construct(
         FrontendUserRepository $feUserRepository,
         BackendUserRepository $beUserRepository,
-        LdapConfiguration $ldapConfig,
+        LdapConfiguration $configuration,
+        LdapServerRepository $serverRepository,
         LdapImporter $importer,
         ModuleData $moduleData,
         ModuleDataStorageService $moduleDataStorageService,
@@ -106,7 +109,8 @@ class ModuleController extends ActionController
     {
         $this->feUserRepository = $feUserRepository;
         $this->beUserRepository = $beUserRepository;
-        $this->ldapConfig = $ldapConfig;
+        $this->configuration = $configuration;
+        $this->serverRepository = $serverRepository;
         $this->importer = $importer;
         $this->moduleData = $moduleData;
         $this->moduleDataStorageService = $moduleDataStorageService;
@@ -172,8 +176,7 @@ class ModuleController extends ActionController
      */
     public function checkAction(): \Psr\Http\Message\ResponseInterface
     {
-        $this->ldapConfig->getLdapServers();
-        $ok = $this->ldapConfig->isConfigOK();
+        $ok = $this->configuration->checkConfiguration();
         $this->view->assign('ok', $ok);
 
         // return $this->htmlResponse();
@@ -192,11 +195,9 @@ class ModuleController extends ActionController
      */
     public function summaryAction(): \Psr\Http\Message\ResponseInterface
     {
-        $ldapServers = $this->ldapConfig->getLdapServers();
+        $ldapServers = $this->serverRepository->findAll();
         $servers = [];
-        foreach ($ldapServers as $uid) {
-            $ldapServer = GeneralUtility::makeInstance(LdapServer::class);
-            $ldapServer->initializeServer($uid);
+        foreach ($ldapServers as $uid => $ldapServer) {
             $status = $ldapServer->checkBind();
             $ldapServer->setLimitLdapResults(3);
             $ldapServer->setScope('fe');
@@ -232,11 +233,9 @@ class ModuleController extends ActionController
         $feUsers = [];
         $settings = $this->initializeFormSettings();
 
-        $ldapServers = $this->ldapConfig->getLdapServers();
+        $ldapServers = $this->serverRepository->findAll();
         $serverConfigurations = [];
-        foreach ($ldapServers as $uid) {
-            $ldapServer = GeneralUtility::makeInstance(LdapServer::class);
-            $ldapServer->initializeServer($uid);
+        foreach ($ldapServers as $ldapServer) {
             $serverConfigurations[] = $ldapServer->getConfiguration();
         }
 
@@ -272,11 +271,10 @@ class ModuleController extends ActionController
         $settings = $this->initializeFormSettings($formSettings);
         $this->view->assign('formSettings', $settings);
 
-        $ldapServers = $this->ldapConfig->getLdapServers();
+        $ldapServers = $this->serverRepository->findAll();
         $runs = [];
-        foreach ($ldapServers as $uid) {
-            $ldapServer = GeneralUtility::makeInstance(LdapServer::class);
-            $ldapServer->initializeServer($uid);
+        foreach ($ldapServers as $ldapServer) {
+            $uid = $ldapServer->getUid();
             if (in_array($uid, $settings->getUseServers())) {
                 if ($settings->getAuthenticateFe()) {
                     $this->importer->init($uid, 'fe');
@@ -305,11 +303,9 @@ class ModuleController extends ActionController
         $feUsers = [];
         $settings = $this->initializeFormSettings();
 
-        $ldapServers = $this->ldapConfig->getLdapServers();
+        $ldapServers = $this->serverRepository->findAll();
         $serverConfigurations = [];
-        foreach ($ldapServers as $uid) {
-            $ldapServer = GeneralUtility::makeInstance(LdapServer::class);
-            $ldapServer->initializeServer($uid);
+        foreach ($ldapServers as $ldapServer) {
             $serverConfigurations[] = $ldapServer->getConfiguration();
         }
 
@@ -345,11 +341,11 @@ class ModuleController extends ActionController
         $settings = $this->initializeFormSettings($formSettings);
         $this->view->assign('formSettings', $settings);
 
-        $ldapServers = $this->ldapConfig->getLdapServers();
+        $ldapServers = $this->serverRepository->findAll();
         $runs = [];
-        foreach ($ldapServers as $uid) {
-            $ldapServer = GeneralUtility::makeInstance(LdapServer::class);
-            $ldapServer->initializeServer($uid);
+
+        foreach ($ldapServers as $ldapServer) {
+            $uid = $ldapServer->getUid();
             if (in_array($uid, $settings->getUseServers())) {
                 if ($settings->getAuthenticateFe()) {
                     $this->importer->init($uid, 'fe');
@@ -378,11 +374,9 @@ class ModuleController extends ActionController
         $feUsers = [];
         $settings = $this->initializeFormSettings();
 
-        $ldapServers = $this->ldapConfig->getLdapServers();
+        $ldapServers = $this->serverRepository->findAll();
         $serverConfigurations = [];
-        foreach ($ldapServers as $uid) {
-            $ldapServer = GeneralUtility::makeInstance(LdapServer::class);
-            $ldapServer->initializeServer($uid);
+        foreach ($ldapServers as $ldapServer) {
             $serverConfigurations[] = $ldapServer->getConfiguration();
         }
 
@@ -418,11 +412,11 @@ class ModuleController extends ActionController
         $settings = $this->initializeFormSettings($formSettings);
         $this->view->assign('formSettings', $settings);
 
-        $ldapServers = $this->ldapConfig->getLdapServers();
+        $ldapServers = $this->serverRepository->findAll();
         $runs = [];
-        foreach ($ldapServers as $uid) {
-            // $ldapServer = GeneralUtility::makeInstance(LdapServer::class);
-            // $ldapServer->initializeServer($uid);
+
+        foreach ($ldapServers as $uid => $ldapServer) {
+            $uid = $ldapServer->getUid();
             if (in_array($uid, $settings->getUseServers())) {
                 if ($settings->getAuthenticateFe()) {
                     $this->importer->init($uid, 'fe');
@@ -507,9 +501,11 @@ class ModuleController extends ActionController
         $user = null;
         $settings = $this->initializeFormSettings();
 
-        $ldapServers = $this->ldapConfig->getLdapServers();
-        $serverConfigurations = [];
-        foreach ($ldapServers as $uid) {
+        $ldapServers = $this->serverRepository->findAll();
+        $runs = [];
+
+        foreach ($ldapServers as $ldapServer) {
+            $uid = $ldapServer->getUid();
             $ldapServer = GeneralUtility::makeInstance(LdapServer::class);
             $ldapServer->initializeServer($uid);
             $serverConfigurations[] = $ldapServer->getConfiguration();
@@ -558,7 +554,8 @@ class ModuleController extends ActionController
                     $password = \NormanSeibert\Ldap\Utility\Helpers::sanitizeCredentials($settings->getPassword());
                     $ldapUsers = $ldapServer->getUsers($loginname);
                     if (isset($ldapUsers) && (1 == count($ldapUsers))) {
-                        $ldapUser = $ldapUsers[0];
+                        $ldapUsers->rewind();
+                        $ldapUser = $ldapUsers->current();
                         $user['found'] = true;
                         $user['serverUid'] = $ldapServer->getConfiguration()->getUid();
                         $user['dn'] = $ldapUser->getDN();

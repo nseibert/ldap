@@ -34,6 +34,7 @@ use NormanSeibert\Ldap\Domain\Model\Typo3User\FrontendUser;
 use NormanSeibert\Ldap\Domain\Model\LdapServer\ServerConfigurationUsers;
 use NormanSeibert\Ldap\Domain\Model\Typo3User\UserInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use Psr\Log\LoggerInterface;
 
 /**
  * Model for users read from LDAP server.
@@ -100,9 +101,7 @@ class User extends \NormanSeibert\Ldap\Domain\Model\LdapUser\LdapEntity
 
     public function __construct(LoggerInterface $logger)
     {
-        parent::construct();
-        $this->importGroups = 1;
-        // $this->logger = GeneralUtility::makeInstance(\TYPO3\CMS\Core\Log\LogManager::class)->getLogger(__CLASS__);
+        parent::__construct($logger);
         $this->logger = $logger;
     }
 

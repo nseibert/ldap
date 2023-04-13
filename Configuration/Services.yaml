@@ -35,18 +35,36 @@ services:
 
   NormanSeibert\Ldap\Domain\Model\Configuration\LdapConfiguration:
     public: true
+    shared: false
 
   NormanSeibert\Ldap\Domain\Model\LdapServer\LdapServer:
     public: true
+    shared: false
+
+  NormanSeibert\Ldap\Domain\Model\LdapServer\ServerConfiguration:
+    public: true
+    shared: false
+
+  NormanSeibert\Ldap\Domain\Model\LdapServer\ServerConfigurationGroups:
+    public: true
+    shared: false
+
+  NormanSeibert\Ldap\Domain\Model\LdapServer\ServerConfigurationUsers:
+    public: true
+    shared: false
 
   NormanSeibert\Ldap\Domain\Model\LdapUser\FeUser:
     public: true
+    shared: false
 
   NormanSeibert\Ldap\Domain\Model\LdapUser\FeGroup:
     public: true
+    shared: false
 
   NormanSeibert\Ldap\Domain\Model\LdapUser\BeUser:
     public: true
+    shared: false
 
   NormanSeibert\Ldap\Domain\Model\LdapUser\BeGroup:
     public: true
+    shared: false

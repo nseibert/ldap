@@ -30,6 +30,7 @@ use NormanSeibert\Ldap\Domain\Model\Configuration\LdapConfiguration;
 use NormanSeibert\Ldap\Domain\Model\LdapServer\LdapServer;
 use NormanSeibert\Ldap\Domain\Repository\Typo3User\BackendUserRepository;
 use NormanSeibert\Ldap\Domain\Repository\Typo3User\FrontendUserRepository;
+use NormanSeibert\Ldap\Domain\Repository\LdapServer\LdapServerRepository;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -55,6 +56,11 @@ class LdapImporter
     protected $ldapServer;
 
     /**
+     * @var LdapServerRepository
+     */
+    protected $serverRepository;
+
+    /**
      * @var FrontendUserRepository
      */
     protected $feUserRepository;
@@ -64,18 +70,17 @@ class LdapImporter
      */
     protected $beUserRepository;
 
-    /**
-     * @param
-     */
     public function __construct(
         LdapConfiguration $ldapConfig,
         LdapServer $ldapServer,
+        LdapServerRepository $serverRepository,
         FrontendUserRepository $feUserRepository,
         BackendUserRepository $beUserRepository,
         LoggerInterface $logger)
     {
         $this->ldapConfig = $ldapConfig;
         $this->ldapServer = $ldapServer;
+        $this->serverRepository = $serverRepository;
         $this->feUserRepository = $feUserRepository;
         $this->beUserRepository = $beUserRepository;
         $this->logger = $logger;
@@ -89,8 +94,9 @@ class LdapImporter
      */
     public function init($uid, $scope)
     {
-        $server = $this->ldapServer->initializeServer($uid);
+        $server = $this->serverRepository->findByUid($uid);
         if (is_object($server)) {
+            $this->ldapServer = $server;
             $this->ldapServer->setScope($scope);
         }
         if ('be' == $scope) {
@@ -167,7 +173,7 @@ class LdapImporter
         $tmpServer = null;
         $removeUsers = [];
         foreach ($users as $user) {
-            $user->setLoglevel($this->ldapConfig->logLevel);
+            $user->setLoglevel($this->ldapConfig->getLogLevel());
             if ($user->getServerUid()) {
 				// note the . behind the uid as it comes from the DB
 				$server = $this->ldapConfig->getLdapServer($user->getServerUid().".");
@@ -217,7 +223,7 @@ class LdapImporter
     private function storeNewUsers($runIdentifier, $ldapUsers)
     {
         foreach ($ldapUsers as $user) {
-            $user->setLoglevel($this->ldapConfig->logLevel);
+            $user->setLoglevel($this->ldapConfig->getLogLevel());
             $user->loadUser();
             $typo3User = $user->getUser();
             if (!is_object($typo3User)) {
@@ -235,7 +241,7 @@ class LdapImporter
     private function updateUsers($runIdentifier, $ldapUsers)
     {
         foreach ($ldapUsers as $user) {
-            $user->setLoglevel($this->ldapConfig->logLevel);
+            $user->setLoglevel($this->ldapConfig->getLogLevel());
             $user->loadUser();
             $typo3User = $user->getUser();
             if (is_object($typo3User)) {
