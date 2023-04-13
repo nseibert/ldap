@@ -10,7 +10,7 @@ defined('TYPO3') or die();
     $subTypes = '';
     if (isset($config['enableFE']) && $config['enableFE']) {
         $subTypesArr[] = 'getUserFE';
-        // $subTypesArr[] = 'authUserFE';
+        $subTypesArr[] = 'authUserFE';
         if ($config['enableSSO']) {
             $TYPO3_CONF_VARS['SVCONF']['auth']['setup']['FE_fetchUserIfNoSession'] = 1;
         }

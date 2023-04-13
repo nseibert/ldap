@@ -35,7 +35,7 @@ use TYPO3\CMS\Extbase\DomainObject\AbstractEntity;
 /**
  * Model for TYPO3 backend users.
  */
-class BackendUser extends AbstractEntity implements \NormanSeibert\Ldap\Domain\Model\Typo3User\UserInterface
+class BackendUser extends AbstractEntity
 {
     /**
      * @var string

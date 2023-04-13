@@ -34,7 +34,7 @@ use TYPO3\CMS\Extbase\Persistence\ObjectStorage;
 /**
  * Model for TYPO3 frontend users.
  */
-class FrontendUserGroup extends AbstractEntity implements \NormanSeibert\Ldap\Domain\Model\Typo3User\UserGroupInterface
+class FrontendUserGroup extends AbstractEntity
 {
     /**
      * @var string

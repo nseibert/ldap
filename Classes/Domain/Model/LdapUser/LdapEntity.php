@@ -28,11 +28,15 @@ namespace NormanSeibert\Ldap\Domain\Model\LdapUser;
 
 use Psr\Log\LoggerInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use NormanSeibert\Ldap\Domain\Model\LdapServer\LdapServer;
+use NormanSeibert\Ldap\Domain\Model\LdapUser\LdapUser;
+use NormanSeibert\Ldap\Domain\Model\LdapUser\LdapGroup;
+
 
 /**
  * Model for objects read from LDAP server.
  */
-class LdapEntity extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
+abstract class LdapEntity
 {
     private LoggerInterface $logger;
 
@@ -47,7 +51,7 @@ class LdapEntity extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
     protected $attributes;
 
     /**
-     * @var \NormanSeibert\Ldap\Domain\Model\LdapServer\Server
+     * @var LdapServer
      */
     protected $ldapServer;
 
@@ -55,12 +59,6 @@ class LdapEntity extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
      * @var int
      */
     protected $logLevel;
-
-    public function __construct(LoggerInterface $logger)
-    {
-        // $this->logger = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Log\LogManager::class)->getLogger(__CLASS__);
-        $this->logger = $logger;
-    }
 
     public function setLoglevel(int $logLevel)
     {
@@ -70,7 +68,7 @@ class LdapEntity extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
     /**
      * @param string $dn
      *
-     * @return \NormanSeibert\Ldap\Domain\Model\LdapUser\User
+     * @return LdapUser | LdapGroup
      */
     public function setDN($dn)
     {
@@ -90,7 +88,7 @@ class LdapEntity extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
     /**
      * @param array $attrs
      *
-     * @return \NormanSeibert\Ldap\Domain\Model\LdapUser\User
+     * @return LdapUser | LdapGroup
      */
     public function setAttributes($attrs)
     {
@@ -111,7 +109,7 @@ class LdapEntity extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
      * @param string $attr
      * @param string $value
      *
-     * @return \NormanSeibert\Ldap\Domain\Model\LdapUser\User
+     * @return LdapUser | LdapGroup
      */
     public function setAttribute($attr, $value)
     {

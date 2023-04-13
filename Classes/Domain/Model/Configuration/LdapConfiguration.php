@@ -110,7 +110,7 @@ class LdapConfiguration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
         $configOK = $this->configurationRepository->isConfigurationValid();
 
         if ($configOK) {
-            $ldapServers = $this->configurationRepository->getLdapServerUids();
+            $ldapServers = $this->configurationRepository->getLdapServers();
 
             if (count($ldapServers)) {
                 $configOK = true;

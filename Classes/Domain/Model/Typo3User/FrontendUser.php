@@ -36,7 +36,7 @@ use TYPO3\CMS\Extbase\Persistence\ObjectStorage;
 /**
  * Model for TYPO3 frontend users.
  */
-class FrontendUser extends AbstractEntity implements \NormanSeibert\Ldap\Domain\Model\Typo3User\UserInterface
+class FrontendUser extends AbstractEntity
 {
     /**
      * @var string
@@ -124,7 +124,7 @@ class FrontendUser extends AbstractEntity implements \NormanSeibert\Ldap\Domain\
     protected $company = '';
 
     /**
-     * @var \DateTime|null
+     * @var \DateTime | null
      */
     protected $lastlogin;
     /**

@@ -29,12 +29,11 @@ namespace NormanSeibert\Ldap\Domain\Repository\Configuration;
 use NormanSeibert\Ldap\Utility\Helpers;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use Psr\Log\LoggerInterface;
-use \TYPO3\CMS\Extbase\Persistence\Repository;
 
 /**
  * Repository for the extension's configuration of LDAP servsers.
  */
-class LdapConfigurationRepository extends Repository
+class LdapConfigurationRepository
 {
     private LoggerInterface $logger;
 
@@ -79,81 +78,11 @@ class LdapConfigurationRepository extends Repository
     }
 
     /**
-     * Gets uids of matching LDAP server definitions.
-     *
-     * @param string $uid
-     * @param array  $pid
-     * @param string $authenticate
-     * @param array  $userPid
-     *
-     * @return array
+     * Gets all LDAP server definitions.
      */
-    public function getLdapServerUids($uid = null, $pid = null, $authenticate = null, $userPid = null)
+    public function getLdapServers(): array
     {
-        $ldapServers = [];
-
-        if (is_array($this->allLdapServers)) {
-            foreach ($this->allLdapServers as $serverUid => $server) {
-                $load = 1;
-                if ($server['disable']) {
-                    $load = 0;
-                    $msg = 'LDAP server "'.$server['title'].'" ignored: is disabled.';
-                    $this->logger->info($msg);
-                }
-                if ($load) {
-                    if ($pid && $server['pid']) {
-                        if (!GeneralUtility::inList($pid, $server['pid'])) {
-                            $load = 0;
-                            $pidList = '';
-                            if (is_array($pid)) {
-                                $pidList = implode(', ', $pid);
-                            } else {
-                                $pidList = $pid;
-                            }
-                            $msg = 'LDAP server "'.$server['title'].'" ignored: does not match list of page uids ('.$pidList.').';
-                            $this->logger->info($msg);
-                        }
-                    }
-                    if ($userPid && isset($server['fe_users.']['pid'])) {
-                        if (!GeneralUtility::inList($userPid, $server['fe_users.']['pid'])) {
-                            $load = 0;
-                            $pidList = '';
-                            if (is_array($userPid)) {
-                                $pidList = implode(', ', $userPid);
-                            } else {
-                                $pidList = $userPid;
-                            }
-                            $msg = 'LDAP server "'.$server['title'].'" ignored: does not match list of page uids ('.$pidList.').';
-                            $this->logger->info($msg);
-                        }
-                    }
-                    if ($uid) {
-                        if ($server['uid']) {
-                            if ($server['uid'] != $uid) {
-                                $load = 0;
-                            } else {
-                                $msg = 'LDAP server "'.$server['uid'].'" fetched from repository successfully.';
-                                $this->logger->debug($msg);
-                            }
-                        }
-                    }
-                    $server['authenticate'] = strtolower($server['authenticate']);
-                    if ($authenticate) {
-                        $authenticate = strtolower($authenticate);
-                        if ($server['authenticate'] && ($server['authenticate'] != $authenticate) && ('both' != $server['authenticate'])) {
-                            $load = 0;
-                            $msg = 'LDAP server "'.$server['title'].'" ignored: no matching authentication configured.';
-                            $this->logger->info($msg);
-                        }
-                    }
-                }
-                if ($load) {
-                    $ldapServers[$serverUid] = $serverUid;
-                }
-            }
-        }
-
-        return $ldapServers;
+        return $this->allLdapServers;
     }
 
     /**

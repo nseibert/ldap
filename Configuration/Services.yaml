@@ -53,18 +53,18 @@ services:
     public: true
     shared: false
 
-  NormanSeibert\Ldap\Domain\Model\LdapUser\FeUser:
+  NormanSeibert\Ldap\Domain\Model\LdapUser\LdapFeUser:
     public: true
     shared: false
 
-  NormanSeibert\Ldap\Domain\Model\LdapUser\FeGroup:
+  NormanSeibert\Ldap\Domain\Model\LdapUser\LdapFeGroup:
     public: true
     shared: false
 
-  NormanSeibert\Ldap\Domain\Model\LdapUser\BeUser:
+  NormanSeibert\Ldap\Domain\Model\LdapUser\LdapBeUser:
     public: true
     shared: false
 
-  NormanSeibert\Ldap\Domain\Model\LdapUser\BeGroup:
+  NormanSeibert\Ldap\Domain\Model\LdapUser\LdapBeGroup:
     public: true
     shared: false

@@ -32,7 +32,7 @@ use TYPO3\CMS\Extbase\Persistence\Repository;
 /**
  * Repository for TYPO3 backend usergroups.
  */
-class BackendUserGroupRepository extends Repository implements UserGroupRepositoryInterface
+class BackendUserGroupRepository extends Repository
 {
     public function initializeObject()
     {
@@ -50,15 +50,13 @@ class BackendUserGroupRepository extends Repository implements UserGroupReposito
         $query->getQuerySettings()->setRespectStoragePage(false);
         \NormanSeibert\Ldap\Utility\Helpers::setRespectEnableFieldsToFalse($query);
         $groups = $query->execute();
-
-        return $groups->toArray();
     }
 
     /**
      * @param string $grouptitle
      * @param int    $pid
      *
-     * @return \TYPO3\CMS\Extbase\Domain\Repository\BackendUserGroupRepository|\TYPO3\CMS\Extbase\Persistence\QueryResultInterface
+     * @return \TYPO3\CMS\Extbase\Domain\Repository\BackendUserGroupRepository | \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
      */
     public function findByGroupTitle($grouptitle, $pid = null)
     {
@@ -92,15 +90,8 @@ class BackendUserGroupRepository extends Repository implements UserGroupReposito
             $query->in('uid', $uidList)
         );
         $groups = $query->execute();
-
-        return $groups->toArray();
     }
 
-    /**
-     * @param string $dn
-     *
-     * @return \TYPO3\CMS\Extbase\Domain\Repository\BackendUserGroupRepository|\TYPO3\CMS\Extbase\Persistence\QueryResultInterface
-     */
     public function findByDn($dn)
     {
         $user = false;
@@ -136,9 +127,6 @@ class BackendUserGroupRepository extends Repository implements UserGroupReposito
         return $query->execute();
     }
 
-    /**
-     * @return \TYPO3\CMS\Extbase\Domain\Repository\BackendUserGroupRepository|\TYPO3\CMS\Extbase\Persistence\QueryResultInterface
-     */
     public function findLdapImported()
     {
         $query = $this->createQuery();
@@ -157,4 +145,27 @@ class BackendUserGroupRepository extends Repository implements UserGroupReposito
 
         return $query->execute();
     }
+
+    /*
+    public function loadAllGroups()
+    {
+        if ('be_users' == $this->table) {
+            $this->allBeGroups = $this->beUsergroupRepository->findAll();
+        } else {
+            $pid = null;
+            $groupRules = $this->getConfiguration()->getUserRules('fe_users')->getGroupRules();
+            if ($groupRules) {
+                $pid = $groupRules->getPid();
+            }
+            if (empty($pid)) {
+                $pid = $this->getConfiguration()->getUserRules('fe_users')->getPid();
+            }
+            if ($pid) {
+                $this->allFeGroups = $this->feUsergroupRepository->findByPid($pid);
+            } else {
+                $this->allFeGroups = $this->feUsergroupRepository->findAll();
+            }
+        }
+    }
+    */
 }

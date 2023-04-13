@@ -27,19 +27,21 @@ namespace NormanSeibert\Ldap\Domain\Model\LdapUser;
  */
 
 use TYPO3\CMS\Extbase\Persistence\ObjectStorage;
-use NormanSeibert\Ldap\Domain\Repository\Typo3User\UserRepositoryInterface;
-use NormanSeibert\Ldap\Domain\Repository\Typo3User\UserGroupRepositoryInterface;
+use NormanSeibert\Ldap\Domain\Repository\Typo3User\FrontendUserRepository;
+use NormanSeibert\Ldap\Domain\Repository\Typo3User\FrontendUserGroupRepository;
+use NormanSeibert\Ldap\Domain\Repository\Typo3User\BackendUserRepository;
+use NormanSeibert\Ldap\Domain\Repository\Typo3User\BackendUserGroupRepository;
 use NormanSeibert\Ldap\Domain\Model\Typo3User\BackendUser;
 use NormanSeibert\Ldap\Domain\Model\Typo3User\FrontendUser;
 use NormanSeibert\Ldap\Domain\Model\LdapServer\ServerConfigurationUsers;
-use NormanSeibert\Ldap\Domain\Model\Typo3User\UserInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use Psr\Log\LoggerInterface;
+use NormanSeibert\Ldap\Utility\Helpers;
 
 /**
  * Model for users read from LDAP server.
  */
-class User extends \NormanSeibert\Ldap\Domain\Model\LdapUser\LdapEntity
+abstract class LdapUser extends LdapEntity
 {
     private LoggerInterface $logger;
 
@@ -50,12 +52,12 @@ class User extends \NormanSeibert\Ldap\Domain\Model\LdapUser\LdapEntity
     const NOTICE = -2;
 
     /**
-     * @var UserRepositoryInterface
+     * @var FrontendUserRepository | BackendUserRepository
      */
     protected $userRepository;
 
     /**
-     * @var UserGroupRepositoryInterface
+     * @var FrontendUserGroupRepository | BackendUserGroupRepository
      */
     protected $usergroupRepository;
 
@@ -67,7 +69,7 @@ class User extends \NormanSeibert\Ldap\Domain\Model\LdapUser\LdapEntity
     /**
      * @var BackendUser | FrontendUser
      */
-    protected $user;
+    protected $typo3User;
 
     /**
      * @var ServerConfigurationUsers
@@ -78,11 +80,6 @@ class User extends \NormanSeibert\Ldap\Domain\Model\LdapUser\LdapEntity
      * @var bool
      */
     protected $importGroups;
-
-    /**
-     * @var string
-     */
-    protected $userObject;
 
     /**
      * @var int
@@ -99,45 +96,39 @@ class User extends \NormanSeibert\Ldap\Domain\Model\LdapUser\LdapEntity
      */
     protected $logLevel;
 
-    public function __construct(LoggerInterface $logger)
-    {
-        parent::__construct($logger);
-        $this->logger = $logger;
-    }
-
     public function setLoglevel(int $logLevel)
     {
         $this->logLevel = $logLevel;
     }
 
-    public function setUser(UserInterface $user)
+    public function setUser(BackendUser | FrontendUser $typo3User)
     {
-        $this->user = $user;
+        $this->typo3User = $typo3User;
     }
 
     /**
-     * @return UserInterface
+     * @return FrontendUser | BackendUser
      */
     public function getUser()
     {
-        return $this->user;
+        return $this->typo3User;
     }
 
     /**
-     * Tries to load the TYPO3 user based on DN or username.
+     * Tries to load the TYPO3 typo3User based on DN or username.
      */
     public function loadUser()
     {
         $pid = $this->userRules->getPid();
-        $msg = 'Search for user record with DN = '.$this->dn.' in page '.$pid;
+        $msg = 'Search for typo3User record with DN = '.$this->dn.' in page '.$pid;
         if ($this->logLevel >= 2) {
             $this->logger->debug($msg);
         }
         // search for DN
-        $user = $this->userRepository->findByDn($this->dn, $pid);
+        $typo3User = $this->userRepository->findByDn($this->dn, $pid);
         // search for Username if no record with DN found
-        if (is_object($user)) {
-            $msg = 'User record already existing: '.$user->getUid();
+        if (is_object($typo3User)) {
+            $msg = 'User record already existing: '.$typo3User->getUid();
             if (3 == $this->logLevel) {
                 $this->logger->debug($msg);
             }
@@ -146,19 +137,19 @@ class User extends \NormanSeibert\Ldap\Domain\Model\LdapUser\LdapEntity
             $rawLdapUsername = $mapping['username.']['data'];
             $ldapUsername = str_replace('field:', '', $rawLdapUsername);
             $username = $this->getAttribute($ldapUsername);
-            $user = $this->userRepository->findByUsername($username, $pid);
-            if (is_object($user)) {
-                $msg = 'User record already existing: '.$user->getUid();
+            $typo3User = $this->userRepository->findByUsername($username, $pid);
+            if (is_object($typo3User)) {
+                $msg = 'User record already existing: '.$typo3User->getUid();
                 if (3 == $this->logLevel) {
                     $this->logger->debug($msg);
                 }
             }
         }
-        $this->user = $user;
+        $this->typo3User = $typo3User;
     }
 
     /**
-     * adds a new TYPO3 user.
+     * adds a new TYPO3 typo3User.
      *
      * @param string $lastRun
      */
@@ -173,22 +164,21 @@ class User extends \NormanSeibert\Ldap\Domain\Model\LdapUser\LdapEntity
         $createUser = false;
 
         if ($username) {
-            $this->user = GeneralUtility::makeInstance($this->userObject);
-            $this->user->setServerUid($this->ldapServer->getConfiguration()->getUid());
-            $this->user->setUsername($username);
-            $this->user->setDN($this->dn);
-            $this->user->generatePassword();
+            $this->typo3User->setServerUid($this->ldapServer->getConfiguration()->getUid());
+            $this->typo3User->setUsername($username);
+            $this->typo3User->setDN($this->dn);
+            $this->typo3User->generatePassword();
 
             $pid = $this->userRules->getPid();
             if (empty($pid)) {
                 $pid = 0;
             }
-            $this->user->setPid($pid);
+            $this->typo3User->setPid($pid);
 
             // LDAP attributes from mapping
             $insertArray = $this->mapAttributes();
             foreach ($insertArray as $field => $value) {
-                $ret = $this->user->_setProperty($field, $value);
+                $ret = $this->typo3User->_setProperty($field, $value);
                 if (!$ret) {
                     $msg = 'Property "'.$field.'" is unknown to Extbase.';
                     if ($this->logLevel >= 1) {
@@ -198,7 +188,7 @@ class User extends \NormanSeibert\Ldap\Domain\Model\LdapUser\LdapEntity
             }
 
             if ($lastRun) {
-                $this->user->setLastRun($lastRun);
+                $this->typo3User->setLastRun($lastRun);
             }
 
             $usergroups = $this->addUsergroupsToUserRecord($lastRun);
@@ -235,14 +225,14 @@ class User extends \NormanSeibert\Ldap\Domain\Model\LdapUser\LdapEntity
             if ($this->logLevel >= 1) {
                 $this->logger->notice($msg);
             }
-            \NormanSeibert\Ldap\Utility\Helpers::addError(self::WARNING, $msg, $this->ldapServer->getConfiguration()->getUid());
+            Helpers::addError(self::WARNING, $msg, $this->ldapServer->getConfiguration()->getUid());
         }
 
         if ($createUser) {
-            $this->userRepository->add($this->user);
-            $msg = 'Create user record "'.$username.'" (DN: '.$this->dn.')';
+            $this->userRepository->add($this->typo3User);
+            $msg = 'Create typo3User record "'.$username.'" (DN: '.$this->dn.')';
             if ($this->logLevel >= 3) {
-                $debugData = (array) $this->user;
+                $debugData = (array) $this->typo3User;
                 $this->logger->debug($msg, $debugData);
             } elseif (2 == $this->logLevel) {
                 $this->logger->debug($msg);
@@ -251,7 +241,7 @@ class User extends \NormanSeibert\Ldap\Domain\Model\LdapUser\LdapEntity
     }
 
     /**
-     * updates a TYPO3 user.
+     * updates a TYPO3 typo3User.
      *
      * @param string $lastRun
      */
@@ -266,19 +256,19 @@ class User extends \NormanSeibert\Ldap\Domain\Model\LdapUser\LdapEntity
         $updateUser = false;
 
         if ($username) {
-            $this->user->setUsername($username);
-            $this->user->setServerUid($this->ldapServer->getConfiguration()->getUid());
-            $this->user->setDN($this->dn);
+            $this->typo3User->setUsername($username);
+            $this->typo3User->setServerUid($this->ldapServer->getConfiguration()->getUid());
+            $this->typo3User->setDN($this->dn);
 
             $pid = $this->userRules->getPid();
             if (!empty($pid)) {
-                $this->user->setPid($pid);
+                $this->typo3User->setPid($pid);
             }
 
             // LDAP attributes from mapping
             $insertArray = $this->mapAttributes();
             foreach ($insertArray as $field => $value) {
-                $ret = $this->user->_setProperty($field, $value);
+                $ret = $this->typo3User->_setProperty($field, $value);
                 if (!$ret) {
                     $msg = 'Property "'.$field.'" is unknown to Extbase.';
                     if ($this->logLevel >= 1) {
@@ -288,7 +278,7 @@ class User extends \NormanSeibert\Ldap\Domain\Model\LdapUser\LdapEntity
             }
 
             if ($lastRun) {
-                $this->user->setLastRun($lastRun);
+                $this->typo3User->setLastRun($lastRun);
             }
 
             $this->removeUsergroupsFromUserRecord();
@@ -326,14 +316,14 @@ class User extends \NormanSeibert\Ldap\Domain\Model\LdapUser\LdapEntity
             if ($this->logLevel >= 1) {
                 $this->logger->warning($msg);
             }
-            \NormanSeibert\Ldap\Utility\Helpers::addError(self::WARNING, $msg, $this->ldapServer->getConfiguration()->getUid());
+            Helpers::addError(self::WARNING, $msg, $this->ldapServer->getConfiguration()->getUid());
         }
 
         if ($updateUser) {
-            $this->userRepository->update($this->user);
-            $msg = 'Update user record "'.$username.'" (DN: '.$this->dn.')';
+            $this->userRepository->update($this->typo3User);
+            $msg = 'Update typo3User record "'.$username.'" (DN: '.$this->dn.')';
             if ($this->logLevel >= 3) {
-                $debugData = (array) $this->user;
+                $debugData = (array) $this->typo3User;
                 $this->logger->debug($msg, $debugData);
             } elseif (2 == $this->logLevel) {
                 $this->logger->debug($msg);
@@ -342,16 +332,16 @@ class User extends \NormanSeibert\Ldap\Domain\Model\LdapUser\LdapEntity
     }
 
     /**
-     * enables a TYPO3 user.
+     * enables a TYPO3 typo3User.
      */
     public function enableUser()
     {
-        $this->user->setIsDisabled(false);
-        $this->userRepository->update($this->user);
+        $this->typo3User->setIsDisabled(false);
+        $this->userRepository->update($this->typo3User);
     }
 
     /**
-     * adds TYPO3 usergroups to the user record.
+     * adds TYPO3 usergroups to the typo3User record.
      *
      * @param string $lastRun
      *
@@ -364,15 +354,15 @@ class User extends \NormanSeibert\Ldap\Domain\Model\LdapUser\LdapEntity
 
             if (count($usergroups) > 0) {
                 foreach ($usergroups as $group) {
-                    $this->user->addUsergroup($group);
+                    $this->typo3User->addUsergroup($group);
                     if (3 == $this->logLevel) {
-                        $msg = 'Add usergroup to user record "'.$this->user->getUsername().'": '.$group->getTitle();
+                        $msg = 'Add usergroup to typo3User record "'.$this->typo3User->getUsername().'": '.$group->getTitle();
                         $this->logger->debug($msg);
                     }
                 }
             } else {
                 if (3 == $this->logLevel) {
-                    $msg = 'User has no LDAP usergroups: '.$this->user->getUsername();
+                    $msg = 'User has no LDAP usergroups: '.$this->typo3User->getUsername();
                     $this->logger->notice($msg);
                 }
             }
@@ -393,33 +383,33 @@ class User extends \NormanSeibert\Ldap\Domain\Model\LdapUser\LdapEntity
     }
 
     /**
-     * removes usergroups from the user record.
+     * removes usergroups from the typo3User record.
      */
     protected function removeUsergroupsFromUserRecord()
     {
         $preserveNonLdapGroups = $this->userRules->getGroupRules()->getPreserveNonLdapGroups();
         if ($preserveNonLdapGroups) {
-            $usergroup = $this->user->getUsergroup();
+            $usergroup = $this->typo3User->getUsergroup();
             if (is_object($usergroup)) {
                 $usergroups = $usergroup->toArray();
                 if (is_array($usergroups)) {
                     foreach ($usergroups as $group) {
                         $extendedGroup = $this->usergroupRepository->findByUid($group->getUid());
                         if ($extendedGroup->getServerUid()) {
-                            $this->user->removeUsergroup($group);
+                            $this->typo3User->removeUsergroup($group);
                         }
                     }
                 } else {
                     $usergroup = GeneralUtility::makeInstance(ObjectStorage::class);
-                    $this->user->setUsergroup($usergroup);
+                    $this->typo3User->setUsergroup($usergroup);
                 }
             } else {
                 $usergroup = GeneralUtility::makeInstance(ObjectStorage::class);
-                $this->user->setUsergroup($usergroup);
+                $this->typo3User->setUsergroup($usergroup);
             }
         } else {
             $usergroup = GeneralUtility::makeInstance(ObjectStorage::class);
-            $this->user->setUsergroup($usergroup);
+            $this->typo3User->setUsergroup($usergroup);
         }
     }
 }

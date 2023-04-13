@@ -26,96 +26,34 @@ namespace NormanSeibert\Ldap\Service;
  * @copyright 2020 Norman Seibert
  */
 
-use NormanSeibert\Ldap\Domain\Model\Configuration\LdapConfiguration;
 use NormanSeibert\Ldap\Domain\Model\LdapServer\LdapServer;
-use NormanSeibert\Ldap\Domain\Repository\Typo3User\BackendUserRepository;
+use SplObjectStorage;
+use TYPO3\CMS\Core\Log\LogManager;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 use NormanSeibert\Ldap\Domain\Repository\Typo3User\FrontendUserRepository;
+use NormanSeibert\Ldap\Domain\Repository\Typo3User\BackendUserRepository;
 use NormanSeibert\Ldap\Domain\Repository\LdapServer\LdapServerRepository;
-use Psr\Log\LoggerInterface;
+use NormanSeibert\Ldap\Service\LdapUserManager;
 
 /**
  * Service to import users from LDAP directory to TYPO3 database.
  */
 class LdapImporter
 {
-    private LoggerInterface $logger;
 
-    /**
-     * @var string
-     */
-    protected $table;
-
-    /**
-     * @var LdapConfiguration
-     */
-    protected $ldapConfig;
-
-    /**
-     * @var LdapServer
-     */
-    protected $ldapServer;
-
-    /**
-     * @var LdapServerRepository
-     */
-    protected $serverRepository;
-
-    /**
-     * @var FrontendUserRepository
-     */
-    protected $feUserRepository;
-
-    /**
-     * @var BackendUserRepository
-     */
-    protected $beUserRepository;
-
-    public function __construct(
-        LdapConfiguration $ldapConfig,
-        LdapServer $ldapServer,
-        LdapServerRepository $serverRepository,
-        FrontendUserRepository $feUserRepository,
-        BackendUserRepository $beUserRepository,
-        LoggerInterface $logger)
-    {
-        $this->ldapConfig = $ldapConfig;
-        $this->ldapServer = $ldapServer;
-        $this->serverRepository = $serverRepository;
-        $this->feUserRepository = $feUserRepository;
-        $this->beUserRepository = $beUserRepository;
-        $this->logger = $logger;
-    }
-
-    /**
-     * initializes the importer.
-     *
-     * @param int $uid
-     * @param string $scope
-     */
-    public function init($uid, $scope)
-    {
-        $server = $this->serverRepository->findByUid($uid);
-        if (is_object($server)) {
-            $this->ldapServer = $server;
-            $this->ldapServer->setScope($scope);
-        }
-        if ('be' == $scope) {
-            $this->table = 'be_users';
-        } else {
-            $this->table = 'fe_users';
-        }
-    }
+    const ERROR = 2;
+    const WARNING = 1;
+    const OK = 0;
+    const INFO = -1;
+    const NOTICE = -2;
 
     /**
      * imports users from LDAP to TYPO3 DB.
-     *
-     * @return string
      */
-    public function doImport()
+    public static function doImport(LdapServer $server): string
     {
         $runIdentifier = uniqid();
-        $this->ldapServer->loadAllGroups();
-        $this->getUsers($runIdentifier, 'import');
+        self::getUsers($server, $runIdentifier, 'import');
 
         return $runIdentifier;
     }
@@ -125,11 +63,10 @@ class LdapImporter
      *
      * @return string
      */
-    public function doUpdate()
+    public function doUpdate(LdapServer $server): string
     {
         $runIdentifier = uniqid();
-        $this->ldapServer->loadAllGroups();
-        $this->getUsers($runIdentifier, 'update');
+        self::getUsers($server, $runIdentifier, 'update');
 
         return $runIdentifier;
     }
@@ -139,44 +76,43 @@ class LdapImporter
      *
      * @return string
      */
-    public function doImportOrUpdate()
+    public function doImportOrUpdate(LdapServer $server): string
     {
         $runIdentifier = uniqid();
-        $this->ldapServer->loadAllGroups();
-        $this->getUsers($runIdentifier, 'importOrUpdate');
+        self::getUsers($server, $runIdentifier, 'importOrUpdate');
 
         return $runIdentifier;
     }
 
     /**
      * deletes/deactivates users from LDAP to TYPO3 DB.
-     *
-     * @param bool $hide
-     * @param bool $deleteNonLdapUsers
-     *
-     * @return string
      */
-    public function doDelete($hide = true, $deleteNonLdapUsers = false)
+    public function doDelete(string $userType, bool $hide = true, bool $deleteNonLdapUsers = false): string
     {
+        $conf = GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Configuration\\ExtensionConfiguration')->get('ldap');
+        $logLevel = $conf['logLevel'];
+        $logger = GeneralUtility::makeInstance(LogManager::class)->getLogger(__CLASS__);
+
         $runIdentifier = uniqid();
-        if ('be_users' == $this->table) {
-            $repository = $this->beUserRepository;
+        if ('be' == $userType) {
+            $userRepository = GeneralUtility::makeInstance(BackendUserRepository::class);
         } else {
-            $repository = $this->feUserRepository;
+            $userRepository = GeneralUtility::makeInstance(FrontendUserRepository::class);
         }
         if ($deleteNonLdapUsers) {
-            $users = $repository->findAll();
+            $users = $userRepository->findAll();
         } else {
-            $users = $repository->findLdapImported();
+            $users = $userRepository->findLdapImported();
         }
 
         $tmpServer = null;
         $removeUsers = [];
         foreach ($users as $user) {
-            $user->setLoglevel($this->ldapConfig->getLogLevel());
+            $user->setLoglevel($logLevel);
             if ($user->getServerUid()) {
 				// note the . behind the uid as it comes from the DB
-				$server = $this->ldapConfig->getLdapServer($user->getServerUid().".");
+                $serverRepository = GeneralUtility::makeInstance(LdapServerRepository::class);
+				$server = $serverRepository->findByUid($user->getServerUid() . ".");
                 if ($server != $tmpServer) {
                     $tmpServer = $server;
                 }
@@ -192,7 +128,7 @@ class LdapImporter
                     } else {
                         $removeUsers[] = $user;
                     }
-                    $repository->update($user);
+                    $userRepository->update($user);
                 }
             } else {
                 $user->setLastRun($runIdentifier);
@@ -201,14 +137,14 @@ class LdapImporter
                 } else {
                     $removeUsers[] = $user;
                 }
-                $repository->update($user);
+                $userRepository->update($user);
             }
         }
 
         foreach ($removeUsers as $user) {
             $user->setLastRun($runIdentifier);
-            $repository->update($user);
-            $repository->remove($user);
+            $userRepository->update($user);
+            $userRepository->remove($user);
         }
 
         return $runIdentifier;
@@ -216,14 +152,14 @@ class LdapImporter
 
     /**
      * creates new TYPO3 users.
-     *
-     * @param string $runIdentifier
-     * @param array  $ldapUsers
      */
-    private function storeNewUsers($runIdentifier, $ldapUsers)
+    private static function storeNewUsers(LdapServer $server, string $runIdentifier, SplObjectStorage $ldapUsers)
     {
+        $conf = GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Configuration\\ExtensionConfiguration')->get('ldap');
+        $logLevel = $conf['logLevel'];
+
         foreach ($ldapUsers as $user) {
-            $user->setLoglevel($this->ldapConfig->getLogLevel());
+            $user->setLoglevel($logLevel());
             $user->loadUser();
             $typo3User = $user->getUser();
             if (!is_object($typo3User)) {
@@ -234,14 +170,14 @@ class LdapImporter
 
     /**
      * updates TYPO3 users.
-     *
-     * @param string $runIdentifier
-     * @param array  $ldapUsers
      */
-    private function updateUsers($runIdentifier, $ldapUsers)
+    private static function updateUsers(LdapServer $server, string $runIdentifier, SplObjectStorage $ldapUsers)
     {
+        $conf = GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Configuration\\ExtensionConfiguration')->get('ldap');
+        $logLevel = $conf['logLevel'];
+
         foreach ($ldapUsers as $user) {
-            $user->setLoglevel($this->ldapConfig->getLogLevel());
+            $user->setLoglevel($logLevel());
             $user->loadUser();
             $typo3User = $user->getUser();
             if (is_object($typo3User)) {
@@ -252,14 +188,10 @@ class LdapImporter
 
     /**
      * imports or updates TYPO3 users.
-     *
-     * @param string $runIdentifier
-     * @param array  $ldapUsers
      */
-    private function storeUsers($runIdentifier, $ldapUsers)
+    private static function storeUsers(LdapServer $server, string $runIdentifier, SplObjectStorage $ldapUsers)
     {
         foreach ($ldapUsers as $user) {
-            // @var $user \NormanSeibert\Ldap\Domain\Model\LdapUser\User
             $user->loadUser();
             $typo3User = $user->getUser();
             if (is_object($typo3User)) {
@@ -272,40 +204,40 @@ class LdapImporter
 
     /**
      * retrieves user records from LDAP.
-     *
-     * @param string $runIdentifier
-     * @param string $command
-     * @param string $search
      */
-    private function getUsers($runIdentifier, $command, $search = '*')
+    private static function getUsers(LdapServer $server, string $runIdentifier, string $command, string $search = '*')
     {
-        $ldapUsers = $this->ldapServer->getUsers($search, false);
+        $conf = GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Configuration\\ExtensionConfiguration')->get('ldap');
+        $logLevel = $conf['logLevel'];
+        $logger = GeneralUtility::makeInstance(LogManager::class)->getLogger(__CLASS__);
+
+        $ldapUsers = $server->getUsers($search, false);
         if (is_object($ldapUsers)) {
             switch ($command) {
                 case 'import':
-                    $this->storeNewUsers($runIdentifier, $ldapUsers);
+                    self::storeNewUsers($server, $runIdentifier, $ldapUsers);
                     break;
                 case 'update':
-                    $this->updateUsers($runIdentifier, $ldapUsers);
+                    self::updateUsers($server, $runIdentifier, $ldapUsers);
                     break;
                 case 'importOrUpdate':
-                    $this->storeUsers($runIdentifier, $ldapUsers);
+                    self::storeUsers($server, $runIdentifier, $ldapUsers);
                     break;
             }
         } else {
             // recursive search
-            if ($this->ldapConfig->logLevel >= 1) {
+            if ($logLevel >= 1) {
                 $msg = 'LDAP query limit exceeded';
                 $this->logger->notice($msg);
             }
             $searchCharacters = \NormanSeibert\Ldap\Utility\Helpers::getSearchCharacterRange();
             foreach ($searchCharacters as $thisCharacter) {
                 $newSearch = substr_replace($search, $thisCharacter, 1, 0);
-                $msg = 'Query server: '.$this->ldapServer->getConfiguration()->getUid().' with getUsers("'.$newSearch.'")';
-                if (3 == $this->ldapConfig->logLevel) {
-                    $this->logger->debug($msg);
+                $msg = 'Query server: ' . $server->getUid() . ' with getUsers("' . $newSearch . '")';
+                if (3 == $logLevel) {
+                    $logger->debug($msg);
                 }
-                $this->getUsers($runIdentifier, $command, $newSearch);
+                self::getUsers($server, $runIdentifier, $command, $newSearch);
             }
         }
     }

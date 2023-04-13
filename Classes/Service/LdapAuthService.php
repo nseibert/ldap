@@ -38,6 +38,7 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager;
 use NormanSeibert\Ldap\Domain\Model\Configuration\LdapConfiguration;
 use NormanSeibert\Ldap\Domain\Repository\LdapServer\LdapServerRepository;
+use SplObjectStorage;
 
 /**
  * Service to authenticate users against LDAP directory.
@@ -102,18 +103,20 @@ class LdapAuthService extends \TYPO3\CMS\Core\Authentication\AuthenticationServi
     private $loginData = [];
 
     /**
-     * @var array
+     * @var SplObjectStorage
      */
     private $ldapServers;
 
     private LdapServerRepository $serverRepository;
 
-    /*
-    public function __construct(PersistenceManager $persistenceManager)
+    public function __construct(
+        LdapServerRepository $serverRepository,
+        PersistenceManager $persistenceManager
+        )
     {
+        $this->serverRepository = $serverRepository;
         $this->persistenceManager = $persistenceManager;
     }
-    */
 
     /**
      * Initialize authentication service.
@@ -144,8 +147,8 @@ class LdapAuthService extends \TYPO3\CMS\Core\Authentication\AuthenticationServi
             if (isset($this->authInfo['db_user']['checkPidList'])) {
                 $pid = $this->authInfo['db_user']['checkPidList'];
             }
-            $this->serverRepository = GeneralUtility::makeInstance(LdapServerRepository::class);
-            $this->ldapServers = $this->serverRepository->findAll(null, null, $this->authInfo['loginType'], $pid);
+            // $this->serverRepository = GeneralUtility::makeInstance(LdapServerRepository::class);
+            $this->ldapServers = $this->serverRepository->findByCritera(null, null, $this->authInfo['loginType'], $pid);
         }
 
         // for testing purposes only!
@@ -156,10 +159,6 @@ class LdapAuthService extends \TYPO3\CMS\Core\Authentication\AuthenticationServi
         if (('logout' != $this->loginData['status']) && empty($this->password) && $this->conf['enableSSO']) {
             $this->activateSSO();
         }
-
-        $configurationManager = GeneralUtility::makeInstance(\TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface::class);
-        $extBaseConfiguration = $configurationManager->getConfiguration(\TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface::CONFIGURATION_TYPE_SETTINGS, 'FeLogin', 'Login');
-        // print_r($extBaseConfiguration); die;
     }
 
     /**
@@ -217,10 +216,10 @@ class LdapAuthService extends \TYPO3\CMS\Core\Authentication\AuthenticationServi
                     $pid = null;
                 }
 
-                if (isset($this->ldapServers) && count($this->ldapServers)) {
+                if (isset($this->ldapServers) && $this->ldapServers->count()) {
                     foreach ($this->ldapServers as $ldapServer) {
                         $uid = $ldapServer->getUid();
-                        if ($user) {
+                        if (is_array($user)) {
                             if ($this->logLevel >= 1) {
                                 $msg = 'User already authenticated';
                                 $this->logger->debug($msg);
@@ -234,8 +233,10 @@ class LdapAuthService extends \TYPO3\CMS\Core\Authentication\AuthenticationServi
                                 $this->logger->debug($msg);
                             }
 
-                            $ldapServer->setScope(strtolower($this->authInfo['loginType']), $pid);
-                            $ldapServer->loadAllGroups();
+                            $ldapServer->setUserType(strtolower($this->authInfo['loginType']));
+                            // $ldapServer->loadAllGroups();
+
+                            // return false;
 
                             if ($this->conf['enableSSO'] && $this->conf['ssoHeader'] && ($_SERVER[$this->conf['ssoHeader']])) {
                                 $ldapUser = $ldapServer->checkUser($this->username);
@@ -253,6 +254,7 @@ class LdapAuthService extends \TYPO3\CMS\Core\Authentication\AuthenticationServi
 
                             if (isset($ldapUser) && is_object($ldapUser)) {
                                 // Credentials are OK
+                                
                                 if ($ldapServer->getConfiguration()->getUserRules($this->user_table)->getAutoImport()) {
                                     // Authenticated users shall be imported/updated
                                     if ($this->logLevel >= 2) {
@@ -266,9 +268,9 @@ class LdapAuthService extends \TYPO3\CMS\Core\Authentication\AuthenticationServi
                                     } else {
                                         $ldapUser->addUser();
                                     }
-                                    // $this->persistenceManager->persistAll();
-                                    $persistenceManager = GeneralUtility::makeInstance(persistenceManager::class);
-                                    $persistenceManager->persistAll();
+                                    $this->persistenceManager->persistAll();
+                                    // $persistenceManager = GeneralUtility::makeInstance(persistenceManager::class);
+                                    // $persistenceManager->persistAll();
                                 }
                                 if ($ldapServer->getConfiguration()->getUserRules($this->user_table)->getAutoEnable()) {
                                     $ldapUser->loadUser();
@@ -283,10 +285,11 @@ class LdapAuthService extends \TYPO3\CMS\Core\Authentication\AuthenticationServi
                                             $ldapUser->enableUser();
                                         }
                                     }
-                                    // $this->persistenceManager->persistAll();
-                                    $persistenceManager = GeneralUtility::makeInstance(persistenceManager::class);
-                                    $persistenceManager->persistAll();
+                                    $this->persistenceManager->persistAll();
+                                    // $persistenceManager = GeneralUtility::makeInstance(persistenceManager::class);
+                                    // $persistenceManager->persistAll();
                                 }
+
                                 $user = $this->getTypo3User($pid);
                                 $user['ldap_authenticated'] = true;
 
@@ -304,7 +307,7 @@ class LdapAuthService extends \TYPO3\CMS\Core\Authentication\AuthenticationServi
                         }
                     }
                 } else {
-                    $user = $this->getTypo3User();
+                    // $user = $this->getTypo3User();
                     if ($this->logLevel >= 1) {
                         $msg = 'No LDAP servers configured';
                         $this->logger->warning($msg);
@@ -325,7 +328,7 @@ class LdapAuthService extends \TYPO3\CMS\Core\Authentication\AuthenticationServi
     {
         $ok = 100;
 
-        if (($this->username) && isset($this->ldapServers) && is_array($this->ldapServers) && (count($this->ldapServers) > 0)) {
+        if (($this->username) && isset($this->ldapServers) && ($this->ldapServers->count() > 0)) {
             $ok = 0;
             // User has already been authenticated during getUser()
             if (isset($user['ldap_authenticated'])) {
@@ -349,6 +352,7 @@ class LdapAuthService extends \TYPO3\CMS\Core\Authentication\AuthenticationServi
                     $this->logger->notice($msg);
                 }
             }
+
             $ok = $ok ? 200 : ($this->conf['onlyLDAP'] ? 0 : 100);
         }
         if ($ok && isset($user['lockToDomain']) && $user['lockToDomain'] != $this->authInfo['HTTP_HOST']) {
@@ -368,7 +372,7 @@ class LdapAuthService extends \TYPO3\CMS\Core\Authentication\AuthenticationServi
         // $this->signalSlotDispatcher->dispatch(__CLASS__, 'beforeAuthentication', $parameters);
 
         if ($this->logLevel >= 1) {
-            $msg = 'function "authUser" returns: '.$ok;
+            $msg = 'function "authUser" returns: ' . $ok;
             $this->logger->debug($msg);
         }
 

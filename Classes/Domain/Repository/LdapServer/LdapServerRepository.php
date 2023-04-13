@@ -39,12 +39,11 @@ use NormanSeibert\Ldap\Domain\Model\Typo3User\BackendUser;
 use NormanSeibert\Ldap\Domain\Model\Typo3User\BackendUserGroup;
 use NormanSeibert\Ldap\Domain\Model\Typo3User\FrontendUser;
 use NormanSeibert\Ldap\Domain\Model\Typo3User\FrontendUserGroup;
-use \TYPO3\CMS\Extbase\Persistence\Repository;
 
 /**
  * Repository for the extension's configured LDAP servsers.
  */
-class LdapServerRepository extends Repository
+class LdapServerRepository
 {
     private LoggerInterface $logger;
 
@@ -77,10 +76,8 @@ class LdapServerRepository extends Repository
 
     /**
      * Gets all LDAP server definitions.
-     *
-     * @return SplObjectStorage
      */
-    public function findAll()
+    public function findAll(): SplObjectStorage
     {
         $ldapServers = new SplObjectStorage();
 
@@ -104,12 +101,8 @@ class LdapServerRepository extends Repository
 
     /**
      * Get LDAP server definitions.
-     *
-     * @param string $uid
-     *
-     * @return mixed
      */
-    public function FindByUid($uid)
+    public function FindByUid(string $uid): LdapServer|bool
     {
         if (isset($this->allLdapServers[$uid . '.'])) {
             $ldapServer = $this->initializeServer($this->allLdapServers[$uid . '.']);
@@ -117,6 +110,78 @@ class LdapServerRepository extends Repository
         } else {
             return false;
         }
+    }
+
+    /**
+     * Gets matching LDAP server definitions.
+     */
+    public function findByCritera(string $uid = null, array $pid = null, string $authenticate = null, string $userPid = null): SplObjectStorage
+    {
+        $ldapServers = new SplObjectStorage();
+
+        if (is_array($this->allLdapServers)) {
+            foreach ($this->allLdapServers as $serverUid => $server) {
+                $load = 1;
+                if ($server['disable']) {
+                    $load = 0;
+                    $msg = 'LDAP server "'.$server['title'].'" ignored: is disabled.';
+                    $this->logger->info($msg);
+                }
+                if ($load) {
+                    if ($pid && $server['pid']) {
+                        if (!GeneralUtility::inList($pid, $server['pid'])) {
+                            $load = 0;
+                            $pidList = '';
+                            if (is_array($pid)) {
+                                $pidList = implode(', ', $pid);
+                            } else {
+                                $pidList = $pid;
+                            }
+                            $msg = 'LDAP server "'.$server['title'].'" ignored: does not match list of page uids ('.$pidList.').';
+                            $this->logger->info($msg);
+                        }
+                    }
+                    if ($userPid && isset($server['fe_users.']['pid'])) {
+                        if (!GeneralUtility::inList($userPid, $server['fe_users.']['pid'])) {
+                            $load = 0;
+                            $pidList = '';
+                            if (is_array($userPid)) {
+                                $pidList = implode(', ', $userPid);
+                            } else {
+                                $pidList = $userPid;
+                            }
+                            $msg = 'LDAP server "'.$server['title'].'" ignored: does not match list of page uids ('.$pidList.').';
+                            $this->logger->info($msg);
+                        }
+                    }
+                    if ($uid) {
+                        if ($server['uid']) {
+                            if ($server['uid'] != $uid) {
+                                $load = 0;
+                            } else {
+                                $msg = 'LDAP server "'.$server['uid'].'" fetched from repository successfully.';
+                                $this->logger->debug($msg);
+                            }
+                        }
+                    }
+                    $server['authenticate'] = strtolower($server['authenticate']);
+                    if ($authenticate) {
+                        $authenticate = strtolower($authenticate);
+                        if ($server['authenticate'] && ($server['authenticate'] != $authenticate) && ('both' != $server['authenticate'])) {
+                            $load = 0;
+                            $msg = 'LDAP server "'.$server['title'].'" ignored: no matching authentication configured.';
+                            $this->logger->info($msg);
+                        }
+                    }
+                }
+                if ($load) {
+                    $ldapServer = $this->initializeServer($this->allLdapServers[$serverUid]);
+                    $ldapServers->attach($ldapServer);
+                }
+            }
+        }
+
+        return $ldapServers;
     }
 
     /**
@@ -276,7 +341,7 @@ class LdapServerRepository extends Repository
     /**
      * @return LdapServer
      */
-    public function initializeServer($server)
+    public function initializeServer(array $server)
     {   
         if (is_array($server)) {
             $errors = $this->checkServerConfiguration($server);

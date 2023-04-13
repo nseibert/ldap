@@ -34,7 +34,7 @@ use TYPO3\CMS\Extbase\Persistence\ObjectStorage;
 /**
  * Model for TYPO3 backend users.
  */
-class BackendUserGroup extends AbstractEntity implements \NormanSeibert\Ldap\Domain\Model\Typo3User\UserGroupInterface
+class BackendUserGroup extends AbstractEntity
 {
     public const FILE_OPPERATIONS = 1;
     public const DIRECTORY_OPPERATIONS = 4;

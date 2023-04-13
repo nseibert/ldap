@@ -32,7 +32,7 @@ use TYPO3\CMS\Extbase\Persistence\Repository;
 /**
  * Repository for TYPO3 backend users.
  */
-class BackendUserRepository extends Repository implements UserRepositoryInterface
+class BackendUserRepository extends Repository
 {
     public function initializeObject()
     {
@@ -45,7 +45,7 @@ class BackendUserRepository extends Repository implements UserRepositoryInterfac
      * @param string $username
      * @param int    $pid
      *
-     * @return \TYPO3\CMS\Extbase\Domain\Repository\BackendUserRepository|\TYPO3\CMS\Extbase\Persistence\QueryResultInterface
+     * @return \TYPO3\CMS\Extbase\Domain\Repository\BackendUserRepository | \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
      */
     public function findByUsername($username, $pid = null)
     {
@@ -69,7 +69,7 @@ class BackendUserRepository extends Repository implements UserRepositoryInterfac
      * @param string $dn
      * @param int    $pid
      *
-     * @return \TYPO3\CMS\Extbase\Domain\Repository\BackendUserRepository|\TYPO3\CMS\Extbase\Persistence\QueryResultInterface
+     * @return \TYPO3\CMS\Extbase\Domain\Repository\BackendUserRepository | \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
      */
     public function findByDn($dn, $pid = null)
     {
@@ -92,7 +92,7 @@ class BackendUserRepository extends Repository implements UserRepositoryInterfac
     /**
      * @param mixed $lastRun
      *
-     * @return \TYPO3\CMS\Extbase\Domain\Repository\BackendUserRepository|\TYPO3\CMS\Extbase\Persistence\QueryResultInterface
+     * @return \TYPO3\CMS\Extbase\Domain\Repository\BackendUserRepository | \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
      */
     public function findByLastRun($lastRun)
     {
@@ -130,7 +130,7 @@ class BackendUserRepository extends Repository implements UserRepositoryInterfac
     }
 
     /**
-     * @return \TYPO3\CMS\Extbase\Domain\Repository\BackendUserRepository|\TYPO3\CMS\Extbase\Persistence\QueryResultInterface
+     * @return \TYPO3\CMS\Extbase\Domain\Repository\BackendUserRepository | \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
      */
     public function findLdapImported()
     {

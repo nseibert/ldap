@@ -30,7 +30,7 @@ namespace NormanSeibert\Ldap\Domain\Repository\Typo3User;
 /**
  * Repository for TYPO3 frontend users.
  */
-class FrontendUserRepository extends Repository implements UserRepositoryInterface
+class FrontendUserRepository extends Repository
 {
     /**
      * @return \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
@@ -80,7 +80,7 @@ class FrontendUserRepository extends Repository implements UserRepositoryInterfa
      * @param string $dn
      * @param int    $pid
      *
-     * @return \TYPO3\CMS\Extbase\Domain\Repository\FrontendUserRepository|\TYPO3\CMS\Extbase\Persistence\QueryResultInterface
+     * @return \TYPO3\CMS\Extbase\Domain\Repository\FrontendUserRepository | \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
      */
     public function findByDn($dn, $pid = null)
     {
@@ -112,7 +112,7 @@ class FrontendUserRepository extends Repository implements UserRepositoryInterfa
     /**
      * @param mixed $lastRun
      *
-     * @return \TYPO3\CMS\Extbase\Domain\Repository\FrontendUserRepository|\TYPO3\CMS\Extbase\Persistence\QueryResultInterface
+     * @return \TYPO3\CMS\Extbase\Domain\Repository\FrontendUserRepository | \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
      */
     public function findByLastRun($lastRun)
     {
@@ -150,7 +150,7 @@ class FrontendUserRepository extends Repository implements UserRepositoryInterfa
     }
 
     /**
-     * @return \TYPO3\CMS\Extbase\Domain\Repository\FrontendUserRepository|\TYPO3\CMS\Extbase\Persistence\QueryResultInterface
+     * @return \TYPO3\CMS\Extbase\Domain\Repository\FrontendUserRepository | \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
      */
     public function findLdapImported()
     {

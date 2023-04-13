@@ -26,18 +26,18 @@ namespace NormanSeibert\Ldap\Domain\Model\LdapServer;
  * @copyright 2020 Norman Seibert
  */
 
-use NormanSeibert\Ldap\Domain\Repository\Typo3User\FrontendUserGroupRepository;
-use NormanSeibert\Ldap\Domain\Repository\Typo3User\BackendUserGroupRepository;
+
 // use Psr\EventDispatcher\EventDispatcherInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use NormanSeibert\Ldap\Domain\Model\LdapUser\BeUser;
-use NormanSeibert\Ldap\Domain\Model\LdapUser\FeUser;
+
+use NormanSeibert\Ldap\Domain\Model\LdapUser\LdapBeUser;
+use NormanSeibert\Ldap\Domain\Model\LdapUser\LdapFeUser;
+use NormanSeibert\Ldap\Domain\Model\LdapUser\LdapUser;
 use NormanSeibert\Ldap\Domain\Model\LdapServer\ServerConfiguration;
 use NormanSeibert\Ldap\Domain\Model\Configuration\LdapConfiguration;
 use NormanSeibert\Ldap\Utility\Helpers;
 use SplObjectStorage;
 use Psr\Log\LoggerInterface;
-
 
 /**
  * Model for an LDAP server.
@@ -91,16 +91,6 @@ class LdapServer extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
      * @var int
      */
     protected $logLevel;
-    
-    /**
-     * @var FrontendUserGroupRepository
-     */
-    protected $feUsergroupRepository;
-
-    /**
-     * @var BackendUserGroupRepository
-     */
-    protected $beUsergroupRepository;
 
     /**
      * @var EventDispatcherInterface
@@ -116,13 +106,9 @@ class LdapServer extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
 
     public function __construct(
         LoggerInterface $logger,
-        FrontendUserGroupRepository $feUsergroupRepository,
-        BackendUserGroupRepository $beUsergroupRepository,
         LdapConfiguration $configuration
     )
     {
-        $this->feUsergroupRepository = $feUsergroupRepository;
-        $this->beUsergroupRepository = $beUsergroupRepository;
         $this->ldapConfiguration = $configuration;
         $this->logger = $logger;
     }
@@ -252,12 +238,14 @@ class LdapServer extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
             // $this->eventDispatcher->dispatch(__CLASS__, 'getUsersResults', $parameters);
 
             $users = new SplObjectStorage();
+            
             for ($i = 0; $i < $info['count']; ++$i) {
                 if ('be_users' == $this->table) {
-                    $user = GeneralUtility::makeInstance(BeUser::class);
+                    $user = GeneralUtility::makeInstance(LdapBeUser::class);
                 } else {
-                    $user = GeneralUtility::makeInstance(FeUser::class);
+                    $user = GeneralUtility::makeInstance(LdapFeUser::class);
                 }
+
                 $user
                     ->setDN($info[$i]['dn'])
                     ->setAttributes($info[$i])
@@ -265,8 +253,9 @@ class LdapServer extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
                 ;
                 $users->attach($user);
             }
+            
 
-            $msg = 'Found '.$info['count'].' records';
+            $msg = 'Found ' . $info['count'] . ' records';
             if (3 == $this->logLevel) {
                 $this->logger->debug($msg);
             }
@@ -286,7 +275,7 @@ class LdapServer extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
      * @param string $dn
      * @param bool   $doSanitize
      *
-     * @return \NormanSeibert\Ldap\Domain\Model\LdapUser\User
+     * @return LdapUser
      */
     public function getUser($dn, $doSanitize = false)
     {
@@ -333,9 +322,9 @@ class LdapServer extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
 
         if (1 == $info['count']) {
             if ('be_users' == $this->table) {
-                $user = GeneralUtility::makeInstance(BeUser::class);
+                $user = GeneralUtility::makeInstance(LdapBeUser::class);
             } else {
-                $user = GeneralUtility::makeInstance(FeUser::class);
+                $user = GeneralUtility::makeInstance(LdapFeUser::class);
             }
         }
 
@@ -351,7 +340,7 @@ class LdapServer extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
                 $this->logger->info($msg);
             }
         } else {
-            $msg = 'Did not find a unique record for the user DN='.$dn.', but found '.$info['count'].' records instead.';
+            $msg = 'Did not find a unique record for the user DN = ' . $dn . ', but found ' . $info['count'] . ' records instead.';
             if ($this->logLevel >= 2) {
                 $this->logger->notice($msg);
             }
@@ -411,7 +400,7 @@ class LdapServer extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
             if (!empty($filter) && !empty($baseDN)) {
                 $filter = str_replace('<search>', $findname, $filter);
 
-                $msg = 'Query server: '.$this->getConfiguration()->getUid().' with filter: '.$filter;
+                $msg = 'Query server: ' . $this->getConfiguration()->getUid() . ' with filter: ' . $filter;
                 if (3 == $this->logLevel) {
                     $this->logger->debug($msg);
                 }
@@ -436,21 +425,30 @@ class LdapServer extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
     }
 
     /**
-     * sets the filter for all queries to FE or BE.
-     *
-     * @param string $scope
-     * @param int    $pid
-     *
-     * @return \NormanSeibert\Ldap\Domain\Model\LdapServer\Server
+     * gets the filter for all queries to FE or BE.
      */
-    public function setScope($scope = 'fe', $pid = null)
+    public function getUserType(): string
+    {
+        if ('be_users' == $this->table) {
+            $userType = 'be';
+        } else {
+            $userType = 'fe';
+        }
+
+        return $userType;
+    }
+
+    /**
+     * sets the filter for all queries to FE or BE.
+     */
+    public function setUserType(string $userType = 'fe', int $pid = null): LdapServer
     {
         if (is_int($pid)) {
             $this->pid = $pid;
         } else {
             unset($this->pid);
         }
-        if ('be' == $scope) {
+        if ('be' == $userType) {
             $this->table = 'be_users';
         } else {
             $this->table = 'fe_users';
@@ -497,20 +495,14 @@ class LdapServer extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
 
     /**
      * checks user credentials by binding to the LDAP server.
-     *
-     * @param string $loginname
-     * @param string $password
-     *
-     * @return array
      */
-    public function authenticateUser($loginname, $password)
+    public function authenticateUser(string $loginname, string $password): LdapFeUser | LdapBeUser | null
     {
         $user = null;
         $username = null;
-        $serverUid = $this->getConfiguration()->getUid();
+        $serverUid = $this->getUid();
         $password = Helpers::sanitizeCredentials($password);
 
-        // @var $ldapUser \NormanSeibert\Ldap\Domain\Model\LdapUser\User
         $ldapUser = $this->checkUser($loginname);
 
         if (is_object($ldapUser)) {
@@ -524,11 +516,11 @@ class LdapServer extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
             if ($bind) {
                 $user = $ldapUser;
                 if ($this->logLevel >= 2) {
-                    $msg = 'User '.$username.' retrieved from LDAP directory (Server: '.$serverUid.')';
+                    $msg = 'User ' . $username . ' retrieved from LDAP directory (Server: ' . $serverUid . ')';
                     $this->logger->debug($msg);
                 }
             } else {
-                $msg = 'LDAP server denies authentication (Server: '.$serverUid.', User: '.$username.')';
+                $msg = 'LDAP server denies authentication (Server: ' . $serverUid . ', User: ' . $username . ')';
                 if ($this->logLevel >= 1) {
                     $this->logger->notice($msg);
                 }
@@ -541,27 +533,23 @@ class LdapServer extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
 
     /**
      * checks user existence.
-     *
-     * @param string $loginname
-     *
-     * @return array
      */
-    public function checkUser($loginname)
+    public function checkUser(string $loginname): LdapFeUser | LdapBeUser | null
     {
         $ldapUser = null;
-        $serverUid = $this->getConfiguration()->getUid();
+        $serverUid = $this->getUid();
         $loginname = Helpers::sanitizeCredentials($loginname);
 
         $ldapUsers = $this->getUsers($loginname);
 
         if (isset($ldapUsers) && (count($ldapUsers) < 1)) {
-            $msg = 'No user found (Server: '.$serverUid.', User: '.$loginname.')';
+            $msg = 'No user found (Server: ' . $serverUid . ', User: ' . $loginname . ')';
             if ($this->logLevel >= 1) {
                 $this->logger->notice($msg);
             }
             Helpers::addError(self::INFO, $msg, $serverUid);
         } elseif (isset($ldapUsers) && (count($ldapUsers) > 1)) {
-            $msg = 'Found '.count($ldapUsers).' instead of one (Server: '.$serverUid.', User: '.$loginname.')';
+            $msg = 'Found ' . count($ldapUsers) . ' instead of one (Server: ' . $serverUid . ', User: ' . $loginname . ')';
             if ($this->logLevel >= 1) {
                 $this->logger->notice($msg);
             }
@@ -592,27 +580,6 @@ class LdapServer extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
     public function getLimitLdapResults()
     {
         return $this->limitLdapResults;
-    }
-
-    public function loadAllGroups()
-    {
-        if ('be_users' == $this->table) {
-            $this->allBeGroups = $this->beUsergroupRepository->findAll();
-        } else {
-            $pid = null;
-            $groupRules = $this->getConfiguration()->getUserRules('fe_users')->getGroupRules();
-            if ($groupRules) {
-                $pid = $groupRules->getPid();
-            }
-            if (empty($pid)) {
-                $pid = $this->getConfiguration()->getUserRules('fe_users')->getPid();
-            }
-            if ($pid) {
-                $this->allFeGroups = $this->feUsergroupRepository->findByPid($pid);
-            } else {
-                $this->allFeGroups = $this->feUsergroupRepository->findAll();
-            }
-        }
     }
 
     public function addFeGroup($group)

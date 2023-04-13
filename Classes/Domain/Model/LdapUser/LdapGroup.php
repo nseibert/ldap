@@ -28,12 +28,14 @@ namespace NormanSeibert\Ldap\Domain\Model\LdapUser;
 
 use Psr\Log\LoggerInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use NormanSeibert\Ldap\Domain\Model\Typo3User\UserGroupInterface;
+use NormanSeibert\Ldap\Domain\Model\Typo3User\FrontendUserGroup;
+use NormanSeibert\Ldap\Domain\Model\Typo3User\BackendUserGroup;
+use NormanSeibert\Ldap\Utility\Helpers;
 
 /**
  * Model for groups read from LDAP server.
  */
-class Group extends \NormanSeibert\Ldap\Domain\Model\LdapUser\LdapEntity
+abstract class LdapGroup extends LdapEntity
 {
     private LoggerInterface $logger;
 
@@ -44,7 +46,7 @@ class Group extends \NormanSeibert\Ldap\Domain\Model\LdapUser\LdapEntity
     const NOTICE = -2;
 
     /**
-     * @var \NormanSeibert\Ldap\Domain\Repository\Typo3User\UserGroupRepositoryInterface
+     * @var FrontendUserGroup | BackendUserGroup
      */
     protected $usergroupRepository;
 
@@ -54,30 +56,14 @@ class Group extends \NormanSeibert\Ldap\Domain\Model\LdapUser\LdapEntity
     protected $usergroupRules;
     
     protected $groupObject;
-
-    /**
-     * @var int
-     */
-    protected $logLevel;
-
-    public function __construct(LoggerInterface $logger)
-    {
-        parent::__construct($logger);
-        $this->logger = $logger;
-    }
-
-    public function setLoglevel(int $logLevel)
-    {
-        $this->logLevel = $logLevel;
-    }
-
-    public function setGroup(UserGroupInterface $group)
+    
+    public function setGroup(FrontendUserGroup | BackendUserGroup $group)
     {
         $this->group = $group;
     }
 
     /**
-     * @return UserGroupInterface
+     * @return FrontendUserGroup | BackendUserGroup
      */
     public function getGroup()
     {
@@ -176,7 +162,7 @@ class Group extends \NormanSeibert\Ldap\Domain\Model\LdapUser\LdapEntity
             if ($this->logLevel >= 1) {
                 $this->logger->notice($msg);
             }
-            \NormanSeibert\Ldap\Utility\Helpers::addError(self::WARNING, $msg, $this->ldapServer->getConfiguration()->getUid());
+            Helpers::addError(self::WARNING, $msg, $this->ldapServer->getConfiguration()->getUid());
         }
 
         if ($createGroup) {
