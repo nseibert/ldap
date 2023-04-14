@@ -53,23 +53,20 @@ class LdapServerRepository
     const INFO = -1;
     const NOTICE = -2;
 
-    /**
-     * @var int
-     */
-    public $logLevel;
+    public int $logLevel;
 
-    /**
-     * @var array
-     */
-    protected $allLdapServers;
+    protected array $allLdapServers;
 
-    /**
-     * @var LdapConfigurationRepository
-     */
-    protected $configurationRepository;
+    protected LdapConfigurationRepository $configurationRepository;
 
-    public function __construct(LoggerInterface $logger, LdapConfigurationRepository $configurationRepository)
+    public function __construct(
+        LoggerInterface $logger,
+        LdapConfigurationRepository $configurationRepository
+        )
     {
+        $conf = GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Configuration\\ExtensionConfiguration')->get('ldap');
+        $this->logLevel = $conf['logLevel'];
+        
         $this->logger = $logger;
         $this->allLdapServers = $configurationRepository->getLdapServerDefinitions();
     }
@@ -186,12 +183,8 @@ class LdapServerRepository
 
     /**
      * checks an LDAP server's definition on syntactical correctness.
-     *
-     * @param array $server
-     *
-     * @return array
      */
-    private function checkServerConfiguration($server)
+    private function checkServerConfiguration(array $server): array
     {
         $errors = [];
 
@@ -338,10 +331,7 @@ class LdapServerRepository
         return $errors;
     }
 
-    /**
-     * @return LdapServer
-     */
-    public function initializeServer(array $server)
+    public function initializeServer(array $server): LdapServer
     {   
         if (is_array($server)) {
             $errors = $this->checkServerConfiguration($server);

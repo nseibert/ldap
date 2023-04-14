@@ -26,11 +26,8 @@ namespace NormanSeibert\Ldap\Domain\Model\LdapUser;
  * @copyright 2020 Norman Seibert
  */
 
-use Psr\Log\LoggerInterface;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
 use NormanSeibert\Ldap\Domain\Model\LdapServer\LdapServer;
-use NormanSeibert\Ldap\Domain\Model\LdapUser\LdapUser;
-use NormanSeibert\Ldap\Domain\Model\LdapUser\LdapGroup;
+use NormanSeibert\Ldap\Service\Mapping\GenericMapper;
 
 
 /**
@@ -38,224 +35,65 @@ use NormanSeibert\Ldap\Domain\Model\LdapUser\LdapGroup;
  */
 abstract class LdapEntity
 {
-    private LoggerInterface $logger;
+    protected string $dn;
 
-    /**
-     * @var string
-     */
-    protected $dn;
+    protected array $attributes;
 
-    /**
-     * @var array
-     */
-    protected $attributes;
+    protected LdapServer $ldapServer;
 
-    /**
-     * @var LdapServer
-     */
-    protected $ldapServer;
+    protected GenericMapper $mapper;
 
-    /**
-     * @var int
-     */
-    protected $logLevel;
+    protected string $userType;
 
-    public function setLoglevel(int $logLevel)
+    public function __construct(
+        GenericMapper $mapper)
     {
-        $this->logLevel = $logLevel;
+        $this->mapper = $mapper;
     }
 
-    /**
-     * @param string $dn
-     *
-     * @return LdapUser | LdapGroup
-     */
-    public function setDN($dn)
+    public function setDN(string $dn): object
     {
         $this->dn = $dn;
 
         return $this;
     }
 
-    /**
-     * @return string
-     */
-    public function getDN()
+    public function getDN(): string
     {
         return $this->dn;
     }
 
-    /**
-     * @param array $attrs
-     *
-     * @return LdapUser | LdapGroup
-     */
-    public function setAttributes($attrs)
+    public function setAttributes(array $attrs): object
     {
         $this->attributes = $attrs;
 
         return $this;
     }
 
-    /**
-     * @return array
-     */
-    public function getAttributes()
+    public function getAttributes(): array
     {
         return $this->attributes;
     }
 
-    /**
-     * @param string $attr
-     * @param string $value
-     *
-     * @return LdapUser | LdapGroup
-     */
-    public function setAttribute($attr, $value)
+    public function setAttribute(string $attr, string $value): object
     {
         $this->attributes[$attr] = $value;
 
         return $this;
     }
 
-    /**
-     * @param string $attr
-     *
-     * @return array
-     */
-    public function getAttribute($attr)
+    public function getAttribute(string $attr): string
     {
         return $this->attributes[$attr];
     }
 
-    /** Retrieves a single attribute from LDAP record.
-     *
-     * @param array  $mapping
-     * @param string $key
-     * @param array  $data
-     *
-     * @return array
-     */
-    protected function getAttributeMapping($mapping, $key, $data)
+    public function getLdapServer(): LdapServer
     {
-        $ldapData = array();
-        
-        // stdWrap does no longer handle arrays, therefore we have to check and map manually
-        // values derived from LDAP attribues
-        $tmp = explode(':', $mapping[$key.'.']['data']);
-        if (is_array($tmp)) {
-            $attrName = $tmp[1];
-            if (isset($data[$attrName])) {
-                $ldapData = $data[$attrName];
-            }
-
-            $msg = 'Mapping attributes';
-            $logArray = [
-                'Key' => $key,
-                'Rules' => $mapping,
-                'Data' => $data,
-            ];
-            if (3 == $this->logLevel) {
-                $this->logger->debug($msg, $logArray);
-            }
-        }
-
-        return $ldapData;
+        return $this->ldapServer;
     }
 
-    /** Maps a single attribute from LDAP record to TYPO3 DB fields.
-     *
-     * @param array  $mapping
-     * @param string $key
-     * @param array  $data
-     *
-     * @return string
-     */
-    protected function mapAttribute($mapping, $key, $data)
+    public function getUserType(): string
     {
-        $ldapData = $this->getAttributeMapping($mapping, $key, $data);
-
-        if (isset($ldapData) && is_array($ldapData)) {
-            unset($ldapData['count']);
-            $ldapDataList = implode(',', $ldapData);
-            $result = $ldapDataList;
-        } else {
-            $result = $ldapData;
-        }
-
-        $msg = 'Mapping for attribute "'.$key.'"';
-        $logArray = [
-            'LDAP attribute value' => $ldapData,
-            'Mapping result' => $result,
-        ];
-        if (3 == $this->logLevel) {
-            $this->logger->debug($msg, $logArray);
-        }
-        // static values, overwrite those from LDAP if set
-        if (isset($mapping[$key.'.']['value'])) {
-            $tmp = $mapping[$key.'.']['value'];
-            if ($tmp) {
-                $result = $tmp;
-                $msg = 'Setting attribute "'.$key.'" to: '.$result;
-                if (3 == $this->logLevel) {
-                    $this->logger->debug($msg);
-                }
-            }
-        }
-
-        return $result;
-    }
-
-    /** Maps attributes from LDAP record to TYPO3 DB fields.
-     *
-     * @param string $mappingType
-     * @param array  $useAttributes
-     *
-     * @return array
-     */
-    protected function mapAttributes($mappingType = 'user', $useAttributes = [])
-    {
-        $insertArray = [];
-
-        if ('group' == $mappingType) {
-            $mapping = $this->userRules->getGroupRules()->getMapping();
-            $attributes = $useAttributes;
-        } else {
-            $mapping = $this->userRules->getMapping();
-            $attributes = $this->attributes;
-        }
-        if (is_array($mapping)) {
-            $msg = 'Mapping attributes';
-            $logArray = [
-                'Type' => $mappingType,
-                'Rules' => $mapping,
-                'Data' => $attributes,
-            ];
-            if (3 == $this->logLevel) {
-                $this->logger->debug($msg, $logArray);
-            }
-
-            foreach ($mapping as $key => $value) {
-                if ('username.' != $key) {
-                    if ('.' == substr($key, strlen($key) - 1, 1)) {
-                        $key = substr($key, 0, strlen($key) - 1);
-                    }
-                    $result = $this->mapAttribute($mapping, $key, $attributes);
-                    $insertArray[$key] = $result;
-                }
-            }
-        } else {
-            $msg = 'No mapping rules found for type "'.$mappingType.'"';
-            if ($this->logLevel >= 2) {
-                $this->logger->notice($msg);
-            }
-        }
-
-        $msg = 'Mapped values to insert into or update to DB';
-        if (3 == $this->logLevel) {
-            $this->logger->debug($msg, $insertArray);
-        }
-
-        return $insertArray;
+        return $this->userType;
     }
 }

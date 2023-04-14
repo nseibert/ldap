@@ -26,51 +26,25 @@ namespace NormanSeibert\Ldap\Domain\Model\LdapUser;
  * @copyright 2020 Norman Seibert
  */
 
-use NormanSeibert\Ldap\Domain\Repository\Typo3User\BackendUserGroupRepository;
-use NormanSeibert\Ldap\Domain\Model\Typo3User\BackendUserGroup;
 use NormanSeibert\Ldap\domain\Model\LdapServer\LdapServer;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
-use Psr\Log\LoggerInterface;
+use NormanSeibert\Ldap\Domain\Model\LdapUser\LdapEntity;
 
 /**
  * Model for users read from LDAP server.
  */
-class LdapBeGroup extends LdapGroup
+class LdapBeGroup extends LdapEntity
 {
-    private LoggerInterface $logger;
 
-    /**
-     * @var BackendUserGroupRepository
-     */
-    protected $usergroupRepository;
-
-    /**
-     * @var BackendUserGroup
-     */
-    protected $groupObject;
-
-    public function __construct(
-        BackendUserGroup $group,
-        BackendUserGroupRepository $groupRepository,
-        LoggerInterface $logger)
-    {
-        // parent::__construct($logger);
-        $this->groupObject = $group;
-        $this->usergroupRepository = $groupRepository;
-        // $this->logger = GeneralUtility::makeInstance(\TYPO3\CMS\Core\Log\LogManager::class)->getLogger(__CLASS__);
-        $this->logger = $logger;
-    }
+    protected $pid = 0;
 
     /**
      * sets the LDAP server (backreference).
-     *
-     * @return BeGroup
      */
-    public function setLdapServer(LdapServer $server)
+    public function setLdapServer(LdapServer $server): LdapBeGroup
     {
         $this->ldapServer = $server;
-        $this->usergroupRules = $this->ldapServer->getConfiguration()->getBeUserRules()->getGroupRules();
         $this->pid = 0;
+        $this->userType = 'be';
 
         return $this;
     }

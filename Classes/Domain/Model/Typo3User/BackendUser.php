@@ -31,6 +31,7 @@ use TYPO3\CMS\Core\Crypto\PasswordHashing\PasswordHashFactory;
 use TYPO3\CMS\Core\Crypto\Random;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\DomainObject\AbstractEntity;
+use NormanSeibert\Ldap\Domain\Model\LdapUser\LdapUser;
 
 /**
  * Model for TYPO3 backend users.
@@ -358,50 +359,27 @@ class BackendUser extends AbstractEntity
         $this->lastLoginDateAndTime = $dateAndTime;
     }
 
-    /**
-     * @param string $dn
-     *
-     * @return \NormanSeibert\Ldap\Domain\Model\Typo3User\BackendUser
-     */
-    public function setDN($dn)
+    public function setDN(string $dn)
     {
         $this->dn = $dn;
-
-        return $this;
     }
 
-    /**
-     * @return string
-     */
-    public function getDN()
+    public function getDN(): string
     {
         return $this->dn;
     }
 
-    /**
-     * @param int $uid
-     *
-     * @return \NormanSeibert\Ldap\Domain\Model\Typo3User\BackendUser
-     */
-    public function setServerUid($uid)
+    public function setServerUid(int $uid)
     {
         $this->serverUid = $uid;
-
-        return $this;
     }
 
-    /**
-     * @return int
-     */
-    public function getServerUid()
+    public function getServerUid(): int
     {
         return $this->serverUid;
     }
 
-    /**
-     * @return \NormanSeibert\Ldap\Domain\Model\LdapUser\User
-     */
-    public function getLdapUser()
+    public function getLdapUser(): LdapUser
     {
         $user = false;
         if ($this->dn && $this->serverUid) {
@@ -413,35 +391,20 @@ class BackendUser extends AbstractEntity
         return $user;
     }
 
-    /**
-     * @return \NormanSeibert\Ldap\Domain\Model\Typo3User\BackendUser
-     */
     public function generatePassword()
     {
         $password = GeneralUtility::makeInstance(Random::class)->generateRandomHexString(20);
         $hashInstance = GeneralUtility::makeInstance(PasswordHashFactory::class)->getDefaultHashInstance('BE');
         $hashedPassword = $hashInstance->getHashedPassword($password);
         $this->password = $hashedPassword;
-
-        return $this;
     }
 
-    /**
-     * @param string $run
-     *
-     * @return \NormanSeibert\Ldap\Domain\Model\Typo3User\BackendUser
-     */
-    public function setLastRun($run)
+    public function setLastRun(string $run)
     {
         $this->lastRun = $run;
-
-        return $this;
     }
 
-    /**
-     * @return string
-     */
-    public function getLastRun()
+    public function getLastRun():string
     {
         return $this->lastRun;
     }
@@ -484,83 +447,42 @@ class BackendUser extends AbstractEntity
         $this->usergroup = $usergroup;
     }
 
-    /**
-     * @param string $mounts
-     *
-     * @return \NormanSeibert\Ldap\Domain\Model\Typo3User\BackendUser
-     */
-    public function setDatabaseMounts($mounts)
+    public function setDatabaseMounts(string $mounts)
     {
         $this->databaseMounts = $mounts;
-
-        return $this;
     }
 
-    /**
-     * @return string
-     */
-    public function getDatabaseMounts()
+    public function getDatabaseMounts(): string
     {
         return $this->databaseMounts;
     }
 
-    /**
-     * @param string $mounts
-     *
-     * @return \NormanSeibert\Ldap\Domain\Model\Typo3User\BackendUser
-     */
-    public function setFileMounts($mounts)
+    public function setFileMounts(string $mounts)
     {
         $this->fileMounts = $mounts;
-
-        return $this;
     }
 
-    /**
-     * @return string
-     */
-    public function getFileMounts()
+    public function getFileMounts(): string
     {
         return $this->fileMounts;
     }
 
-    /**
-     * @param string $permissions
-     *
-     * @return \NormanSeibert\Ldap\Domain\Model\Typo3User\BackendUser
-     */
-    public function setFileOperationPermissions($permissions)
+    public function setFileOperationPermissions(string $permissions)
     {
         $this->fileOperationPermissions = $permissions;
-
-        return $this;
     }
 
-    /**
-     * @return string
-     */
-    public function getFileOperationPermissions()
+    public function getFileOperationPermissions():string
     {
         return $this->fileOperationPermissions;
     }
 
-    /**
-     * @param string $mounts
-     * @param mixed  $options
-     *
-     * @return \NormanSeibert\Ldap\Domain\Model\Typo3User\BackendUser
-     */
-    public function setOptions($options)
+    public function setOptions(int $options)
     {
         $this->options = $options;
-
-        return $this;
     }
 
-    /**
-     * @return int
-     */
-    public function getOptions()
+    public function getOptions(): int
     {
         return $this->options;
     }

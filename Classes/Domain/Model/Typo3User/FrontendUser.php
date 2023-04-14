@@ -32,6 +32,7 @@ use TYPO3\CMS\Core\Crypto\Random;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\DomainObject\AbstractEntity;
 use TYPO3\CMS\Extbase\Persistence\ObjectStorage;
+use NormanSeibert\Ldap\Domain\Model\LdapUser;
 
 /**
  * Model for TYPO3 frontend users.
@@ -570,16 +571,9 @@ class FrontendUser extends AbstractEntity
         $this->isDisabled = $isDisabled;
     }
 
-    /**
-     * @param string $dn
-     *
-     * @return \NormanSeibert\Ldap\Domain\Model\Typo3User\FrontendUser
-     */
-    public function setDN($dn)
+    public function setDN(string $dn)
     {
         $this->dn = $dn;
-
-        return $this;
     }
 
     /**
@@ -590,30 +584,17 @@ class FrontendUser extends AbstractEntity
         return $this->dn;
     }
 
-    /**
-     * @param int $uid
-     *
-     * @return \NormanSeibert\Ldap\Domain\Model\Typo3User\FrontendUser
-     */
-    public function setServerUid($uid)
+    public function setServerUid(int $uid)
     {
         $this->serverUid = $uid;
-
-        return $this;
     }
 
-    /**
-     * @return int
-     */
-    public function getServerUid()
+    public function getServerUid(): int
     {
         return $this->serverUid;
     }
 
-    /**
-     * @return \NormanSeibert\Ldap\Domain\Model\LdapUser\User
-     */
-    public function getLdapUser()
+    public function getLdapUser(): LdapUser
     {
         $user = false;
         if ($this->dn && $this->serverUid) {
@@ -625,35 +606,20 @@ class FrontendUser extends AbstractEntity
         return $user;
     }
 
-    /**
-     * @return \NormanSeibert\Ldap\Domain\Model\Typo3User\FrontendUser
-     */
     public function generatePassword()
     {
         $password = GeneralUtility::makeInstance(Random::class)->generateRandomHexString(20);
         $hashInstance = GeneralUtility::makeInstance(PasswordHashFactory::class)->getDefaultHashInstance('FE');
         $hashedPassword = $hashInstance->getHashedPassword($password);
         $this->password = $hashedPassword;
-
-        return $this;
     }
 
-    /**
-     * @param string $run
-     *
-     * @return \NormanSeibert\Ldap\Domain\Model\Typo3User\FrontendUser
-     */
-    public function setLastRun($run)
+    public function setLastRun(string $run)
     {
         $this->lastRun = $run;
-
-        return $this;
     }
 
-    /**
-     * @return string
-     */
-    public function getLastRun()
+    public function getLastRun(): string
     {
         return $this->lastRun;
     }

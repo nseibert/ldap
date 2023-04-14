@@ -246,11 +246,10 @@ class LdapServer extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
                     $user = GeneralUtility::makeInstance(LdapFeUser::class);
                 }
 
-                $user
-                    ->setDN($info[$i]['dn'])
-                    ->setAttributes($info[$i])
-                    ->setLdapServer($this)
-                ;
+                $user->setDN($info[$i]['dn']);
+                $user->setAttributes($info[$i]);
+                $user->setLdapServer($this);
+                
                 $users->attach($user);
             }
             

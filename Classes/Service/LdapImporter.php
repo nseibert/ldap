@@ -33,7 +33,7 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 use NormanSeibert\Ldap\Domain\Repository\Typo3User\FrontendUserRepository;
 use NormanSeibert\Ldap\Domain\Repository\Typo3User\BackendUserRepository;
 use NormanSeibert\Ldap\Domain\Repository\LdapServer\LdapServerRepository;
-use NormanSeibert\Ldap\Service\LdapUserManager;
+use NormanSeibert\Ldap\Service\Mapping\LdapTypo3UserMapper;
 
 /**
  * Service to import users from LDAP directory to TYPO3 database.
@@ -108,7 +108,6 @@ class LdapImporter
         $tmpServer = null;
         $removeUsers = [];
         foreach ($users as $user) {
-            $user->setLoglevel($logLevel);
             if ($user->getServerUid()) {
 				// note the . behind the uid as it comes from the DB
                 $serverRepository = GeneralUtility::makeInstance(LdapServerRepository::class);
@@ -158,12 +157,12 @@ class LdapImporter
         $conf = GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Configuration\\ExtensionConfiguration')->get('ldap');
         $logLevel = $conf['logLevel'];
 
+        $userMapper = GeneralUtility::makeInstance(LdapTypo3UserMapper::class);
+
         foreach ($ldapUsers as $user) {
-            $user->setLoglevel($logLevel());
-            $user->loadUser();
-            $typo3User = $user->getUser();
+            $typo3User = $userMapper->loadUser($user);
             if (!is_object($typo3User)) {
-                $user->addUser($runIdentifier);
+                $userMapper->addUser($runIdentifier);
             }
         }
     }
@@ -176,10 +175,10 @@ class LdapImporter
         $conf = GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Configuration\\ExtensionConfiguration')->get('ldap');
         $logLevel = $conf['logLevel'];
 
+        $userMapper = GeneralUtility::makeInstance(LdapTypo3UserMapper::class);
+
         foreach ($ldapUsers as $user) {
-            $user->setLoglevel($logLevel());
-            $user->loadUser();
-            $typo3User = $user->getUser();
+            $typo3User = $userMapper->loadUser($user);
             if (is_object($typo3User)) {
                 $user->updateUser($runIdentifier);
             }
@@ -191,13 +190,17 @@ class LdapImporter
      */
     private static function storeUsers(LdapServer $server, string $runIdentifier, SplObjectStorage $ldapUsers)
     {
+        $conf = GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Configuration\\ExtensionConfiguration')->get('ldap');
+        $logLevel = $conf['logLevel'];
+
+        $userMapper = GeneralUtility::makeInstance(LdapTypo3UserMapper::class);
+
         foreach ($ldapUsers as $user) {
-            $user->loadUser();
-            $typo3User = $user->getUser();
+            $typo3User = $userMapper->loadUser($user);
             if (is_object($typo3User)) {
-                $user->updateUser($runIdentifier);
+                $userMapper->updateUser($user, $typo3User, $runIdentifier);
             } else {
-                $user->addUser($runIdentifier);
+                $userMapper->addUser($runIdentifier);
             }
         }
     }

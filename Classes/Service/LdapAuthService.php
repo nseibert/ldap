@@ -35,20 +35,22 @@ use TYPO3\CMS\Core\Database\Query\Restriction\QueryRestrictionContainerInterface
 use TYPO3\CMS\Core\Database\Query\Restriction\RootLevelRestriction;
 use TYPO3\CMS\Core\Database\Query\Restriction\StartTimeRestriction;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Core\Authentication\AuthenticationService;
 use TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager;
 use NormanSeibert\Ldap\Domain\Model\Configuration\LdapConfiguration;
 use NormanSeibert\Ldap\Domain\Repository\LdapServer\LdapServerRepository;
 use SplObjectStorage;
+use NormanSeibert\Ldap\Service\Mapping\LdapTypo3UserMapper;
 
 /**
  * Service to authenticate users against LDAP directory.
  */
-class LdapAuthService extends \TYPO3\CMS\Core\Authentication\AuthenticationService
+class LdapAuthService extends AuthenticationService
 {
     /**
      * Enable field columns of user table.
      */
-    public $enablecolumns = [
+    public array $enablecolumns = [
         'rootLevel' => '',
         // Boolean: If TRUE, 'AND pid=0' will be a part of the query...
         'disabled' => '',
@@ -57,66 +59,25 @@ class LdapAuthService extends \TYPO3\CMS\Core\Authentication\AuthenticationServi
         'deleted' => '',
     ];
 
-    /**
-     * @var string
-     */
-    public $user_table = '';
+    public string $user_table = '';
 
-    /**
-     * @var Configuration
-     */
-    protected $ldapConfig;
+    // protected Dispatcher $signalSlotDispatcher;
 
-    /**
-     * @var Dispatcher
-     */
-    // protected $signalSlotDispatcher;
+    protected persistenceManager $persistenceManager;
 
-    /**
-     * @var persistenceManager
-     */
-    protected $persistenceManager;
+    private array $conf;
 
-    /**
-     * @var array
-     */
-    private $conf;
+    private int $logLevel;
 
-    /**
-     * @var int
-     */
-    private $logLevel;
+    private string $username = '';
 
-    /**
-     * @var string
-     */
-    private $username = '';
+    private string $password = '';
 
-    /**
-     * @var string
-     */
-    private $password = '';
+    private array $loginData = [];
 
-    /**
-     * @var array
-     */
-    private $loginData = [];
-
-    /**
-     * @var SplObjectStorage
-     */
-    private $ldapServers;
+    private SplObjectStorage $ldapServers;
 
     private LdapServerRepository $serverRepository;
-
-    public function __construct(
-        LdapServerRepository $serverRepository,
-        PersistenceManager $persistenceManager
-        )
-    {
-        $this->serverRepository = $serverRepository;
-        $this->persistenceManager = $persistenceManager;
-    }
 
     /**
      * Initialize authentication service.
@@ -138,16 +99,18 @@ class LdapAuthService extends \TYPO3\CMS\Core\Authentication\AuthenticationServi
 
         $this->user_table = $this->authInfo['db_user']['table'];
 
-        $this->ldapConfig = GeneralUtility::makeInstance(LdapConfiguration::class);
+        $ldapConfig = GeneralUtility::makeInstance(LdapConfiguration::class);
 
-        if (isset($this->ldapConfig)) {
-            $this->conf = $this->ldapConfig->getConfiguration();
+        // $this->persistenceManager = GeneralUtility::makeInstance(PersistenceManager::class);
+
+        if (isset($ldapConfig)) {
+            $this->conf = $ldapConfig->getConfiguration();
             $this->logLevel = $this->conf['logLevel'];
             $pid = null;
             if (isset($this->authInfo['db_user']['checkPidList'])) {
                 $pid = $this->authInfo['db_user']['checkPidList'];
             }
-            // $this->serverRepository = GeneralUtility::makeInstance(LdapServerRepository::class);
+            $this->serverRepository = GeneralUtility::makeInstance(LdapServerRepository::class);
             $this->ldapServers = $this->serverRepository->findByCritera(null, null, $this->authInfo['loginType'], $pid);
         }
 
@@ -194,10 +157,9 @@ class LdapAuthService extends \TYPO3\CMS\Core\Authentication\AuthenticationServi
     {
         $user = false;
 
-        // if ($this->logLevel >= 2) {
         $msg = 'getUser() called, loginType: '.$this->authInfo['loginType'];
         $this->logger->debug($msg);
-        // }
+
         if (isset($this->loginData['status']) && ('login' == $this->loginData['status'])) {
             if ($this->username) {
                 if (2 == $this->logLevel) {
@@ -236,8 +198,6 @@ class LdapAuthService extends \TYPO3\CMS\Core\Authentication\AuthenticationServi
                             $ldapServer->setUserType(strtolower($this->authInfo['loginType']));
                             // $ldapServer->loadAllGroups();
 
-                            // return false;
-
                             if ($this->conf['enableSSO'] && $this->conf['ssoHeader'] && ($_SERVER[$this->conf['ssoHeader']])) {
                                 $ldapUser = $ldapServer->checkUser($this->username);
                                 if ($this->logLevel >= 2) {
@@ -261,14 +221,17 @@ class LdapAuthService extends \TYPO3\CMS\Core\Authentication\AuthenticationServi
                                         $msg = 'Import/update user: ' . $this->username;
                                         $this->logger->debug($msg);
                                     }
-                                    $ldapUser->loadUser();
-                                    $typo3User = $ldapUser->getUser();
+
+                                    $userMapper = GeneralUtility::makeInstance(LdapTypo3UserMapper::class);
+
+                                    $typo3User = $userMapper->loadUser($ldapUser);
+
                                     if (is_object($typo3User)) {
-                                        $ldapUser->updateUser();
+                                        $userMapper->updateUser($ldapUser, $typo3User);
                                     } else {
                                         $ldapUser->addUser();
                                     }
-                                    $this->persistenceManager->persistAll();
+                                    // $this->persistenceManager->persistAll();
                                     // $persistenceManager = GeneralUtility::makeInstance(persistenceManager::class);
                                     // $persistenceManager->persistAll();
                                 }
@@ -285,7 +248,7 @@ class LdapAuthService extends \TYPO3\CMS\Core\Authentication\AuthenticationServi
                                             $ldapUser->enableUser();
                                         }
                                     }
-                                    $this->persistenceManager->persistAll();
+                                    // $this->persistenceManager->persistAll();
                                     // $persistenceManager = GeneralUtility::makeInstance(persistenceManager::class);
                                     // $persistenceManager->persistAll();
                                 }

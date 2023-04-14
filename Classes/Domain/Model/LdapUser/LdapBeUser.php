@@ -26,70 +26,33 @@ namespace NormanSeibert\Ldap\Domain\Model\LdapUser;
  * @copyright 2020 Norman Seibert
  */
 
-use NormanSeibert\Ldap\Domain\Repository\Typo3User\BackendUserGroupRepository;
-use NormanSeibert\Ldap\Domain\Repository\Typo3User\BackendUserRepository;
 use NormanSeibert\Ldap\Domain\Model\LdapServer\LdapServer;
 use NormanSeibert\Ldap\Domain\Model\LdapUser\LdapBeGroup;
-use NormanSeibert\Ldap\Domain\Model\Typo3User\BackendUser;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
-use Psr\Log\LoggerInterface;
+use NormanSeibert\Ldap\Domain\Model\LdapUser\LdapEntity;
 
 
 /**
  * Model for users read from LDAP server.
  */
-class LdapBeUser extends \NormanSeibert\Ldap\Domain\Model\LdapUser\LdapUser
+class LdapBeUser extends LdapEntity
 {
-    private LoggerInterface $logger;
+    protected LdapBeGroup $groupObject;
 
-    /**
-     * @var BackendUserRepository
-     */
-    protected $userRepository;
+    protected $pid = 0;
 
-    /**
-     * @var BackendUserGroupRepository
-     */
-    protected $usergroupRepository;
-
-    /**
-     * @var LdapBeGroup
-     */
-    protected $groupObject;
-
-    /**
-     * @var BackendUser
-     */
-    protected $typo3User;
-
-    public function __construct(
-        LoggerInterface $logger,
-        BackendUser $typo3User,
-        LdapBeGroup $group,
-        BackendUserRepository $userRepository,
-        BackendUserGroupRepository $groupRepository
-        )
+    public function __construct(LdapBeGroup $group)
     {
-        // parent::__construct($logger);
-        $this->typo3User = $typo3User;
         $this->groupObject = $group;
-        $this->userRepository = $userRepository;
-        $this->usergroupRepository = $groupRepository;
-        // $this->logger = GeneralUtility::makeInstance(\TYPO3\CMS\Core\Log\LogManager::class)->getLogger(__CLASS__);
-        $this->logger = $logger;
     }
 
     /**
      * sets the LDAP server (backreference).
-     *
-     * @return LdapBeUser
      */
-    public function setLdapServer(LdapServer $server)
+    public function setLdapServer(LdapServer $server): LdapBeUser
     {
         $this->ldapServer = $server;
         $this->groupObject->setLdapServer($server);
-        $this->userRules = $this->ldapServer->getConfiguration()->getBeUserRules();
-        $this->pid = 0;
+        $this->userType = 'be';
 
         return $this;
     }
