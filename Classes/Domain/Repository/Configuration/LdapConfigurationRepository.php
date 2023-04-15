@@ -29,11 +29,12 @@ namespace NormanSeibert\Ldap\Domain\Repository\Configuration;
 use NormanSeibert\Ldap\Utility\Helpers;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use Psr\Log\LoggerInterface;
+use TYPO3\CMS\Extbase\Persistence\Repository;
 
 /**
  * Repository for the extension's configuration of LDAP servsers.
  */
-class LdapConfigurationRepository
+class LdapConfigurationRepository extends Repository
 {
     private LoggerInterface $logger;
 
@@ -68,13 +69,13 @@ class LdapConfigurationRepository
      */
     protected $configOK;
 
-    public function __construct(LoggerInterface $logger)
+    public function __construct()
     {
+        $this->logger = GeneralUtility::makeInstance(\TYPO3\CMS\Core\Log\LogManager::class)->getLogger(__CLASS__);
+        
         $this->configOK = false;
-        $this->logger = $logger;
         $this->config = $this->loadConfiguration();
         $this->allLdapServers = $this->getLdapServersFromConfiguration();
-        // print_r($this->allLdapServers);
     }
 
     /**

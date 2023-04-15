@@ -45,10 +45,13 @@ abstract class LdapEntity
 
     protected string $userType;
 
-    public function __construct(
-        GenericMapper $mapper)
+    public function __construct()
     {
-        $this->mapper = $mapper;
+        $this->initializeObject();
+    }
+
+    public function initializeObject() {
+        $this->mapper = new GenericMapper();
     }
 
     public function setDN(string $dn): object

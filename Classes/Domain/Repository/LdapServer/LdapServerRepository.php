@@ -39,11 +39,12 @@ use NormanSeibert\Ldap\Domain\Model\Typo3User\BackendUser;
 use NormanSeibert\Ldap\Domain\Model\Typo3User\BackendUserGroup;
 use NormanSeibert\Ldap\Domain\Model\Typo3User\FrontendUser;
 use NormanSeibert\Ldap\Domain\Model\Typo3User\FrontendUserGroup;
+use TYPO3\CMS\Extbase\Persistence\Repository;
 
 /**
  * Repository for the extension's configured LDAP servsers.
  */
-class LdapServerRepository
+class LdapServerRepository extends Repository
 {
     private LoggerInterface $logger;
 
@@ -59,16 +60,15 @@ class LdapServerRepository
 
     protected LdapConfigurationRepository $configurationRepository;
 
-    public function __construct(
-        LoggerInterface $logger,
-        LdapConfigurationRepository $configurationRepository
-        )
+    public function __construct()
     {
         $conf = GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Configuration\\ExtensionConfiguration')->get('ldap');
         $this->logLevel = $conf['logLevel'];
         
-        $this->logger = $logger;
+        $configurationRepository = new LdapConfigurationRepository();
         $this->allLdapServers = $configurationRepository->getLdapServerDefinitions();
+
+        $this->logger = GeneralUtility::makeInstance(\TYPO3\CMS\Core\Log\LogManager::class)->getLogger(__CLASS__);
     }
 
     /**
@@ -99,7 +99,7 @@ class LdapServerRepository
     /**
      * Get LDAP server definitions.
      */
-    public function FindByUid(string $uid): LdapServer|bool
+    public function FindByUid($uid): LdapServer|bool
     {
         if (isset($this->allLdapServers[$uid . '.'])) {
             $ldapServer = $this->initializeServer($this->allLdapServers[$uid . '.']);

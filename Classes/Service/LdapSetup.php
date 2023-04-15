@@ -27,6 +27,7 @@ namespace NormanSeibert\Ldap\Service;
  */
 
 use Psr\Log\LoggerInterface;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 use NormanSeibert\Ldap\Utility\Helpers;
 
 /**
@@ -36,9 +37,9 @@ class LdapSetup
 {
     private LoggerInterface $logger;
 
-    public function __construct(LoggerInterface $logger)
+    public function __construct()
     {
-        $this->logger = $logger;
+        $this->logger = GeneralUtility::makeInstance(\TYPO3\CMS\Core\Log\LogManager::class)->getLogger(__CLASS__);
     }
 
     /**

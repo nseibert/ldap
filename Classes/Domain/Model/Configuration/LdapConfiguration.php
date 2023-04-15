@@ -31,11 +31,12 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 use Psr\Log\LoggerInterface;
 use NormanSeibert\Ldap\Service\LdapSetup;
 use NormanSeibert\Ldap\Domain\Repository\Configuration\LdapConfigurationRepository;
+use TYPO3\CMS\Extbase\DomainObject\AbstractEntity;
 
 /**
  * Model for the extension's configuration of LDAP servsers.
  */
-class LdapConfiguration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
+class LdapConfiguration extends AbstractEntity
 {
     private LoggerInterface $logger;
 
@@ -51,45 +52,28 @@ class LdapConfiguration extends \TYPO3\CMS\Extbase\DomainObject\AbstractEntity
     public $config;
 
     /**
-     * @var LdapSetup
-     */
-    private $ldapSetup;
-
-    /**
      * @var LdapConfigurationRepository
      */
     private $configurationRepository;
 
-    public function __construct(LoggerInterface $logger, LdapSetup $ldapSetup, LdapConfigurationRepository $configurationRepository)
+    public function __construct()
     {
-        $this->logger = $logger;
-        $this->ldapSetup = $ldapSetup;
-        $this->configurationRepository = $configurationRepository;
+        $this->initializeObject();
+    }
 
-        $this->ldapSetup->checkLdapExtension();
+    public function initializeObject()
+    {
+        $this->configurationRepository = new LdapConfigurationRepository();
+
+        $ldapSetup = new LdapSetup();
+        $ldapSetup->checkLdapExtension();
         $this->config = $this->configurationRepository->getConfiguration();
-        // $this->logger = GeneralUtility::makeInstance(\TYPO3\CMS\Core\Log\LogManager::class)->getLogger(__CLASS__);
+
+        $this->logger = GeneralUtility::makeInstance(\TYPO3\CMS\Core\Log\LogManager::class)->getLogger(__CLASS__);
     }
 
     public function getLoglevel() {
         return $this->config['logLevel'];
-    }
-
-    /**
-     * checks whether PHP's LDAP functionality is available.
-     *
-     * @return bool
-     */
-    public function checkLdapExtension()
-    {
-        $result = extension_loaded('ldap');
-        if (!$result) {
-            $msg = 'PHP LDAP extension not loaded.';
-            $this->logger->error($msg);
-            Helpers::addError(self::ERROR, $msg);
-        }
-
-        return $result;
     }
 
     /**

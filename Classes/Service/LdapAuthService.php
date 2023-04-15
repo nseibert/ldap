@@ -41,6 +41,7 @@ use NormanSeibert\Ldap\Domain\Model\Configuration\LdapConfiguration;
 use NormanSeibert\Ldap\Domain\Repository\LdapServer\LdapServerRepository;
 use SplObjectStorage;
 use NormanSeibert\Ldap\Service\Mapping\LdapTypo3UserMapper;
+use NormanSeibert\Ldap\Service\LdapHandler;
 
 /**
  * Service to authenticate users against LDAP directory.
@@ -199,13 +200,15 @@ class LdapAuthService extends AuthenticationService
                             // $ldapServer->loadAllGroups();
 
                             if ($this->conf['enableSSO'] && $this->conf['ssoHeader'] && ($_SERVER[$this->conf['ssoHeader']])) {
-                                $ldapUser = $ldapServer->checkUser($this->username);
+                                $ldapHandler = new LdapHandler();
+                                $ldapUser = $ldapHandler->checkUser($ldapServer, $this->username);
                                 if ($this->logLevel >= 2) {
                                     $msg = 'Check SSO user: ' . $this->username;
                                     $this->logger->debug($msg);
                                 }
                             } else {
-                                $ldapUser = $ldapServer->authenticateUser($this->username, $this->password);
+                                $ldapHandler = new LdapHandler();
+                                $ldapUser = $ldapHandler->authenticateUser($ldapServer, $this->username, $this->password);
                                 if ($this->logLevel >= 2) {
                                     $msg = 'Authenticate user: ' . $this->username;
                                     $this->logger->debug($msg);

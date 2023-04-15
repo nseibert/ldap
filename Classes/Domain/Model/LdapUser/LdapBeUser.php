@@ -40,9 +40,9 @@ class LdapBeUser extends LdapEntity
 
     protected $pid = 0;
 
-    public function __construct(LdapBeGroup $group)
+    public function __construct()
     {
-        $this->groupObject = $group;
+        $this->groupObject = new LdapFeGroup();
     }
 
     /**

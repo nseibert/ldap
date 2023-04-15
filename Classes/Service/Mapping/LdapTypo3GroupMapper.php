@@ -40,6 +40,7 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 use Psr\Log\LoggerInterface;
 use NormanSeibert\Ldap\Utility\Helpers;
 use NormanSeibert\Ldap\Service\Mapping\GenericMapper;
+use NormanSeibert\Ldap\Service\LdapHandler;
 
 /**
  * Maps groups read from LDAP to TYPO3 groups
@@ -58,28 +59,21 @@ class LdapTypo3GroupMapper
     const INFO = -1;
     const NOTICE = -2;
 
-    protected FrontendUserGroupRepository $feUsergroupRepository;
-
-    protected BackendUserGroupRepository $beUsergroupRepository;
-
     protected GenericMapper $mapper;
+
+    protected LdapHandler $ldapHandler;
 
     protected int $logLevel;
 
-    public function __construct(
-        FrontendUserGroupRepository $feUsergroupRepository,
-        BackendUserGroupRepository $beUsergroupRepository,
-        LoggerInterface $logger,
-        GenericMapper $mapper
-    )
+    public function __construct()
     {
         $conf = GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Configuration\\ExtensionConfiguration')->get('ldap');
         $this->logLevel = $conf['logLevel'];
 
-        $this->feUsergroupRepository = $feUsergroupRepository;
-        $this->beUsergroupRepository = $beUsergroupRepository;
-        $this->logger = $logger;
-        $this->mapper = $mapper;
+        $this->mapper = new GenericMapper();
+        $this->ldapHandler = new LdapHandler();
+
+        $this->logger = GeneralUtility::makeInstance(\TYPO3\CMS\Core\Log\LogManager::class)->getLogger(__CLASS__);
     }
 
     /**
@@ -88,10 +82,10 @@ class LdapTypo3GroupMapper
     public function loadGroup(LdapFeGroup | LdapBeGroup $ldapGroup): FrontendUserGroup | BackendUserGroup
     {
         if ($ldapGroup->getUserType() == 'be') {
-            $groupRepository = $this->beUsergroupRepository;
+            $groupRepository = GeneralUtility::makeInstance(BackendUserGroupRepository::class);
             $groupRules = $ldapGroup->getLdapServer()->getConfiguration()->getBeUserRules()->getGroupRules();
         } else {
-            $groupRepository = $this->feUsergroupRepository;
+            $groupRepository = GeneralUtility::makeInstance(FrontendUserGroupRepository::class);
             $groupRules = $ldapGroup->getLdapServer()->getConfiguration()->getFeUserRules()->getGroupRules();
         }
         $pid = $groupRules->getPid();
@@ -280,11 +274,11 @@ class LdapTypo3GroupMapper
     {
         if ($userType == 'be') {
             $groupRules = $ldapServer->getConfiguration()->getFeUserRules()->getGroupRules();
-            $groupRepository = $this->beUsergroupRepository;
+            $groupRepository = GeneralUtility::makeInstance(BackendUserGroupRepository::class);
             $groupObject = 'NormanSeibert\Ldap\Domain\Model\Typo3User\BackendUserGroup';
         } else {
             $groupRules = $ldapServer->getConfiguration()->getFeUserRules()->getGroupRules();
-            $groupRepository = $this->feUsergroupRepository;
+            $groupRepository = GeneralUtility::makeInstance(FrontendUserGroupRepository::class);
             $groupObject = 'NormanSeibert\Ldap\Domain\Model\Typo3User\FrontendUserGroup';
         }
         
@@ -348,10 +342,10 @@ class LdapTypo3GroupMapper
 
         if ($userType == 'be') {
             $groupRules = $ldapServer->getConfiguration()->getBeUserRules()->getGroupRules();
-            $groupRepository = $this->beUsergroupRepository;
+            GeneralUtility::makeInstance(BackendUserGroupRepository::class);
         } else {
             $groupRules = $ldapServer->getConfiguration()->getFeUserRules()->getGroupRules();
-            $groupRepository = $this->feUsergroupRepository;
+            GeneralUtility::makeInstance(FrontendUserGroupRepository::class);
         }
         $mapping = $groupRules->getMapping();
 
@@ -504,7 +498,7 @@ class LdapTypo3GroupMapper
         if (is_array($userAttributes) && $userAttributes[$searchAttribute]) {
             $searchFor = mb_strtolower($userAttributes[$searchAttribute]);
 
-            $ldapGroups = $ldapServer->getGroups($searchFor);
+            $ldapGroups = $this->ldapHandler->getGroups($ldapServer, $searchFor);
 
             if (is_array($ldapGroups)) {
                 unset($ldapGroups['count']);

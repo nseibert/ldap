@@ -42,6 +42,7 @@ use Psr\Log\LoggerInterface;
 use NormanSeibert\Ldap\Utility\Helpers;
 use NormanSeibert\Ldap\Service\Mapping\GenericMapper;
 use NormanSeibert\Ldap\Service\Mapping\LdapTypo3GroupMapper;
+use NormanSeibert\Ldap\Service\LdapHandler;
 
 /**
  * Maps groups read from LDAP to TYPO3 groups
@@ -56,40 +57,24 @@ class LdapTypo3UserMapper
     const INFO = -1;
     const NOTICE = -2;
 
-    protected FrontendUserRepository $feUserRepository;
-
-    protected BackendUserRepository $beUserRepository;
-
-    protected FrontendUserGroupRepository $feUsergroupRepository;
-
-    protected BackendUserGroupRepository $beUsergroupRepository;
-
     protected GenericMapper $mapper;
 
     protected LdapTypo3GroupMapper $groupMapper;
 
+    protected LdapHandler $ldapHandler;
+
     protected int $logLevel;
 
-    public function __construct(
-        FrontendUserRepository $feUserRepository,
-        BackendUserRepository $beUserRepository,
-        FrontendUserGroupRepository $feUsergroupRepository,
-        BackendUserGroupRepository $beUsergroupRepository,
-        LoggerInterface $logger,
-        GenericMapper $mapper,
-        LdapTypo3GroupMapper $groupMapper
-    )
+    public function __construct()
     {
         $conf = GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Configuration\\ExtensionConfiguration')->get('ldap');
         $this->logLevel = $conf['logLevel'];
 
-        $this->feUserRepository = $feUserRepository;
-        $this->beUserRepository = $beUserRepository;
-        $this->feUsergroupRepository = $feUsergroupRepository;
-        $this->beUsergroupRepository = $beUsergroupRepository;
-        $this->logger = $logger;
-        $this->mapper = $mapper;
-        $this->groupMapper = $groupMapper;
+        $this->mapper = new GenericMapper();
+        $this->groupMapper = new LdapTypo3GroupMapper();
+        $this->ldapHandler = new LdapHandler();
+
+        $this->logger = GeneralUtility::makeInstance(\TYPO3\CMS\Core\Log\LogManager::class)->getLogger(__CLASS__);
     }
 
     public function setLoglevel(int $logLevel)
@@ -103,10 +88,10 @@ class LdapTypo3UserMapper
     public function loadUser(LdapFeUser | LdapBeUser $ldapUser): FrontendUser | BackendUser | null
     {   
         if ($ldapUser->getUserType() == 'be') {
-            $userRepository = $this->beUserRepository;
+            $userRepository = GeneralUtility::makeInstance(BackendUserRepository::class);
             $userRules = $ldapUser->getLdapServer()->getConfiguration()->getBeUserRules();
         } else {
-            $userRepository = $this->feUserRepository;
+            $userRepository = GeneralUtility::makeInstance(FrontendUserRepository::class);
             $userRules = $ldapUser->getLdapServer()->getConfiguration()->getFeUserRules();
         }
         $pid = $userRules->getPid();
@@ -132,6 +117,7 @@ class LdapTypo3UserMapper
             $typo3User = $userRepository->findByUsername($username, $pid);
             
             if (is_object($typo3User)) {
+                print_r($typo3User->toArray());
                 $msg = 'User record already existing: ' . $typo3User->getUid();
                 if (3 == $this->logLevel) {
                     $this->logger->debug($msg);
@@ -244,10 +230,10 @@ class LdapTypo3UserMapper
         $ldapServer = $ldapUser->getLdapServer();
         $userType = $ldapUser->getUserType();
         if ($userType == 'be') {
-            $userRepository = $this->beUserRepository;
+            $userRepository = GeneralUtility::makeInstance(BackendUserRepository::class);
             $userRules = $ldapServer->getConfiguration()->getFeUserRules();
         } else {
-            $userRepository = $this->feUserRepository;
+            $userRepository = GeneralUtility::makeInstance(FrontendUserRepository::class);
             $userRules = $ldapServer->getConfiguration()->getFeUserRules();
         }
         $pid = $userRules->getPid();
@@ -359,10 +345,8 @@ class LdapTypo3UserMapper
         $ldapServer = $ldapUser->getLdapServer();
         if ($userType == 'be') {
             $userRules = $ldapServer->getConfiguration()->getBeUserRules();
-            $groupRepository = $this->beUsergroupRepository;
         } else {
             $userRules = $ldapServer->getConfiguration()->getFeUserRules();
-            $groupRepository = $this->feUsergroupRepository;
         }
         $groupRules = $userRules->getGroupRules();
         if (is_object($groupRules)) {
@@ -404,10 +388,10 @@ class LdapTypo3UserMapper
     protected function removeUsergroupsFromUserRecord(LdapServer $ldapServer, FrontendUser | BackendUser $typo3User, $userType)
     {
         if ($userType == 'be') {
-            $usergroupRepository = $this->beUsergroupRepository;
+            $usergroupRepository = GeneralUtility::makeInstance(BackendUserGroupRepository::class);
             $userRules = $ldapServer->getConfiguration()->getFeUserRules();
         } else {
-            $usergroupRepository = $this->feUsergroupRepository;
+            $usergroupRepository = GeneralUtility::makeInstance(FrontendUserGroupRepository::class);
             $userRules = $ldapServer->getConfiguration()->getFeUserRules();
         }
         $groupRules = $userRules->getGroupRules();

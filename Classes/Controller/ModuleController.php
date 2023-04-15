@@ -42,6 +42,7 @@ use TYPO3\CMS\Extbase\Mvc\Web\Routing\UriBuilder;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 use TYPO3\CMS\Backend\Template\ModuleTemplateFactory;
 use NormanSeibert\Ldap\Domain\Repository\LdapServer\LdapServerRepository;
+use NormanSeibert\Ldap\Service\LdapHandler;
 
 /**
  * Controller for backend module.
@@ -75,6 +76,8 @@ class ModuleController extends ActionController
      */
     protected $configuration;
 
+    protected Ldaphandler $ldapHandler;
+
     /**
      * @var ModuleData
      *  */
@@ -99,7 +102,8 @@ class ModuleController extends ActionController
         LdapServerRepository $serverRepository,
         ModuleData $moduleData,
         ModuleDataStorageService $moduleDataStorageService,
-        ModuleTemplateFactory $moduleTemplateFactory)
+        ModuleTemplateFactory $moduleTemplateFactory,
+        Ldaphandler $ldapHandler)
     {
         $this->feUserRepository = $feUserRepository;
         $this->beUserRepository = $beUserRepository;
@@ -108,6 +112,7 @@ class ModuleController extends ActionController
         $this->moduleData = $moduleData;
         $this->moduleDataStorageService = $moduleDataStorageService;
         $this->moduleTemplateFactory = $moduleTemplateFactory;
+        $this->ldapHandler = $ldapHandler;
     }
 
     protected function createMenu($moduleTemplate)
@@ -190,13 +195,14 @@ class ModuleController extends ActionController
     {
         $ldapServers = $this->serverRepository->findAll();
         $servers = [];
+
         foreach ($ldapServers as $uid => $ldapServer) {
-            $status = $ldapServer->checkBind();
+            $status = $this->ldapHandler->checkBind($ldapServer);
             $ldapServer->setLimitLdapResults(3);
             $ldapServer->setUserType('fe');
-            $feUsers = $ldapServer->getUsers('*');
+            $feUsers = $this->ldapHandler->getUsers($ldapServer, '*');
             $ldapServer->setUserType('be');
-            $beUsers = $ldapServer->getUsers('*');
+            $beUsers = $this->ldapHandler->getUsers($ldapServer, '*');
             $servers[] = [
                 'server' => $ldapServer->getConfiguration(),
                 'status' => $status,

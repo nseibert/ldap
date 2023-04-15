@@ -34,6 +34,7 @@ use NormanSeibert\Ldap\Domain\Repository\Typo3User\FrontendUserRepository;
 use NormanSeibert\Ldap\Domain\Repository\Typo3User\BackendUserRepository;
 use NormanSeibert\Ldap\Domain\Repository\LdapServer\LdapServerRepository;
 use NormanSeibert\Ldap\Service\Mapping\LdapTypo3UserMapper;
+use NormanSeibert\Ldap\Service\LdapHandler;
 
 /**
  * Service to import users from LDAP directory to TYPO3 database.
@@ -214,7 +215,9 @@ class LdapImporter
         $logLevel = $conf['logLevel'];
         $logger = GeneralUtility::makeInstance(LogManager::class)->getLogger(__CLASS__);
 
-        $ldapUsers = $server->getUsers($search, false);
+        $ldapHandler = new LdapHandler();
+        $ldapUsers = $ldapHandler->getUsers($server, $search, false);
+
         if (is_object($ldapUsers)) {
             switch ($command) {
                 case 'import':

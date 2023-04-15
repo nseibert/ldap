@@ -7,6 +7,57 @@ return [
         'tableName' => 'fe_users',
         'recordType' => '',
         'properties' => [
+            'username' => [
+                'fieldName' => 'username',
+            ],
+            'password' => [
+                'fieldName' => 'password',
+            ],
+            'usergroup' => [
+                'fieldName' => 'usergroup',
+            ],
+            'name' => [
+                'fieldName' => 'name',
+            ],
+            'firstName' => [
+                'fieldName' => 'first_name',
+            ],
+            'middletName' => [
+                'fieldName' => 'middle_name',
+            ],
+            'lastName' => [
+                'fieldName' => 'last_name',
+            ],
+            'address' => [
+                'fieldName' => 'address',
+            ],
+            'telephone' => [
+                'fieldName' => 'telephone',
+            ],
+            'fax' => [
+                'fieldName' => 'fax',
+            ],
+            'email' => [
+                'fieldName' => 'email',
+            ],
+            'zip' => [
+                'fieldName' => 'zip',
+            ],
+            'city' => [
+                'fieldName' => 'city',
+            ],
+            'country' => [
+                'fieldName' => 'country',
+            ],
+            'www' => [
+                'fieldName' => 'www',
+            ],
+            'company' => [
+                'fieldName' => 'company',
+            ],
+            'lastlogin' => [
+                'fieldName' => 'lastlogin',
+            ],
             'dn' => [
                 'fieldName' => 'tx_ldap_dn',
             ],

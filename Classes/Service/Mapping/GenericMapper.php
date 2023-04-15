@@ -37,14 +37,12 @@ class GenericMapper
 
     protected int $logLevel;
 
-    public function __construct(
-        LoggerInterface $logger
-    )
+    public function __construct()
     {
         $conf = GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Configuration\\ExtensionConfiguration')->get('ldap');
         $this->logLevel = $conf['logLevel'];
 
-        $this->logger = $logger;
+        $this->logger = GeneralUtility::makeInstance(\TYPO3\CMS\Core\Log\LogManager::class)->getLogger(__CLASS__);
     }
 
     /** Retrieves a single attribute from LDAP record.

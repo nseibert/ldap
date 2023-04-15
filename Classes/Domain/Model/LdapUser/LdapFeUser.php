@@ -29,6 +29,7 @@ namespace NormanSeibert\Ldap\Domain\Model\LdapUser;
 use NormanSeibert\Ldap\Domain\Model\LdapServer\LdapServer;
 use NormanSeibert\Ldap\Domain\Model\LdapUser\LdapFeGroup;
 use NormanSeibert\Ldap\Domain\Model\LdapUser\LdapEntity;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
  * Model for users read from LDAP server.
@@ -39,9 +40,13 @@ class LdapFeUser extends LdapEntity
 
     protected LdapFeGroup $groupObject;
 
-    public function __construct(LdapFeGroup $group)
+    public function __construct()
     {
-        $this->groupObject = $group;
+        $this->initializeObject();
+    }
+
+    public function initializeObject() {
+        $this->groupObject = new LdapFeGroup();
     }
 
     /**
