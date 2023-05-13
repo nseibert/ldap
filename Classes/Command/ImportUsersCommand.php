@@ -36,6 +36,8 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use TYPO3\CMS\Core\Core\Bootstrap;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+use NormanSeibert\Ldap\Domain\Repository\LdapServer\LdapServerRepository;
 use TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager;
 
 /**
@@ -59,25 +61,25 @@ class ImportUsersCommand extends Command
     protected $ldapConfig;
 
     /**
-     * @var LdapImporter
+     * @var LdapServerRepository
      */
-    protected $importer;
-
-    /**
-     * @var PersistenceManager
-     */
-    protected $persistenceManager;
+    protected $serverRepository;
 
     /**
      * @param
      */
-    public function __construct(FrontendUserRepository $feUserRepository, BackendUserRepository $beUserRepository, LdapConfiguration $ldapConfig, LdapImporter $importer)
+    public function __construct(
+        FrontendUserRepository $feUserRepository,
+        BackendUserRepository $beUserRepository,
+        LdapConfiguration $ldapConfig,
+        LdapServerRepository $serverRepository
+    )
     {
         parent::__construct();
         $this->feUserRepository = $feUserRepository;
         $this->beUserRepository = $beUserRepository;
         $this->ldapConfig = $ldapConfig;
-        $this->importer = $importer;
+        $this->serverRepository = $serverRepository;
     }
 
     /**
@@ -124,32 +126,34 @@ class ImportUsersCommand extends Command
         $servers = $input->getArgument('servers');
         $processFe = $input->getArgument('processFe');
         $processBe = $input->getArgument('processBe');
+        $serverUids = GeneralUtility::trimExplode(',', $servers, true);
 
-        $ldapServers = $this->ldapConfig->getLdapServers();
-        $serverUids = \TYPO3\CMS\Core\Utility\GeneralUtility::trimExplode(',', $servers, true);
-        foreach ($ldapServers as $server) {
-            // @var $server \NormanSeibert\Ldap\Domain\Model\LdapServer\Server
-            if (in_array($server->getConfiguration()->getUid(), $serverUids)) {
-                $io->writeln('Importing from server: '.$server->getConfiguration()->getUid());
+        $ldapServers = $this->serverRepository->findAll();
+        if ($ldapServers->count()) {
+            $importer = GeneralUtility::makeInstance(LdapImporter::class);
+            $persistenceManager = GeneralUtility::makeInstance(persistenceManager::class);
+        }
+
+        foreach ($ldapServers as $ldapServer) {
+            if (in_array($ldapServer->getConfiguration()->getUid(), $serverUids)) {
+                $io->writeln('Importing from server: ' . $ldapServer->getConfiguration()->getUid());
                 $runs = [];
                 if ($processFe) {
-                    $this->importer->init($server, 'fe');
-                    $runs[] = $this->importer->doImport();
-                    $this->persistenceManager->persistAll();
+                    $ldapServer->setUserType('fe');
+                    $runs[] = $importer::doImport($ldapServer);
+                    $persistenceManager->persistAll();
                     $feUsers = $this->feUserRepository->countByLastRun($runs);
-                    $io->writeln('Frontend users: '.$feUsers);
+                    $io->writeln('Frontend users: ' . $feUsers);
                 }
                 if ($processBe) {
-                    $this->importer->init($server, 'be');
-                    $runs[] = $this->importer->doImport();
-                    $this->persistenceManager->persistAll();
+                    $ldapServer->setUserType('be');
+                    $runs[] = $importer::doImport($ldapServer);
+                    $persistenceManager->persistAll();
                     $beUsers = $this->beUserRepository->countByLastRun($runs);
-                    $io->writeln('Backend users: '.$beUsers);
+                    $io->writeln('Backend users: ' . $beUsers);
                 }
             }
         }
-
-        $this->persistenceManager->persistAll();
 
         return 0; // everything fine
     }

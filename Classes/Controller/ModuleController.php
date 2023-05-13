@@ -28,7 +28,6 @@ namespace NormanSeibert\Ldap\Controller;
 
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use NormanSeibert\Ldap\Domain\Model\Configuration\LdapConfiguration;
-use NormanSeibert\Ldap\Domain\Model\LdapServer\LdapServer;
 use NormanSeibert\Ldap\Domain\Repository\Typo3User\BackendUserRepository;
 use NormanSeibert\Ldap\Domain\Repository\Typo3User\FrontendUserRepository;
 use NormanSeibert\Ldap\Service\LdapImporter;
@@ -488,9 +487,7 @@ class ModuleController extends ActionController
         $settings = $this->initializeFormSettings($formSettings);
         $this->view->assign('formSettings', $settings);
 
-        if ($ldapServers->count()) {
-            $importer = GeneralUtility::makeInstance(LdapImporter::class);
-        }
+        $importer = GeneralUtility::makeInstance(LdapImporter::class);
 
         $runs = [];
         if ($settings->getAuthenticateFe()) {

@@ -64,7 +64,7 @@ class LdapImporter
      *
      * @return string
      */
-    public function doUpdate(LdapServer $server): string
+    public static function doUpdate(LdapServer $server): string
     {
         $runIdentifier = uniqid();
         self::getUsers($server, $runIdentifier, 'update');
@@ -77,7 +77,7 @@ class LdapImporter
      *
      * @return string
      */
-    public function doImportOrUpdate(LdapServer $server): string
+    public static function doImportOrUpdate(LdapServer $server): string
     {
         $runIdentifier = uniqid();
         self::getUsers($server, $runIdentifier, 'importOrUpdate');
@@ -88,7 +88,7 @@ class LdapImporter
     /**
      * deletes/deactivates users from LDAP to TYPO3 DB.
      */
-    public function doDelete(string $userType, bool $hide = true, bool $deleteNonLdapUsers = false): string
+    public static function doDelete(string $userType, bool $hide = true, bool $deleteNonLdapUsers = false): string
     {
         $conf = GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Configuration\\ExtensionConfiguration')->get('ldap');
         $logLevel = $conf['logLevel'];
@@ -120,7 +120,6 @@ class LdapImporter
 				if ($tmpServer) {
 					$ldapUser = $tmpServer->getUser($user->getDN());
 				}
-                $ldapUser = $tmpServer->getUser($user->getDN());
                 if (!is_object($ldapUser)) {
                     $user->setLastRun($runIdentifier);
                     if ($hide) {

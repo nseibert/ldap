@@ -36,6 +36,8 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use TYPO3\CMS\Core\Core\Bootstrap;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+use NormanSeibert\Ldap\Domain\Repository\LdapServer\LdapServerRepository;
 use TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager;
 
 /**
@@ -59,25 +61,25 @@ class DeleteUsersCommand extends Command
     protected $ldapConfig;
 
     /**
-     * @var LdapImporter
+     * @var LdapServerRepository
      */
-    protected $importer;
-
-    /**
-     * @var PersistenceManager
-     */
-    protected $persistenceManager;
+    protected $serverRepository;
 
     /**
      * @param
      */
-    public function __construct(FrontendUserRepository $feUserRepository, BackendUserRepository $beUserRepository, LdapConfiguration $ldapConfig, LdapImporter $importer)
+    public function __construct(
+        FrontendUserRepository $feUserRepository,
+        BackendUserRepository $beUserRepository,
+        LdapConfiguration $ldapConfig,
+        LdapServerRepository $serverRepository
+    )
     {
         parent::__construct();
         $this->feUserRepository = $feUserRepository;
         $this->beUserRepository = $beUserRepository;
         $this->ldapConfig = $ldapConfig;
-        $this->importer = $importer;
+        $this->serverRepository = $serverRepository;
     }
 
     /**
@@ -131,20 +133,21 @@ class DeleteUsersCommand extends Command
         $disableUsers = $input->getArgument('disableUsers');
         $processNonLdapUsers = $input->getArgument('processNonLdapUsers');
 
+        $importer = GeneralUtility::makeInstance(LdapImporter::class);
+        $persistenceManager = GeneralUtility::makeInstance(persistenceManager::class);
+
         $runs = [];
         if ($processFe) {
-            $this->importer->init(null, 'fe');
-            $runs[] = $this->importer->doDelete($disableUsers, $processNonLdapUsers);
-            $this->persistenceManager->persistAll();
+            $runs[] = $importer::doDelete('fe', $disableUsers, $processNonLdapUsers);
+            $persistenceManager->persistAll();
             $feUsers = $this->feUserRepository->countByLastRun($runs);
-            $io->writeln('Frontend users: '.$feUsers);
+            $io->writeln('Frontend users: ' . $feUsers);
         }
         if ($processBe) {
-            $this->importer->init(null, 'be');
-            $runs[] = $this->importer->doDelete($disableUsers, $processNonLdapUsers);
-            $this->persistenceManager->persistAll();
+            $runs[] = $importer::doDelete('be', $disableUsers, $processNonLdapUsers);
+            $persistenceManager->persistAll();
             $beUsers = $this->beUserRepository->countByLastRun($runs);
-            $io->writeln('Backend users: '.$beUsers);
+            $io->writeln('Backend users: ' . $beUsers);
         }
 
         return 0; // everything fine
