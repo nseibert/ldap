@@ -44,7 +44,7 @@ class FrontendUserRepository extends Repository
         return $query->execute();
     }
 
-    public function findByUsername(string $username, int $pid = null): FrontendUser | QueryResultInterface
+    public function findByUsername(string $username, int $pid = null): FrontendUser | QueryResultInterface | bool
     {
         $user = false;
         $query = $this->createQuery();
@@ -71,7 +71,7 @@ class FrontendUserRepository extends Repository
         return $user;
     }
 
-    public function findByDn(string $dn, int $pid = null): FrontendUser | QueryResultInterface
+    public function findByDn(string $dn, int $pid = null): FrontendUser | QueryResultInterface | bool
     {
         $user = false;
         $query = $this->createQuery();
@@ -91,6 +91,7 @@ class FrontendUserRepository extends Repository
         }
         $users = $query->execute();
         $userCount = $users->count();
+        // echo $userCount; die;
         if (1 == $userCount) {
             $user = $users->getFirst();
         }

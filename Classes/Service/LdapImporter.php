@@ -162,7 +162,7 @@ class LdapImporter
         foreach ($ldapUsers as $user) {
             $typo3User = $userMapper->loadUser($user);
             if (!is_object($typo3User)) {
-                $userMapper->addUser($runIdentifier);
+                $userMapper->addUser($server, $user, $runIdentifier);
             }
         }
     }

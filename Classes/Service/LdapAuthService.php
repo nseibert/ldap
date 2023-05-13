@@ -36,12 +36,13 @@ use TYPO3\CMS\Core\Database\Query\Restriction\RootLevelRestriction;
 use TYPO3\CMS\Core\Database\Query\Restriction\StartTimeRestriction;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Authentication\AuthenticationService;
-use TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager;
+// use TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager;
 use NormanSeibert\Ldap\Domain\Model\Configuration\LdapConfiguration;
 use NormanSeibert\Ldap\Domain\Repository\LdapServer\LdapServerRepository;
 use SplObjectStorage;
 use NormanSeibert\Ldap\Service\Mapping\LdapTypo3UserMapper;
 use NormanSeibert\Ldap\Service\LdapHandler;
+use TYPO3\CMS\Core\Authentication\AbstractUserAuthentication;
 
 /**
  * Service to authenticate users against LDAP directory.
@@ -64,7 +65,7 @@ class LdapAuthService extends AuthenticationService
 
     // protected Dispatcher $signalSlotDispatcher;
 
-    protected persistenceManager $persistenceManager;
+    // protected persistenceManager $persistenceManager;
 
     private array $conf;
 
@@ -83,14 +84,17 @@ class LdapAuthService extends AuthenticationService
     /**
      * Initialize authentication service.
      *
-     * @param string $subType                   Subtype of the service which is used to call the service
-     * @param array  $loginData                 Submitted login form data
-     * @param array  $authenticationInformation Information array. Holds submitted form data etc.
-     * @param object $parentObject              Parent object
+     * @param string $subType                           Subtype of the service which is used to call the service
+     * @param array $loginData                          Submitted login form data
+     * @param array $authenticationInformation          Information array. Holds submitted form data etc.
+     * @param AbstractUserAuthentication $parentObject  Parent object
      */
     public function initAuth($subType, $loginData, $authenticationInformation, $parentObject)
     {
+        parent::initAuth($subType, $loginData, $authenticationInformation, $parentObject);
+
         // $this->signalSlotDispatcher =  GeneralUtility::makeInstance(Dispatcher::class);
+        
         $this->loginData = $loginData;
         $this->authInfo = $authenticationInformation;
 
@@ -104,16 +108,20 @@ class LdapAuthService extends AuthenticationService
 
         // $this->persistenceManager = GeneralUtility::makeInstance(PersistenceManager::class);
 
+        $this->logLevel = 0;
+
         if (isset($ldapConfig)) {
             $this->conf = $ldapConfig->getConfiguration();
             $this->logLevel = $this->conf['logLevel'];
-            $pid = null;
-            if (isset($this->authInfo['db_user']['checkPidList'])) {
-                $pid = $this->authInfo['db_user']['checkPidList'];
-            }
-            $this->serverRepository = GeneralUtility::makeInstance(LdapServerRepository::class);
-            $this->ldapServers = $this->serverRepository->findByCritera(null, null, $this->authInfo['loginType'], $pid);
         }
+
+        $pid = null;
+        if (isset($this->authInfo['db_user']['checkPidList'])) {
+            $pid = $this->authInfo['db_user']['checkPidList'];
+        }
+        
+        $this->serverRepository = new LdapServerRepository();
+        $this->ldapServers = $this->serverRepository->findByCritera(null, null, $this->authInfo['loginType'], $pid);
     }
 
     /**
@@ -149,7 +157,7 @@ class LdapAuthService extends AuthenticationService
     {
         $user = false;
 
-        $msg = 'getUser() called, loginType: '.$this->authInfo['loginType'];
+        $msg = 'getUser() called, loginType: ' . $this->authInfo['loginType'];
         $this->logger->debug($msg);
 
         if (isset($this->loginData['status']) && ('login' == $this->loginData['status'])) {
@@ -192,6 +200,7 @@ class LdapAuthService extends AuthenticationService
 
                             $ldapHandler = new LdapHandler();
                             $ldapUser = $ldapHandler->authenticateUser($ldapServer, $this->username, $this->password);
+
                             if ($this->logLevel >= 2) {
                                 $msg = 'Authenticate user: ' . $this->username;
                                 $this->logger->debug($msg);
@@ -199,7 +208,7 @@ class LdapAuthService extends AuthenticationService
 
                             if (isset($ldapUser) && is_object($ldapUser)) {
                                 // Credentials are OK
-                                
+
                                 if ($ldapServer->getConfiguration()->getUserRules($this->user_table)->getAutoImport()) {
                                     // Authenticated users shall be imported/updated
                                     if ($this->logLevel >= 2) {
@@ -207,22 +216,21 @@ class LdapAuthService extends AuthenticationService
                                         $this->logger->debug($msg);
                                     }
 
-                                    $userMapper = GeneralUtility::makeInstance(LdapTypo3UserMapper::class);
-
+                                    $userMapper = new LdapTypo3UserMapper();
                                     $typo3User = $userMapper->loadUser($ldapUser);
 
                                     if (is_object($typo3User)) {
                                         $userMapper->updateUser($ldapUser, $typo3User);
                                     } else {
-                                        $ldapUser->addUser();
+                                        $userMapper->addUser($ldapServer, $ldapUser);
                                     }
                                     // $this->persistenceManager->persistAll();
                                     // $persistenceManager = GeneralUtility::makeInstance(persistenceManager::class);
                                     // $persistenceManager->persistAll();
                                 }
                                 if ($ldapServer->getConfiguration()->getUserRules($this->user_table)->getAutoEnable()) {
-                                    $ldapUser->loadUser();
-                                    $typo3User = $ldapUser->getUser();
+                                    $userMapper = new LdapTypo3UserMapper();
+                                    $typo3User = $userMapper->loadUser($ldapUser);
                                     if (is_object($typo3User)) {
                                         if ($typo3User->getIsDisabled()) {
                                             // Authenticated users shall be enabled
@@ -230,7 +238,7 @@ class LdapAuthService extends AuthenticationService
                                                 $msg = 'Enable user: ' . $this->username;
                                                 $this->logger->debug($msg);
                                             }
-                                            $ldapUser->enableUser();
+                                            $typo3User->setIsDisabled(false);
                                         }
                                     }
                                     // $this->persistenceManager->persistAll();

@@ -85,7 +85,7 @@ class LdapTypo3UserMapper
     /**
      * Tries to load the TYPO3 typo3User based on DN or username.
      */
-    public function loadUser(LdapFeUser | LdapBeUser $ldapUser): FrontendUser | BackendUser | null
+    public function loadUser(LdapFeUser | LdapBeUser $ldapUser): FrontendUser | BackendUser | bool
     {   
         if ($ldapUser->getUserType() == 'be') {
             $userRepository = GeneralUtility::makeInstance(BackendUserRepository::class);
@@ -130,37 +130,51 @@ class LdapTypo3UserMapper
 
     /**
      * adds a new TYPO3 typo3User.
-     *
-     * @param string $lastRun
      */
-    public function addUser($lastRun = null)
+    public function addUser(LdapServer $ldapServer, LdapFeUser | LdapBeUser $ldapUser, string $lastRun = null)
     {
-        $mapping = $this->userRules->getMapping();
+        $userType = $ldapUser->getUserType();
+        if ($userType == 'be') {
+            $userRepository = GeneralUtility::makeInstance(BackendUserRepository::class);
+            $userRules = $ldapServer->getConfiguration()->getBeUserRules();
+            $typo3User = GeneralUtility::makeInstance(BackendUser::class);
+        } else {
+            $userRepository = GeneralUtility::makeInstance(FrontendUserRepository::class);
+            $userRules = $ldapServer->getConfiguration()->getFeUserRules();
+            $typo3User = GeneralUtility::makeInstance(FrontendUser::class);
+        }
+
+        $mapping = $userRules->getMapping();
         $rawLdapUsername = $mapping['username.']['data'];
         $ldapUsername = str_replace('field:', '', $rawLdapUsername);
 
-        $username = $this->getAttribute($ldapUsername);
+        $username = (string) $ldapUser->getAttribute($ldapUsername);
 
         $createUser = false;
 
         if ($username) {
-            $this->typo3User->setServerUid($this->ldapServer->getConfiguration()->getUid());
-            $this->typo3User->setUsername($username);
-            $this->typo3User->setDN($this->dn);
-            $this->typo3User->generatePassword();
+            $typo3User->setUsername($username);
+            $typo3User->setServerUid($ldapServer->getUid());
+            $typo3User->setDN($ldapUser->getDN());
+            $typo3User->generatePassword();
 
-            $pid = $this->userRules->getPid();
+            if (!empty($pid)) {
+                $typo3User->setPid($pid);
+            }
+
+            $pid = $userRules->getPid();
             if (empty($pid)) {
                 $pid = 0;
             }
-            $this->typo3User->setPid($pid);
+            $typo3User->setPid($pid);
 
             // LDAP attributes from mapping
-            $insertArray = $this->mapAttributes();
+            $attributes = $ldapUser->getAttributes();
+            $insertArray = $this->mapper->mapAttributes($mapping, $attributes);
             foreach ($insertArray as $field => $value) {
-                $ret = $this->typo3User->_setProperty($field, $value);
+                $ret = $typo3User->_setProperty($field, $value);
                 if (!$ret) {
-                    $msg = 'Property "'.$field.'" is unknown to Extbase.';
+                    $msg = 'Property "' . $field . '" is unknown to Extbase.';
                     if ($this->logLevel >= 1) {
                         $this->logger->warning($msg);
                     }
@@ -168,18 +182,18 @@ class LdapTypo3UserMapper
             }
 
             if ($lastRun) {
-                $this->typo3User->setLastRun($lastRun);
+                $typo3User->setLastRun($lastRun);
             }
 
-            $usergroups = $this->addUsergroupsToUserRecord($lastRun);
+            $usergroups = $this->addUsergroupsToUserRecord($ldapUser, $typo3User, $lastRun);
             $numberOfGroups = count($usergroups);
 
-            if ((0 == $numberOfGroups) && ($this->userRules->getOnlyUsersWithGroup())) {
-                $msg = 'User "'.$username.'" (DN: '.$this->dn.') not imported due to missing usergroup';
+            if ((0 == $numberOfGroups) && ($userRules->getOnlyUsersWithGroup())) {
+                $msg = 'User "' . $username.'" (DN: ' . $ldapUser->getDN() . ') not imported due to missing usergroup';
                 if ($this->logLevel >= 1) {
                     $this->logger->notice($msg);
                 }
-            } elseif ($this->userRules->getGroupRules()->getRestrictToGroups()) {
+            } elseif ($userRules->getGroupRules()->getRestrictToGroups()) {
                 $groupFound = false;
                 reset($usergroups);
                 foreach ($usergroups as $group) {
@@ -191,7 +205,7 @@ class LdapTypo3UserMapper
                 if ($groupFound) {
                     $createUser = true;
                 } else {
-                    $msg = 'User "'.$username.'" (DN: '.$this->dn.') because no usergroup matches "'.$this->userRules->getGroupRules()->getRestrictToGroups().'"';
+                    $msg = 'User "' . $username . '" (DN: ' . $ldapUser->getDN() . ') because no usergroup matches "' . $userRules->getGroupRules()->getRestrictToGroups() . '"';
                     if ($this->logLevel >= 1) {
                         $this->logger->notice($msg);
                     }
@@ -201,18 +215,18 @@ class LdapTypo3UserMapper
             }
         } else {
             // error condition. There should always be a username
-            $msg = 'No username (Server: '.$this->ldapServer->getConfiguration()->getUid().', DN: '.$this->dn.')';
+            $msg = 'No username (Server: ' . $ldapServer->getConfiguration()->getUid() . ', DN: ' . $ldapUser->getDN() . ')';
             if ($this->logLevel >= 1) {
                 $this->logger->notice($msg);
             }
-            Helpers::addError(self::WARNING, $msg, $this->ldapServer->getConfiguration()->getUid());
+            Helpers::addError(self::WARNING, $msg, $ldapServer->getConfiguration()->getUid());
         }
 
         if ($createUser) {
-            $this->userRepository->add($this->typo3User);
-            $msg = 'Create typo3User record "'.$username.'" (DN: '.$this->dn.')';
+            $userRepository->add($typo3User);
+            $msg = 'Create typo3User record "' . $username . '" (DN: ' . $ldapUser->getDN() . ')';
             if ($this->logLevel >= 3) {
-                $debugData = (array) $this->typo3User;
+                $debugData = (array) $typo3User;
                 $this->logger->debug($msg, $debugData);
             } elseif (2 == $this->logLevel) {
                 $this->logger->debug($msg);
@@ -222,8 +236,6 @@ class LdapTypo3UserMapper
 
     /**
      * updates a TYPO3 typo3User.
-     *
-     * @param string $lastRun
      */
     public function updateUser(LdapFeUser | LdapBeUser $ldapUser, FrontendUser | BackendUser $typo3User, $lastRun = null)
     {
@@ -231,7 +243,7 @@ class LdapTypo3UserMapper
         $userType = $ldapUser->getUserType();
         if ($userType == 'be') {
             $userRepository = GeneralUtility::makeInstance(BackendUserRepository::class);
-            $userRules = $ldapServer->getConfiguration()->getFeUserRules();
+            $userRules = $ldapServer->getConfiguration()->getBeUserRules();
         } else {
             $userRepository = GeneralUtility::makeInstance(FrontendUserRepository::class);
             $userRules = $ldapServer->getConfiguration()->getFeUserRules();
@@ -275,7 +287,7 @@ class LdapTypo3UserMapper
             }
 
             $this->removeUsergroupsFromUserRecord($ldapServer, $typo3User, $userType);
-            $usergroups = $this->addUsergroupsToUserRecord($ldapUser, $typo3User, $userType, $lastRun);
+            $usergroups = $this->addUsergroupsToUserRecord($ldapUser, $typo3User, $lastRun);
             $numberOfGroups = count($usergroups);
 
             if ((0 == $numberOfGroups) && ($userRules->getOnlyUsersWithGroup())) {
@@ -340,9 +352,10 @@ class LdapTypo3UserMapper
      *
      * @return array
      */
-    protected function addUsergroupsToUserRecord(LdapFeUser | LdapBeUser $ldapUser, FrontendUser | BackendUser $typo3User, $userType, $lastRun = null)
+    protected function addUsergroupsToUserRecord(LdapFeUser | LdapBeUser $ldapUser, FrontendUser | BackendUser $typo3User, $lastRun = null)
     {
         $ldapServer = $ldapUser->getLdapServer();
+        $userType = $ldapUser->getUserType();
         if ($userType == 'be') {
             $userRules = $ldapServer->getConfiguration()->getBeUserRules();
         } else {

@@ -562,14 +562,16 @@ class ModuleController extends ActionController
                     $ldapServer->setUserType($settings->getLoginType());
                     $loginname = \NormanSeibert\Ldap\Utility\Helpers::sanitizeCredentials($settings->getLoginname());
                     $password = \NormanSeibert\Ldap\Utility\Helpers::sanitizeCredentials($settings->getPassword());
-                    $ldapUsers = $ldapServer->getUsers($loginname);
+                    
+                    $ldapHandler = new LdapHandler();
+                    $ldapUsers = $ldapHandler->getUsers($ldapServer, $loginname);
                     if (isset($ldapUsers) && (1 == count($ldapUsers))) {
                         $ldapUsers->rewind();
                         $ldapUser = $ldapUsers->current();
                         $user['found'] = true;
                         $user['serverUid'] = $ldapServer->getConfiguration()->getUid();
                         $user['dn'] = $ldapUser->getDN();
-                        $ldapUser = $ldapServer->authenticateUser($loginname, $password);
+                        $ldapUser = $ldapHandler->authenticateUser($ldapServer, $loginname, $password);
                         if (is_object($ldapUser)) {
                             $user['authenticated'] = true;
                         }
