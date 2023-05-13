@@ -25,15 +25,18 @@ namespace NormanSeibert\Ldap\Domain\Repository\Typo3User;
  * @copyright 2020 Norman Seibert
  */
 
+ use TYPO3\CMS\Extbase\Persistence\Repository;
+ use TYPO3\CMS\Extbase\Persistence\QueryResultInterface;
+ use TYPO3\CMS\Extbase\Persistence\QueryInterface;
+ use NormanSeibert\Ldap\Utility\Helpers;
+ use NormanSeibert\Ldap\Domain\Model\Typo3User\FrontendUser;
+
 /**
  * Repository for TYPO3 frontend users.
  */
-class FrontendUserRepository extends \TYPO3\CMS\Extbase\Domain\Repository\FrontendUserRepository implements \NormanSeibert\Ldap\Domain\Repository\Typo3User\UserRepositoryInterface
+class FrontendUserRepository extends Repository
 {
-    /**
-     * @return \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
-     */
-    public function findAll()
+    public function findAll(): QueryResultInterface
     {
         $query = $this->createQuery();
         $query->getQuerySettings()->setRespectStoragePage(false);
@@ -41,18 +44,12 @@ class FrontendUserRepository extends \TYPO3\CMS\Extbase\Domain\Repository\Fronte
         return $query->execute();
     }
 
-    /**
-     * @param string $username
-     * @param int    $pid
-     *
-     * @return \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
-     */
-    public function findByUsername($username, $pid = null)
+    public function findByUsername(string $username, int $pid = null): FrontendUser | QueryResultInterface | bool
     {
         $user = false;
         $query = $this->createQuery();
         $query->getQuerySettings()->setRespectStoragePage(false);
-        \NormanSeibert\Ldap\Utility\Helpers::setRespectEnableFieldsToFalse($query);
+        Helpers::setRespectEnableFieldsToFalse($query);
         if ($pid) {
             $query->matching(
                 $query->logicalAnd(
@@ -74,13 +71,7 @@ class FrontendUserRepository extends \TYPO3\CMS\Extbase\Domain\Repository\Fronte
         return $user;
     }
 
-    /**
-     * @param string $dn
-     * @param int    $pid
-     *
-     * @return \TYPO3\CMS\Extbase\Domain\Repository\FrontendUserRepository|\TYPO3\CMS\Extbase\Persistence\QueryResultInterface
-     */
-    public function findByDn($dn, $pid = null)
+    public function findByDn(string $dn, int $pid = null): FrontendUser | QueryResultInterface | bool
     {
         $user = false;
         $query = $this->createQuery();
@@ -100,6 +91,7 @@ class FrontendUserRepository extends \TYPO3\CMS\Extbase\Domain\Repository\Fronte
         }
         $users = $query->execute();
         $userCount = $users->count();
+        // echo $userCount; die;
         if (1 == $userCount) {
             $user = $users->getFirst();
         }
@@ -107,17 +99,12 @@ class FrontendUserRepository extends \TYPO3\CMS\Extbase\Domain\Repository\Fronte
         return $user;
     }
 
-    /**
-     * @param mixed $lastRun
-     *
-     * @return \TYPO3\CMS\Extbase\Domain\Repository\FrontendUserRepository|\TYPO3\CMS\Extbase\Persistence\QueryResultInterface
-     */
-    public function findByLastRun($lastRun)
+    public function findByLastRun(array | string $lastRun): FrontendUser | QueryResultInterface
     {
         $query = $this->createQuery();
         $query->getQuerySettings()->setRespectStoragePage(false);
         $query->getQuerySettings()->setIncludeDeleted(true);
-        \NormanSeibert\Ldap\Utility\Helpers::setRespectEnableFieldsToFalse($query);
+        Helpers::setRespectEnableFieldsToFalse($query);
         if (is_array($lastRun)) {
             if (1 == count($lastRun)) {
                 $query->matching(
@@ -137,24 +124,15 @@ class FrontendUserRepository extends \TYPO3\CMS\Extbase\Domain\Repository\Fronte
         return $query->execute();
     }
 
-    /**
-     * @param mixed $lastRun
-     *
-     * @return int
-     */
-    public function countByLastRun($lastRun)
+    public function countByLastRun(array | string $lastRun): int
     {
         return $this->findByLastRun($lastRun)->count();
     }
 
-    /**
-     * @return \TYPO3\CMS\Extbase\Domain\Repository\FrontendUserRepository|\TYPO3\CMS\Extbase\Persistence\QueryResultInterface
-     */
-    public function findLdapImported()
+    public function findLdapImported(): FrontendUser | QueryResultInterface
     {
         $query = $this->createQuery();
         $query->getQuerySettings()->setRespectStoragePage(false);
-        // \NormanSeibert\Ldap\Utility\Helpers::setRespectEnableFieldsToFalse($query);
         $query->matching(
             $query->logicalNot(
                 $query->equals('dn', '')
@@ -162,7 +140,7 @@ class FrontendUserRepository extends \TYPO3\CMS\Extbase\Domain\Repository\Fronte
         );
         $query->setOrderings(
             [
-                'serverUid' => \TYPO3\CMS\Extbase\Persistence\QueryInterface::ORDER_ASCENDING,
+                'serverUid' => QueryInterface::ORDER_ASCENDING,
             ]
         );
 

@@ -18,13 +18,18 @@
       "homepage": "https://www.entios.de/ldap-mit-typo3/"
     }
   ],
-  "license": "GPL-2.0+",
+  "license": "GPL-2.0-or-later",
   "require": {
-    "typo3/cms-core": "^10.0"
+    "typo3/cms-core": ">= 11.5"
   },
   "autoload": {
     "psr-4": {
       "NormanSeibert\\Ldap\\": "Classes"
+    }
+  },
+  "extra": {
+    "typo3/cms": {
+       "extension-key": "ldap"
     }
   }
 }

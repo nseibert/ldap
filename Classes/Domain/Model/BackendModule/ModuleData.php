@@ -31,12 +31,12 @@ namespace NormanSeibert\Ldap\Domain\Model\BackendModule;
 class ModuleData
 {
     /**
-     * @var \NormanSeibert\Ldap\Domain\Model\BackendModule\FormSettings
+     * @var FormSettings
      */
     protected $formSettings;
 
     /**
-     * @return \NormanSeibert\Ldap\Domain\Model\BackendModule\FormSettings
+     * @return FormSettings
      */
     public function getFormSettings()
     {
@@ -44,7 +44,7 @@ class ModuleData
     }
 
     /**
-     * @param \NormanSeibert\Ldap\Domain\Model\BackendModule\FormSettings $settings
+     * @param FormSettings $settings
      */
     public function setFormSettings(FormSettings $settings)
     {

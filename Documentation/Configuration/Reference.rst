@@ -25,6 +25,10 @@ compatibility with database records.**
 
 Mandatory properties are printed bold.
 
+.. attention::
+
+   Currently it's not possible to import or update users automatically during login. This means that **autoImport** and **autoEnable** must not be set to 1.
+
 +----------------------------------+---------------+----------------------------------------------------------------------------------------------------+----------------+
 | Parameter                        | Data type     | Description                                                                                        | Default        |
 +==================================+===============+====================================================================================================+================+

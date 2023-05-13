@@ -23,6 +23,9 @@ Features include:
 * Authentication of FE and BE users against the directory
 * Usage of the TYPO3 scheduler to import/update/delete TYPO3 users
 
+.. attention::
+   
+   Currently it's not possible to import or update users automatically during login.
 
 .. _screenshots:
 

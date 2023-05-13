@@ -1,22 +1,3 @@
-<html
-    xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
-    xmlns:be="http://typo3.org/ns/TYPO3/CMS/Backend/ViewHelpers"
-    data-namespace-typo3-fluid="true">
-
-<be:moduleLayout>
-
-	<be:moduleLayout.menu identifier="BackendUserModuleMenu">
-		<be:moduleLayout.menuItem label="{f:translate(id: 'action.check')}" uri="{f:uri.action(controller: 'Module', action: 'check')}"/>
-		<be:moduleLayout.menuItem label="{f:translate(id: 'action.summary')}" uri="{f:uri.action(controller: 'Module', action: 'summary')}"/>
-		<be:moduleLayout.menuItem label="{f:translate(id: 'action.importUsers')}" uri="{f:uri.action(controller: 'Module', action: 'importUsers')}"/>
-		<be:moduleLayout.menuItem label="{f:translate(id: 'action.updateUsers')}" uri="{f:uri.action(controller: 'Module', action: 'updateUsers')}"/>
-		<be:moduleLayout.menuItem label="{f:translate(id: 'action.importAndUpdateUsers')}" uri="{f:uri.action(controller: 'Module', action: 'importAndUpdateUsers')}"/>
-		<be:moduleLayout.menuItem label="{f:translate(id: 'action.deleteUsers')}" uri="{f:uri.action(controller: 'Module', action: 'deleteUsers')}"/>
-		<be:moduleLayout.menuItem label="{f:translate(id: 'action.checkLogin')}" uri="{f:uri.action(controller: 'Module', action: 'checkLogin')}"/>
-	</be:moduleLayout.menu>
-
-	<f:render section="content" />
-
-</be:moduleLayout>
-
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers" data-namespace-typo3-fluid="true">
+	<f:render section="main"/>
 </html>

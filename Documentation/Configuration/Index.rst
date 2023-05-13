@@ -12,11 +12,9 @@ problems result from wrong configurations. A general advice is to set
 the logging level to “2” in the extension's configuration (in the
 extension manager).
 
-.. important::
+.. attention::
 
-   In Version 3.4.x the UIDs of LDAP server records in the configuration file changed.
-
-   **UIDs have to be integer now!**
+   Currently it's not possible to import or update users automatically during login.
 
 
 Typical Example
@@ -38,4 +36,3 @@ An example configuration file is included in the directory “example”.
 	Reference
 	Groups
 	Extbase
-	SSO

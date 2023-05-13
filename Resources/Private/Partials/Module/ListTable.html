@@ -12,12 +12,14 @@
 		</tr>
 	</thead>
 	<tbody>
-		<f:for each="{users}" as="user">
+		<f:for each="{users.paginator.paginatedItems}" as="user">
 			<f:render partial="Module/ListRowUsers" arguments="{formSettings: formSettings, user: user, dateFormat: dateFormat, timeFormat: timeFormat, returnUrl: returnUrl}" />
 		</f:for>
 		<tr>
 			<td colspan="7">
-				<f:count subject="{users}" /> Users
+				<f:alias map="{pagination:users.pagination, paginator:users.paginator, name:users.name}">
+					<f:render partial="Module/Pagination" arguments="{_all}" />
+				</f:alias>
 			</td>
 		</tr>
 	</tbody>

@@ -26,3 +26,23 @@ services:
     tags:
       - name: 'console.command'
         command: 'ldap:deleteUsers'
+
+  NormanSeibert\Ldap\Service\LdapAuthService:
+    public: true
+    shared: false
+
+  NormanSeibert\Ldap\Service\LdapImporter:
+    public: true
+    shared: false
+
+  NormanSeibert\Ldap\Service\Mapping\LdapTypo3UserMapper:
+    public: true
+    shared: false
+
+  NormanSeibert\Ldap\Service\Mapping\LdapTypo3GroupMapper:
+    public: true
+    shared: false
+
+  NormanSeibert\Ldap\Service\Mapping\GenericMapper:
+    public: true
+    shared: false

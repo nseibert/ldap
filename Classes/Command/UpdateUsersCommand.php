@@ -26,7 +26,7 @@ namespace NormanSeibert\Ldap\Command;
  * @copyright 2020 Norman Seibert
  */
 
-use NormanSeibert\Ldap\Domain\Model\Configuration\Configuration;
+use NormanSeibert\Ldap\Domain\Model\Configuration\LdapConfiguration;
 use NormanSeibert\Ldap\Domain\Repository\Typo3User\BackendUserRepository;
 use NormanSeibert\Ldap\Domain\Repository\Typo3User\FrontendUserRepository;
 use NormanSeibert\Ldap\Service\LdapImporter;
@@ -37,8 +37,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use TYPO3\CMS\Core\Core\Bootstrap;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Extbase\Object\ObjectManager;
-use TYPO3\CMS\Extbase\Persistence\PersistenceManagerInterface;
+use NormanSeibert\Ldap\Domain\Repository\LdapServer\LdapServerRepository;
+use TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager;
 
 /**
  * Controller for scheduled execution.
@@ -56,32 +56,30 @@ class UpdateUsersCommand extends Command
     protected $beUserRepository;
 
     /**
-     * @var Configuration
+     * @var LdapConfiguration
      */
     protected $ldapConfig;
 
     /**
-     * @var LdapImporter
+     * @var LdapServerRepository
      */
-    protected $importer;
-
-    /**
-     * @var PersistenceManagerInterface
-     */
-    protected $persistenceManager;
+    protected $serverRepository;
 
     /**
      * @param
      */
-    public function __construct(FrontendUserRepository $feUserRepository, BackendUserRepository $beUserRepository, Configuration $ldapConfig, LdapImporter $importer)
+    public function __construct(
+        FrontendUserRepository $feUserRepository,
+        BackendUserRepository $beUserRepository,
+        LdapConfiguration $ldapConfig,
+        LdapServerRepository $serverRepository
+    )
     {
         parent::__construct();
         $this->feUserRepository = $feUserRepository;
         $this->beUserRepository = $beUserRepository;
         $this->ldapConfig = $ldapConfig;
-        $this->importer = $importer;
-        $objectManager = GeneralUtility::makeInstance(ObjectManager::class);
-        $this->persistenceManager = $objectManager->get(PersistenceManagerInterface::class);
+        $this->serverRepository = $serverRepository;
     }
 
     /**
@@ -128,27 +126,32 @@ class UpdateUsersCommand extends Command
         $servers = $input->getArgument('servers');
         $processFe = $input->getArgument('processFe');
         $processBe = $input->getArgument('processBe');
+        $serverUids = GeneralUtility::trimExplode(',', $servers, true);
 
-        $ldapServers = $this->ldapConfig->getLdapServers();
-        $serverUids = \TYPO3\CMS\Core\Utility\GeneralUtility::trimExplode(',', $servers, true);
-        foreach ($ldapServers as $server) {
-            // @var $server \NormanSeibert\Ldap\Domain\Model\LdapServer\Server
-            if (in_array($server->getConfiguration()->getUid(), $serverUids)) {
-                $io->writeln('Updating from server: '.$server->getConfiguration()->getUid());
+        $ldapServers = $this->serverRepository->findAll();
+        if ($ldapServers->count()) {
+            $importer = GeneralUtility::makeInstance(LdapImporter::class);
+            $persistenceManager = GeneralUtility::makeInstance(persistenceManager::class);
+        }
+
+        foreach ($ldapServers as $ldapServer) {
+            if (in_array($ldapServer->getConfiguration()->getUid(), $serverUids)) {
+                $io->writeln('Updating from server: ' . $ldapServer->getConfiguration()->getUid());
                 $runs = [];
                 if ($processFe) {
-                    $this->importer->init($server, 'fe');
-                    $runs[] = $this->importer->doUpdate();
+                    $ldapServer->setUserType('fe');
+                    $runs[] = $importer::doUpdate($ldapServer);
+                    $persistenceManager->persistAll();
                     $this->persistenceManager->persistAll();
                     $feUsers = $this->feUserRepository->countByLastRun($runs);
-                    $io->writeln('Frontend users: '.$feUsers);
+                    $io->writeln('Frontend users: ' . $feUsers);
                 }
                 if ($processBe) {
-                    $this->importer->init($server, 'be');
-                    $runs[] = $this->importer->doUpdate();
-                    $this->persistenceManager->persistAll();
+                    $ldapServer->setUserType('be');
+                    $runs[] = $importer::doUpdate($ldapServer);
+                    $persistenceManager->persistAll();
                     $beUsers = $this->beUserRepository->countByLastRun($runs);
-                    $io->writeln('Backend users: '.$beUsers);
+                    $io->writeln('Backend users: ' . $beUsers);
                 }
             }
         }

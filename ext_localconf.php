@@ -1,58 +1,47 @@
 <?php
 
-if (!defined('TYPO3_MODE')) {
-    exit('Access denied.');
-}
+defined('TYPO3') or die();
 
-$config = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Configuration\\ExtensionConfiguration')->get('ldap');
+(static function (string $_EXTKEY) {
+    // Configuration of authentication service
+    $config = $GLOBALS['TYPO3_CONF_VARS']['EXTENSIONS'][$_EXTKEY] ?? [];
 
-if ($config['enableFE'] && !$config['enableBE']) {
-    $subTypes = 'getUserFE,authUserFE';
-    if ($config['enableSSO']) {
-        $TYPO3_CONF_VARS['SVCONF']['auth']['setup']['FE_fetchUserIfNoSession'] = 1;
+    $subTypesArr = [];
+    $subTypes = '';
+    if (isset($config['enableFE']) && $config['enableFE']) {
+        $subTypesArr[] = 'getUserFE';
+        $subTypesArr[] = 'authUserFE';
     }
-}
-
-if (!$config['enableFE'] && $config['enableBE']) {
-    $subTypes = 'getUserBE,authUserBE';
-    if ($config['enableSSO']) {
-        $TYPO3_CONF_VARS['SVCONF']['auth']['setup']['BE_fetchUserIfNoSession'] = 1;
+    if (isset($config['enableBE']) && $config['enableBE']) {
+        $subTypesArr[] = 'getUserBE';
+        $subTypesArr[] = 'authUserBE';
     }
-}
-
-if ($config['enableFE'] && $config['enableBE']) {
-    $subTypes = 'getUserFE,authUserFE,getUserBE,authUserBE';
-    if ($config['enableSSO']) {
-        $TYPO3_CONF_VARS['SVCONF']['auth']['setup']['FE_fetchUserIfNoSession'] = 1;
+    if (is_array($subTypesArr)) {
+        $subTypesArr = array_unique($subTypesArr);
+        $subTypes = implode(',', $subTypesArr);
+        \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addService(
+            $_EXTKEY,
+            'auth',
+            \NormanSeibert\Ldap\Service\LdapAuthService::class,
+            [
+                'title' => 'LDAP-Authentication',
+                'description' => 'Authentication service for LDAP (FE and BE).',
+                'subtype' => $subTypes,
+                'available' => 1,
+                'priority' => 75,
+                'quality' => 75,
+                'os' => '',
+                'exec' => '',
+                'className' => \NormanSeibert\Ldap\Service\LdapAuthService::class,
+            ]
+        );
     }
-    if ($config['enableSSO']) {
-        $TYPO3_CONF_VARS['SVCONF']['auth']['setup']['BE_fetchUserIfNoSession'] = 1;
-    }
-}
 
-if ($config['enableFE'] || $config['enableBE']) {
-    \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addService(
-        'ldap',
-        'auth',
-        NormanSeibert\Ldap\Service\LdapAuthService::class,
-        [
-            'title' => 'LDAP-Authentication',
-            'description' => 'Authentication service for LDAP (FE and BE).',
-            'subtype' => $subTypes,
-            'available' => 1,
-            'priority' => 75,
-            'quality' => 75,
-            'os' => '',
-            'exec' => '',
-            'className' => NormanSeibert\Ldap\Service\LdapAuthService::class,
-        ]
-    );
-}
-
-$GLOBALS['TYPO3_CONF_VARS']['LOG']['NormanSeibert']['Ldap']['writerConfiguration'] = [
-    \TYPO3\CMS\Core\Log\LogLevel::DEBUG => [
-        \TYPO3\CMS\Core\Log\Writer\FileWriter::class => [
-            'logFileInfix' => 'ldap',
+    $GLOBALS['TYPO3_CONF_VARS']['LOG']['NormanSeibert']['Ldap']['writerConfiguration'] = [
+        \TYPO3\CMS\Core\Log\LogLevel::DEBUG => [
+            \TYPO3\CMS\Core\Log\Writer\FileWriter::class => [
+                'logFileInfix' => 'ldap',
+            ],
         ],
-    ],
-];
+    ];
+})('ldap');

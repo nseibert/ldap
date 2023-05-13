@@ -26,35 +26,24 @@ namespace NormanSeibert\Ldap\Domain\Model\LdapUser;
  * @copyright 2020 Norman Seibert
  */
 
-use NormanSeibert\Ldap\Domain\Repository\Typo3User\BackendUserGroupRepository;
+use NormanSeibert\Ldap\Domain\Model\LdapServer\LdapServer;
+use NormanSeibert\Ldap\Domain\Model\LdapUser\LdapEntity;
 
 /**
- * Model for users read from LDAP server.
+ * Model for groups read from LDAP server.
  */
-class BeGroup extends \NormanSeibert\Ldap\Domain\Model\LdapUser\Group
+class LdapFeGroup extends LdapEntity
 {
-    /**
-     * @var \NormanSeibert\Ldap\Domain\Repository\Typo3User\BackendUserGroupRepository
-     */
-    protected $usergroupRepository;
-
-    public function __construct(BackendUserGroupRepository $usergroupRepository)
-    {
-        parent::__construct();
-        $this->usergroupRepository = $usergroupRepository;
-        $this->groupObject = 'NormanSeibert\Ldap\Domain\Model\Typo3User\BackendUserGroup';
-    }
+    protected int $pid;
 
     /**
      * sets the LDAP server (backreference).
-     *
-     * @return \NormanSeibert\Ldap\Domain\Model\LdapUser\BeGroup
      */
-    public function setLdapServer(\NormanSeibert\Ldap\Domain\Model\LdapServer\Server $server)
+    public function setLdapServer(LdapServer $server): LdapFeGroup
     {
         $this->ldapServer = $server;
-        $this->usergroupRules = $this->ldapServer->getConfiguration()->getBeUserRules()->getGroupRules();
-        $this->pid = 0;
+        $this->pid = $server->getConfiguration()->getFeUserRules()->getGroupRules()->getPid();
+        $this->userType = 'fe';
 
         return $this;
     }

@@ -15,7 +15,7 @@ $EM_CONF[$_EXTKEY] = [
     'description' => 'LDAP Integration',
     'category' => 'module',
     'shy' => 0,
-    'version' => '3.4.6',
+    'version' => '3.5.0',
     'dependencies' => 'extbase,fluid',
     'modify_tables' => 'fe_users,fe_groups,be_users,be_groups',
     'conflicts' => '',
@@ -34,8 +34,8 @@ $EM_CONF[$_EXTKEY] = [
     'CGLcompliance_note' => '',
     'constraints' => [
         'depends' => [
-            'php' => '7.2.0-0.0.0',
-            'typo3' => '10.0.0-10.9.99',
+            'php' => '7.4.0-0.0.0',
+            'typo3' => '11.0.0-12.9.99',
         ],
         'conflicts' => [
         ],

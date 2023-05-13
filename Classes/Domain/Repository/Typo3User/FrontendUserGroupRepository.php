@@ -25,10 +25,12 @@ namespace NormanSeibert\Ldap\Domain\Repository\Typo3User;
  * @copyright 2020 Norman Seibert
  */
 
+use TYPO3\CMS\Extbase\Persistence\Repository;
+
 /**
  * Repository for TYPO3 frontend usergroups.
  */
-class FrontendUserGroupRepository extends \TYPO3\CMS\Extbase\Domain\Repository\FrontendUserGroupRepository implements \NormanSeibert\Ldap\Domain\Repository\Typo3User\UserGroupRepositoryInterface
+class FrontendUserGroupRepository extends Repository
 {
     /**
      * @return array
@@ -39,15 +41,13 @@ class FrontendUserGroupRepository extends \TYPO3\CMS\Extbase\Domain\Repository\F
         $query->getQuerySettings()->setRespectStoragePage(false);
         \NormanSeibert\Ldap\Utility\Helpers::setRespectEnableFieldsToFalse($query);
         $groups = $query->execute();
-
-        return $groups->toArray();
     }
 
     /**
      * @param string $grouptitle
      * @param int    $pid
      *
-     * @return \TYPO3\CMS\Extbase\Domain\Repository\FrontendUserGroupRepository|\TYPO3\CMS\Extbase\Persistence\QueryResultInterface
+     * @return \TYPO3\CMS\Extbase\Domain\Repository\FrontendUserGroupRepository | \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
      */
     public function findByGroupTitle($grouptitle, $pid = null)
     {
@@ -76,11 +76,7 @@ class FrontendUserGroupRepository extends \TYPO3\CMS\Extbase\Domain\Repository\F
         return $group;
     }
 
-    /**
-     * @param array $uidList
-     *
-     * @return array
-     */
+
     public function findByUids($uidList)
     {
         $query = $this->createQuery();
@@ -90,15 +86,8 @@ class FrontendUserGroupRepository extends \TYPO3\CMS\Extbase\Domain\Repository\F
             $query->in('uid', $uidList)
         );
         $groups = $query->execute();
-
-        return $groups->toArray();
     }
 
-    /**
-     * @param int $pid
-     *
-     * @return array
-     */
     public function findByPid($pid)
     {
         $query = $this->createQuery();
@@ -108,16 +97,8 @@ class FrontendUserGroupRepository extends \TYPO3\CMS\Extbase\Domain\Repository\F
             $query->equals('pid', $pid)
         );
         $groups = $query->execute();
-
-        return $groups->toArray();
     }
 
-    /**
-     * @param string $dn
-     * @param int    $pid
-     *
-     * @return \TYPO3\CMS\Extbase\Domain\Repository\FrontendUserGroupRepository|\TYPO3\CMS\Extbase\Persistence\QueryResultInterface
-     */
     public function findByDn($dn, $pid = null)
     {
         $user = false;
@@ -139,11 +120,6 @@ class FrontendUserGroupRepository extends \TYPO3\CMS\Extbase\Domain\Repository\F
         return $user;
     }
 
-    /**
-     * @param array $lastRun
-     *
-     * @return \TYPO3\CMS\Extbase\Domain\Repository\FrontendUserGroupRepository|\TYPO3\CMS\Extbase\Persistence\QueryResultInterface
-     */
     public function findByLastRun($lastRun)
     {
         $query = $this->createQuery();
@@ -156,9 +132,6 @@ class FrontendUserGroupRepository extends \TYPO3\CMS\Extbase\Domain\Repository\F
         return $query->execute();
     }
 
-    /**
-     * @return \TYPO3\CMS\Extbase\Domain\Repository\FrontendUserGroupRepository|\TYPO3\CMS\Extbase\Persistence\QueryResultInterface
-     */
     public function findLdapImported()
     {
         $query = $this->createQuery();

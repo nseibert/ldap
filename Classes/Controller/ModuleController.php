@@ -26,27 +26,34 @@ namespace NormanSeibert\Ldap\Controller;
  * @copyright 2020 Norman Seibert
  */
 
-use NormanSeibert\Ldap\Domain\Model\BackendModule\ModuleData;
-use NormanSeibert\Ldap\Domain\Model\Configuration\Configuration;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+use NormanSeibert\Ldap\Domain\Model\Configuration\LdapConfiguration;
 use NormanSeibert\Ldap\Domain\Repository\Typo3User\BackendUserRepository;
 use NormanSeibert\Ldap\Domain\Repository\Typo3User\FrontendUserRepository;
 use NormanSeibert\Ldap\Service\LdapImporter;
-use NormanSeibert\Ldap\Service\ModuleDataStorageService;
+use NormanSeibert\Ldap\Service\BackendModule\ModuleDataStorageService;
+use NormanSeibert\Ldap\Domain\Model\BackendModule\ModuleData;
+use NormanSeibert\Ldap\Domain\Model\BackendModule\FormSettings;
+use TYPO3\CMS\Backend\Template\Components\Menu\Menu;
+use TYPO3\CMS\Backend\View\BackendTemplateView;
+use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
+use TYPO3\CMS\Extbase\Mvc\Web\Routing\UriBuilder;
+use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
+use TYPO3\CMS\Backend\Template\ModuleTemplateFactory;
+use NormanSeibert\Ldap\Domain\Repository\LdapServer\LdapServerRepository;
+use NormanSeibert\Ldap\Service\LdapHandler;
 
 /**
  * Controller for backend module.
  */
-class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController
+class ModuleController extends ActionController
 {
-    /**
-     * @var string Key of the extension this controller belongs to
-     */
-    protected $extensionName = 'Ldap';
 
-    /**
-     * @var \TYPO3\CMS\Core\Page\PageRenderer
-     */
-    protected $pageRenderer;
+    const ERROR = 2;
+    const WARNING = 1;
+    const OK = 0;
+    const INFO = -1;
+    const NOTICE = -2;
 
     /**
      * @var FrontendUserRepository
@@ -59,9 +66,16 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
     protected $beUserRepository;
 
     /**
-     * @var Configuration
+     * @var LdapServerRepository
      */
-    protected $ldapConfig;
+    protected $serverRepository;
+
+    /**
+     * @var LdapConfiguration
+     */
+    protected $configuration;
+
+    protected Ldaphandler $ldapHandler;
 
     /**
      * @var ModuleData
@@ -74,21 +88,65 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
     protected $moduleDataStorageService;
 
     /**
-     * @var LdapImporter
+     * @var BackendTemplateView
      */
-    protected $importer;
+    protected $view;
+    
+    protected ModuleTemplateFactory $moduleTemplateFactory;
 
-    /**
-     * @param
-     */
-    public function __construct(FrontendUserRepository $feUserRepository, BackendUserRepository $beUserRepository, Configuration $ldapConfig, ModuleData $moduleData, ModuleDataStorageService $moduleDataStorageService, LdapImporter $importer)
+    public function __construct(
+        FrontendUserRepository $feUserRepository,
+        BackendUserRepository $beUserRepository,
+        LdapConfiguration $configuration,
+        LdapServerRepository $serverRepository,
+        ModuleData $moduleData,
+        ModuleDataStorageService $moduleDataStorageService,
+        ModuleTemplateFactory $moduleTemplateFactory,
+        Ldaphandler $ldapHandler)
     {
         $this->feUserRepository = $feUserRepository;
         $this->beUserRepository = $beUserRepository;
-        $this->ldapConfig = $ldapConfig;
+        $this->configuration = $configuration;
+        $this->serverRepository = $serverRepository;
         $this->moduleData = $moduleData;
         $this->moduleDataStorageService = $moduleDataStorageService;
-        $this->importer = $importer;
+        $this->moduleTemplateFactory = $moduleTemplateFactory;
+        $this->ldapHandler = $ldapHandler;
+    }
+
+    protected function createMenu($moduleTemplate)
+    {
+        // Add action menu
+        /** @var Menu $menu */
+        $menu = GeneralUtility::makeInstance(Menu::class);
+        $menu->setIdentifier('_ldapMenu');
+
+        /** @var UriBuilder $uriBuilder */
+        $uriBuilder = GeneralUtility::makeInstance(UriBuilder::class);
+        $uriBuilder->setRequest($this->request);
+
+        // Add menu items
+        $menu = $moduleTemplate->getDocHeaderComponent()->getMenuRegistry()->makeMenu();
+        $menu->setIdentifier('ldap');
+
+        $items = ['check', 'summary', 'importUsers', 'updateUsers', 'importAndUpdateUsers', 'deleteUsers', 'checkLogin'];
+        
+        foreach ($items as $item) {
+            $isActive = $this->actionMethodName === $item . 'Action';
+            $uri = $uriBuilder->reset()->uriFor(
+                $item,
+                [],
+                'Module'
+            );
+            $title = LocalizationUtility::translate('action.' . $item, 'ldap');
+            $item = $menu->makeMenuItem()
+                ->setTitle($title)
+                ->setActive($isActive)
+                ->setHref($uri);
+            $menu->addMenuItem($item);
+        }
+
+        return $menu;
     }
 
     /**
@@ -96,12 +154,12 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
      *
      * @throws \TYPO3\CMS\Extbase\Mvc\Exception\StopActionException
      */
-    public function processRequest(\TYPO3\CMS\Extbase\Mvc\RequestInterface $request, \TYPO3\CMS\Extbase\Mvc\ResponseInterface $response)
+    public function processRequest(\TYPO3\CMS\Extbase\Mvc\RequestInterface $request): \Psr\Http\Message\ResponseInterface
     {
         $this->moduleData = $this->moduleDataStorageService->loadModuleData();
         // We "finally" persist the module data.
         try {
-            parent::processRequest($request, $response);
+            return parent::processRequest($request);
             $this->moduleDataStorageService->persistModuleData($this->moduleData);
         } catch (\TYPO3\CMS\Extbase\Mvc\Exception\StopActionException $e) {
             $this->moduleDataStorageService->persistModuleData($this->moduleData);
@@ -113,52 +171,70 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
     /**
      * Checks LDAP configuration.
      */
-    public function checkAction()
+    public function checkAction(): \Psr\Http\Message\ResponseInterface
     {
-        $this->ldapConfig->getLdapServers();
-        $ok = $this->ldapConfig->isConfigOK();
+        $ok = $this->configuration->checkConfiguration();
         $this->view->assign('ok', $ok);
+
+        // return $this->htmlResponse();
+        $moduleTemplate = $this->moduleTemplateFactory->create($this->request);
+        $menu = $this->createMenu($moduleTemplate);
+        if ($menu instanceof Menu) {
+            // $this->view->getModuleTemplate()->getDocHeaderComponent()->getMenuRegistry()->addMenu($menu);
+            $moduleTemplate->getDocHeaderComponent()->getMenuRegistry()->addMenu($menu);
+        }
+        $moduleTemplate->setContent($this->view->render());
+        return $this->htmlResponse($moduleTemplate->renderContent());
     }
 
     /**
      * Queries LDAP and compiles a list of users and attributes.
      */
-    public function summaryAction()
+    public function summaryAction(): \Psr\Http\Message\ResponseInterface
     {
-        $ldapServers = $this->ldapConfig->getLdapServers();
+        $ldapServers = $this->serverRepository->findAll();
         $servers = [];
-        foreach ($ldapServers as $server) {
-            // @var $server \NormanSeibert\Ldap\Domain\Model\LdapServer\Server
-            $status = $server->checkBind();
-            $server->setLimitLdapResults(3);
-            $server->setScope('fe');
-            $feUsers = $server->getUsers('*');
-            $server->setScope('be');
-            $beUsers = $server->getUsers('*');
+
+        foreach ($ldapServers as $uid => $ldapServer) {
+            $status = $this->ldapHandler->checkBind($ldapServer);
+            $ldapServer->setLimitLdapResults(3);
+            $ldapServer->setUserType('fe');
+            $feUsers = $this->ldapHandler->getUsers($ldapServer, '*');
+            $ldapServer->setUserType('be');
+            $beUsers = $this->ldapHandler->getUsers($ldapServer, '*');
             $servers[] = [
-                'server' => $server,
+                'server' => $ldapServer->getConfiguration(),
                 'status' => $status,
                 'feUsers' => $feUsers,
                 'beUsers' => $beUsers,
             ];
         }
         $this->view->assign('ldapServers', $servers);
+
+        // return $this->htmlResponse();
+        $moduleTemplate = $this->moduleTemplateFactory->create($this->request);
+        $menu = $this->createMenu($moduleTemplate);
+        if ($menu instanceof Menu) {
+            // $this->view->getModuleTemplate()->getDocHeaderComponent()->getMenuRegistry()->addMenu($menu);
+            $moduleTemplate->getDocHeaderComponent()->getMenuRegistry()->addMenu($menu);
+        }
+        $moduleTemplate->setContent($this->view->render());
+        return $this->htmlResponse($moduleTemplate->renderContent());
     }
 
     /**
      * configures the import and display the result list.
      */
-    public function importUsersAction()
+    public function importUsersAction(): \Psr\Http\Message\ResponseInterface
     {
         $beUsers = [];
         $feUsers = [];
         $settings = $this->initializeFormSettings();
 
-        $ldapServers = $this->ldapConfig->getLdapServers();
+        $ldapServers = $this->serverRepository->findAll();
         $serverConfigurations = [];
-        foreach ($ldapServers as $server) {
-            // @var $server \NormanSeibert\Ldap\Domain\Model\LdapServer\Server
-            $serverConfigurations[] = $server->getConfiguration();
+        foreach ($ldapServers as $ldapServer) {
+            $serverConfigurations[] = $ldapServer->getConfiguration();
         }
 
         if ($this->request->hasArgument('runs')) {
@@ -173,28 +249,43 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 
         $this->view->assign('be_users', $beUsers);
         $this->view->assign('fe_users', $feUsers);
+
+        // return $this->htmlResponse();
+        $moduleTemplate = $this->moduleTemplateFactory->create($this->request);
+        $menu = $this->createMenu($moduleTemplate);
+        if ($menu instanceof Menu) {
+            // $this->view->getModuleTemplate()->getDocHeaderComponent()->getMenuRegistry()->addMenu($menu);
+            $moduleTemplate->getDocHeaderComponent()->getMenuRegistry()->addMenu($menu);
+        }
+        $moduleTemplate->setContent($this->view->render());
+        return $this->htmlResponse($moduleTemplate->renderContent());
     }
 
     /**
      * imports users.
      */
-    public function doImportUsersAction(\NormanSeibert\Ldap\Domain\Model\BackendModule\FormSettings $formSettings = null)
+    public function doImportUsersAction(FormSettings $formSettings = null)
     {
         $settings = $this->initializeFormSettings($formSettings);
         $this->view->assign('formSettings', $settings);
 
-        $ldapServers = $this->ldapConfig->getLdapServers();
+        $ldapServers = $this->serverRepository->findAll();
         $runs = [];
-        foreach ($ldapServers as $server) {
-            // @var $server \NormanSeibert\Ldap\Domain\Model\LdapServer\Server
-            if (in_array($server->getConfiguration()->getUid(), $settings->getUseServers())) {
+
+        if ($ldapServers->count()) {
+            $importer = GeneralUtility::makeInstance(LdapImporter::class);
+        }
+
+        foreach ($ldapServers as $ldapServer) {
+            $uid = $ldapServer->getUid();
+            if (in_array($uid, $settings->getUseServers())) {
                 if ($settings->getAuthenticateFe()) {
-                    $this->importer->init($server, 'fe');
-                    $runs[] = $this->importer->doImport();
+                    $ldapServer->setUserType('fe');
+                    $runs[] = $importer::doImport($ldapServer);
                 }
                 if ($settings->getAuthenticateBe()) {
-                    $this->importer->init($server, 'be');
-                    $runs[] = $this->importer->doImport();
+                    $ldapServer->setUserType('fe');
+                    $runs[] = $importer::doImport($ldapServer);
                 }
             }
         }
@@ -209,17 +300,16 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
     /**
      * configures the update and display the result list.
      */
-    public function updateUsersAction()
+    public function updateUsersAction(): \Psr\Http\Message\ResponseInterface
     {
         $beUsers = [];
         $feUsers = [];
         $settings = $this->initializeFormSettings();
 
-        $ldapServers = $this->ldapConfig->getLdapServers();
+        $ldapServers = $this->serverRepository->findAll();
         $serverConfigurations = [];
-        foreach ($ldapServers as $server) {
-            // @var $server \NormanSeibert\Ldap\Domain\Model\LdapServer\Server
-            $serverConfigurations[] = $server->getConfiguration();
+        foreach ($ldapServers as $ldapServer) {
+            $serverConfigurations[] = $ldapServer->getConfiguration();
         }
 
         if ($this->request->hasArgument('runs')) {
@@ -234,28 +324,43 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 
         $this->view->assign('be_users', $beUsers);
         $this->view->assign('fe_users', $feUsers);
+
+        // return $this->htmlResponse();
+        $moduleTemplate = $this->moduleTemplateFactory->create($this->request);
+        $menu = $this->createMenu($moduleTemplate);
+        if ($menu instanceof Menu) {
+            // $this->view->getModuleTemplate()->getDocHeaderComponent()->getMenuRegistry()->addMenu($menu);
+            $moduleTemplate->getDocHeaderComponent()->getMenuRegistry()->addMenu($menu);
+        }
+        $moduleTemplate->setContent($this->view->render());
+        return $this->htmlResponse($moduleTemplate->renderContent());
     }
 
     /**
      * updates users.
      */
-    public function doUpdateUsersAction(\NormanSeibert\Ldap\Domain\Model\BackendModule\FormSettings $formSettings = null)
+    public function doUpdateUsersAction(FormSettings $formSettings = null)
     {
         $settings = $this->initializeFormSettings($formSettings);
         $this->view->assign('formSettings', $settings);
 
-        $ldapServers = $this->ldapConfig->getLdapServers();
+        $ldapServers = $this->serverRepository->findAll();
         $runs = [];
-        foreach ($ldapServers as $server) {
-            // @var $server \NormanSeibert\Ldap\Domain\Model\LdapServer\Server
-            if (in_array($server->getConfiguration()->getUid(), $settings->getUseServers())) {
+
+        if ($ldapServers->count()) {
+            $importer = GeneralUtility::makeInstance(LdapImporter::class);
+        }
+
+        foreach ($ldapServers as $ldapServer) {
+            $uid = $ldapServer->getUid();
+            if (in_array($uid, $settings->getUseServers())) {
                 if ($settings->getAuthenticateFe()) {
-                    $this->importer->init($server, 'fe');
-                    $runs[] = $this->importer->doUpdate();
+                    $ldapServer->setUserType('fe');
+                    $runs[] = $importer->doUpdate($ldapServer);
                 }
                 if ($settings->getAuthenticateBe()) {
-                    $this->importer->init($server, 'be');
-                    $runs[] = $this->importer->doUpdate();
+                    $ldapServer->setUserType('be');
+                    $runs[] = $importer->doUpdate($ldapSerer);
                 }
             }
         }
@@ -270,17 +375,16 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
     /**
      * configures the import/update and display the result list.
      */
-    public function importAndUpdateUsersAction()
+    public function importAndUpdateUsersAction(): \Psr\Http\Message\ResponseInterface
     {
         $beUsers = [];
         $feUsers = [];
         $settings = $this->initializeFormSettings();
 
-        $ldapServers = $this->ldapConfig->getLdapServers();
+        $ldapServers = $this->serverRepository->findAll();
         $serverConfigurations = [];
-        foreach ($ldapServers as $server) {
-            // @var $server \NormanSeibert\Ldap\Domain\Model\LdapServer\Server
-            $serverConfigurations[] = $server->getConfiguration();
+        foreach ($ldapServers as $ldapServer) {
+            $serverConfigurations[] = $ldapServer->getConfiguration();
         }
 
         if ($this->request->hasArgument('runs')) {
@@ -295,27 +399,43 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 
         $this->view->assign('be_users', $beUsers);
         $this->view->assign('fe_users', $feUsers);
+
+        // return $this->htmlResponse();
+        $moduleTemplate = $this->moduleTemplateFactory->create($this->request);
+        $menu = $this->createMenu($moduleTemplate);
+        if ($menu instanceof Menu) {
+            // $this->view->getModuleTemplate()->getDocHeaderComponent()->getMenuRegistry()->addMenu($menu);
+            $moduleTemplate->getDocHeaderComponent()->getMenuRegistry()->addMenu($menu);
+        }
+        $moduleTemplate->setContent($this->view->render());
+        return $this->htmlResponse($moduleTemplate->renderContent());
     }
 
     /**
      * imports or updates users.
      */
-    public function doImportAndUpdateUsersAction(\NormanSeibert\Ldap\Domain\Model\BackendModule\FormSettings $formSettings = null)
+    public function doImportAndUpdateUsersAction(FormSettings $formSettings = null)
     {
         $settings = $this->initializeFormSettings($formSettings);
         $this->view->assign('formSettings', $settings);
 
-        $ldapServers = $this->ldapConfig->getLdapServers();
+        $ldapServers = $this->serverRepository->findAll();
         $runs = [];
-        foreach ($ldapServers as $server) {
-            if (in_array($server->getConfiguration()->getUid(), $settings->getUseServers())) {
+
+        if ($ldapServers->count()) {
+            $importer = GeneralUtility::makeInstance(LdapImporter::class);
+        }
+
+        foreach ($ldapServers as $uid => $ldapServer) {
+            $uid = $ldapServer->getUid();
+            if (in_array($uid, $settings->getUseServers())) {
                 if ($settings->getAuthenticateFe()) {
-                    $this->importer->init($server, 'fe');
-                    $runs[] = $this->importer->doImportOrUpdate();
+                    $ldapServer->setUserType('fe');
+                    $runs[] = $importer->doImportOrUpdate($ldapServer);
                 }
                 if ($settings->getAuthenticateBe()) {
-                    $this->importer->init($server, 'be');
-                    $runs[] = $this->importer->doImportOrUpdate();
+                    $ldapServer->setUserType('be');
+                    $runs[] = $importer->doImportOrUpdate($ldapServer);
                 }
             }
         }
@@ -330,7 +450,7 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
     /**
      * configures the deletion/deactivation and display the result list.
      */
-    public function deleteUsersAction()
+    public function deleteUsersAction(): \Psr\Http\Message\ResponseInterface
     {
         $beUsers = [];
         $feUsers = [];
@@ -347,24 +467,34 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
 
         $this->view->assign('be_users', $beUsers);
         $this->view->assign('fe_users', $feUsers);
+
+        // return $this->htmlResponse();
+        $moduleTemplate = $this->moduleTemplateFactory->create($this->request);
+        $menu = $this->createMenu($moduleTemplate);
+        if ($menu instanceof Menu) {
+            // $this->view->getModuleTemplate()->getDocHeaderComponent()->getMenuRegistry()->addMenu($menu);
+            $moduleTemplate->getDocHeaderComponent()->getMenuRegistry()->addMenu($menu);
+        }
+        $moduleTemplate->setContent($this->view->render());
+        return $this->htmlResponse($moduleTemplate->renderContent());
     }
 
     /**
      * deletes/deactivates users.
      */
-    public function doDeleteUsersAction(\NormanSeibert\Ldap\Domain\Model\BackendModule\FormSettings $formSettings = null)
+    public function doDeleteUsersAction(FormSettings $formSettings = null)
     {
         $settings = $this->initializeFormSettings($formSettings);
         $this->view->assign('formSettings', $settings);
 
+        $importer = GeneralUtility::makeInstance(LdapImporter::class);
+
         $runs = [];
         if ($settings->getAuthenticateFe()) {
-            $this->importer->init(null, 'fe');
-            $runs[] = $this->importer->doDelete($settings->getHideNotDelete(), $settings->getDeleteNonLdapUsers());
+            $runs[] = $importer->doDelete($settings->getHideNotDelete(), $settings->getDeleteNonLdapUsers());
         }
         if ($settings->getAuthenticateBe()) {
-            $this->importer->init(null, 'be');
-            $runs[] = $this->importer->doDelete($settings->getHideNotDelete(), $settings->getDeleteNonLdapUsers());
+            $runs[] = $importer->doDelete($settings->getHideNotDelete(), $settings->getDeleteNonLdapUsers());
         }
 
         $arguments = [
@@ -377,16 +507,17 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
     /**
      * configures the login mask.
      */
-    public function checkLoginAction()
+    public function checkLoginAction(): \Psr\Http\Message\ResponseInterface
     {
         $user = null;
         $settings = $this->initializeFormSettings();
 
-        $ldapServers = $this->ldapConfig->getLdapServers();
-        $serverConfigurations = [];
-        foreach ($ldapServers as $server) {
-            // @var $server \NormanSeibert\Ldap\Domain\Model\LdapServer\Server
-            $serverConfigurations[] = $server->getConfiguration();
+        $ldapServers = $this->serverRepository->findAll();
+        $runs = [];
+
+        foreach ($ldapServers as $ldapServer) {
+            $uid = $ldapServer->getUid();
+            $serverConfigurations[] = $ldapServer->getConfiguration();
         }
 
         if ($this->request->hasArgument('user')) {
@@ -397,12 +528,22 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
         $this->view->assign('ldapServers', $serverConfigurations);
         $this->view->assign('returnUrl', 'mod.php?M=tools_LdapM1');
         $this->view->assign('user', $user);
+
+        // return $this->htmlResponse();
+        $moduleTemplate = $this->moduleTemplateFactory->create($this->request);
+        $menu = $this->createMenu($moduleTemplate);
+        if ($menu instanceof Menu) {
+            // $this->view->getModuleTemplate()->getDocHeaderComponent()->getMenuRegistry()->addMenu($menu);
+            $moduleTemplate->getDocHeaderComponent()->getMenuRegistry()->addMenu($menu);
+        }
+        $moduleTemplate->setContent($this->view->render());
+        return $this->htmlResponse($moduleTemplate->renderContent());
     }
 
     /**
      * checks whether a user can be authenticated successfully.
      */
-    public function doCheckLoginAction(\NormanSeibert\Ldap\Domain\Model\BackendModule\FormSettings $formSettings = null)
+    public function doCheckLoginAction(FormSettings $formSettings = null)
     {
         $settings = $this->initializeFormSettings($formSettings);
         $this->view->assign('formSettings', $settings);
@@ -411,22 +552,26 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
         $user['submitted'] = true;
         $user['found'] = false;
         $user['authenticated'] = false;
-        $ldapServers = $this->ldapConfig->getLdapServers();
-        foreach ($ldapServers as $server) {
-            // @var $server \NormanSeibert\Ldap\Domain\Model\LdapServer\Server
+        
+        $ldapServers = $this->serverRepository->findAll();
+
+        foreach ($ldapServers as $ldapServer) {
+            $uid = $ldapServer->getUid();
             if (!$user['found']) {
-                if (in_array($server->getConfiguration()->getUid(), $settings->getUseServers())) {
-                    $server->setScope($settings->getLoginType());
+                if (in_array($uid, $settings->getUseServers())) {
+                    $ldapServer->setUserType($settings->getLoginType());
                     $loginname = \NormanSeibert\Ldap\Utility\Helpers::sanitizeCredentials($settings->getLoginname());
                     $password = \NormanSeibert\Ldap\Utility\Helpers::sanitizeCredentials($settings->getPassword());
-                    $ldapUsers = $server->getUsers($loginname);
-                    if (1 == count($ldapUsers)) {
-                        // @var $ldapUser \NormanSeibert\Ldap\Domain\Model\LdapUser\User
-                        $ldapUser = $ldapUsers[0];
+                    
+                    $ldapHandler = new LdapHandler();
+                    $ldapUsers = $ldapHandler->getUsers($ldapServer, $loginname);
+                    if (isset($ldapUsers) && (1 == count($ldapUsers))) {
+                        $ldapUsers->rewind();
+                        $ldapUser = $ldapUsers->current();
                         $user['found'] = true;
-                        $user['serverUid'] = $server->getConfiguration()->getUid();
+                        $user['serverUid'] = $ldapServer->getConfiguration()->getUid();
                         $user['dn'] = $ldapUser->getDN();
-                        $ldapUser = $server->authenticateUser($loginname, $password);
+                        $ldapUser = $ldapHandler->authenticateUser($ldapServer, $loginname, $password);
                         if (is_object($ldapUser)) {
                             $user['authenticated'] = true;
                         }
@@ -443,37 +588,11 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
     }
 
     /**
-     * Assign default variables to view.
-     *
-     * @param ViewInterface $view
-     */
-    protected function initializeView(\TYPO3\CMS\Extbase\Mvc\View\ViewInterface $view)
-    {
-        $view->assignMultiple([
-            'shortcutLabel' => 'ldap',
-            'dateFormat' => $GLOBALS['TYPO3_CONF_VARS']['SYS']['ddmmyy'],
-            'timeFormat' => $GLOBALS['TYPO3_CONF_VARS']['SYS']['hhmm'],
-        ]);
-
-        // Workaround to make FlashMessages appear in the module
-        // Don't know why this works
-        $flashMessage = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(
-            'TYPO3\\CMS\\Core\\Messaging\\FlashMessage',
-            'dummy',
-            '',
-            \TYPO3\CMS\Core\Messaging\FlashMessage::ERROR,
-            false
-        );
-        $messageQueue = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Messaging\\FlashMessageQueue', 'ldap');
-        $messageQueue->enqueue($flashMessage);
-    }
-
-    /**
      * initializes/stores the form's content.
      *
-     * @param \NormanSeibert\Ldap\Domain\Model\BackendModule\FormSettings $settings
+     * @param FormSettings $settings
      *
-     * @return \NormanSeibert\Ldap\Domain\Model\BackendModule\FormSettings
+     * @return FormSettings
      */
     private function initializeFormSettings($settings = null)
     {
@@ -484,7 +603,14 @@ class ModuleController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControlle
             $formSettings = $settings;
         }
         if (!is_object($formSettings)) {
-            $formSettings = $this->objectManager->get('NormanSeibert\\Ldap\\Domain\\Model\\BackendModule\\FormSettings');
+            $formSettings = GeneralUtility::makeInstance(FormSettings::class);
+        }
+
+        if (isset($settings)) {
+            $formSettings = $settings;
+        }
+        if (!is_object($formSettings)) {
+            $formSettings = GeneralUtility::makeInstance(FormSettings::class);
         }
 
         if ('' != $formSettings->getAuthenticateBe()) {

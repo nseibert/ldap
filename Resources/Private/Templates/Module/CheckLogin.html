@@ -1,130 +1,121 @@
 <html xmlns:core="http://typo3.org/ns/TYPO3/CMS/Core/ViewHelpers"
 	xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
-    xmlns:be="http://typo3.org/ns/TYPO3/CMS/Backend/ViewHelpers"
     data-namespace-typo3-fluid="true">
-
-<f:layout name="Backend"/>
-
-<f:section name="content">
-
-	<be:moduleLayout.button.shortcutButton displayName="{f:translate(id: 'action.checkLogin')}" />
 	
-	<h1><f:translate key="headline.checkLogin" /></h1>
+<h1><f:translate key="headline.checkLogin" /></h1>
+
+<f:flashMessages queueIdentifier="ldap" />
+
+<f:form action="doCheckLogin" controller="Module" objectName="formSettings" object="{formSettings}">
 	
-	<f:flashMessages queueIdentifier="ldap" />
-	
-	<f:form action="doCheckLogin" controller="Module" objectName="formSettings" object="{formSettings}">
-		
-		<fieldset>
-			<table>
-				<tr>
-					<td>
-						<label><f:translate key="form.useServers" /></label>
-					</td>
-					<td colspan="2">
-						<f:form.select
-							id="useServers"
-							property="useServers"
-							options="{ldapServers}"
-							optionValueField="uid"
-							optionLabelField="longName"
-							size="5"
-							multiple="multiple"
-						/>
-					</td>
-				</tr>
-				<tr>
-					<td>&nbsp;</td>
-				</tr>
-				<tr>
-					<td>
-						<label><f:translate key="form.loginType" /></label>
-					</td>
-					<td>
-						<f:form.select
-							id="loginType"
-							property="loginType"
-							options="{fe: 'Frontend', be: 'Backend'}"
-							size="1"
-						/>
-					</td>
-				</tr>
-				<tr>
-					<td>&nbsp;</td>
-				</tr>
-				<tr>
-					<td>
-						<label><f:translate key="form.user" /></label>
-					</td>
-					<td>
-						<f:form.textfield
-							id="loginname"
-							property="loginname"
-						/>
-					</td>
-					<td>
-						<f:if condition="{user.submitted}">
-							<f:if condition="{user.found}">
-								<f:then>
-									<span class="t3js-icon icon icon-size-small icon-state-default icon-status-dialog-ok">
-										<span class="icon-markup">
-											<span class="icon-unify"><i class="fa fa-check-circle"></i></span>
-										</span>
+	<fieldset>
+		<table>
+			<tr>
+				<td>
+					<label><f:translate key="form.useServers" /></label>
+				</td>
+				<td colspan="2">
+					<f:form.select
+						id="useServers"
+						property="useServers"
+						options="{ldapServers}"
+						optionValueField="uid"
+						optionLabelField="longName"
+						size="5"
+						multiple="multiple"
+					/>
+				</td>
+			</tr>
+			<tr>
+				<td>&nbsp;</td>
+			</tr>
+			<tr>
+				<td>
+					<label><f:translate key="form.loginType" /></label>
+				</td>
+				<td>
+					<f:form.select
+						id="loginType"
+						property="loginType"
+						options="{fe: 'Frontend', be: 'Backend'}"
+						size="1"
+					/>
+				</td>
+			</tr>
+			<tr>
+				<td>&nbsp;</td>
+			</tr>
+			<tr>
+				<td>
+					<label><f:translate key="form.user" /></label>
+				</td>
+				<td>
+					<f:form.textfield
+						id="loginname"
+						property="loginname"
+					/>
+				</td>
+				<td>
+					<f:if condition="{user.submitted}">
+						<f:if condition="{user.found}">
+							<f:then>
+								<span class="t3js-icon icon icon-size-small icon-state-default icon-status-dialog-ok">
+									<span class="icon-markup">
+										<span class="icon-unify"><i class="fa fa-check-circle"></i></span>
 									</span>
-									{user.serverUid}: {user.dn}
-								</f:then>
-								<f:else>
-									<span class="t3js-icon icon icon-size-small icon-state-default icon-status-dialog-error">
-										<span class="icon-markup">
-											<span class="icon-unify"><i class="fa fa-exclamation-circle"></i></span>
-										</span>
+								</span>
+								{user.serverUid}: {user.dn}
+							</f:then>
+							<f:else>
+								<span class="t3js-icon icon icon-size-small icon-state-default icon-status-dialog-error">
+									<span class="icon-markup">
+										<span class="icon-unify"><i class="fa fa-exclamation-circle"></i></span>
 									</span>
-									<f:translate key="form.noUserFound" />
-								</f:else>
-							</f:if>
+								</span>
+								<f:translate key="form.noUserFound" />
+							</f:else>
 						</f:if>
-					</td>
-				</tr>
-				<tr>
-					<td>
-						<label><f:translate key="form.password" /></label>
-					</td>
-					<td>
-						<f:form.textfield
-							id="password"
-							property="password"
-						/>
-					</td>
-					<td>
-						<f:if condition="{user.submitted}">
-							<f:if condition="{user.authenticated}">
-								<f:then>
-									<span class="t3js-icon icon icon-size-small icon-state-default icon-status-dialog-ok">
-										<span class="icon-markup">
-											<span class="icon-unify"><i class="fa fa-check-circle"></i></span>
-										</span>
+					</f:if>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<label><f:translate key="form.password" /></label>
+				</td>
+				<td>
+					<f:form.textfield
+						id="password"
+						property="password"
+					/>
+				</td>
+				<td>
+					<f:if condition="{user.submitted}">
+						<f:if condition="{user.authenticated}">
+							<f:then>
+								<span class="t3js-icon icon icon-size-small icon-state-default icon-status-dialog-ok">
+									<span class="icon-markup">
+										<span class="icon-unify"><i class="fa fa-check-circle"></i></span>
 									</span>
-									<f:translate key="form.authenticationSuccess" />
-								</f:then>
-								<f:else>
-									<span class="t3js-icon icon icon-size-small icon-state-default icon-status-dialog-error">
-										<span class="icon-markup">
-											<span class="icon-unify"><i class="fa fa-exclamation-circle"></i></span>
-										</span>
+								</span>
+								<f:translate key="form.authenticationSuccess" />
+							</f:then>
+							<f:else>
+								<span class="t3js-icon icon icon-size-small icon-state-default icon-status-dialog-error">
+									<span class="icon-markup">
+										<span class="icon-unify"><i class="fa fa-exclamation-circle"></i></span>
 									</span>
-									<f:translate key="form.authenticationFail" />
-								</f:else>
-							</f:if>
+								</span>
+								<f:translate key="form.authenticationFail" />
+							</f:else>
 						</f:if>
-					</td>
-				</tr>
-			</table>
-		</fieldset>
-		
-		<div class="btn-group">
-			<f:form.submit value="{f:translate(key: 'form.check')}" class="btn btn-default" />
-		</div>
-
-	</f:form>
+					</f:if>
+				</td>
+			</tr>
+		</table>
+	</fieldset>
 	
-</f:section>
+	<div class="btn-group">
+		<f:form.submit value="{f:translate(key: 'form.check')}" class="btn btn-default" />
+	</div>
+
+</f:form>
