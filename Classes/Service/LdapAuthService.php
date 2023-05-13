@@ -114,15 +114,6 @@ class LdapAuthService extends AuthenticationService
             $this->serverRepository = GeneralUtility::makeInstance(LdapServerRepository::class);
             $this->ldapServers = $this->serverRepository->findByCritera(null, null, $this->authInfo['loginType'], $pid);
         }
-
-        // for testing purposes only!
-        // $_SERVER[$this->conf['ssoHeader']] = 'admin@entios.local';
-        // $_SERVER[$this->conf['ssoHeader']] = 'entios\\admin';
-
-        // SSO
-        if (('logout' != $this->loginData['status']) && empty($this->password) && $this->conf['enableSSO']) {
-            $this->activateSSO();
-        }
     }
 
     /**
@@ -199,20 +190,11 @@ class LdapAuthService extends AuthenticationService
                             $ldapServer->setUserType(strtolower($this->authInfo['loginType']));
                             // $ldapServer->loadAllGroups();
 
-                            if ($this->conf['enableSSO'] && $this->conf['ssoHeader'] && ($_SERVER[$this->conf['ssoHeader']])) {
-                                $ldapHandler = new LdapHandler();
-                                $ldapUser = $ldapHandler->checkUser($ldapServer, $this->username);
-                                if ($this->logLevel >= 2) {
-                                    $msg = 'Check SSO user: ' . $this->username;
-                                    $this->logger->debug($msg);
-                                }
-                            } else {
-                                $ldapHandler = new LdapHandler();
-                                $ldapUser = $ldapHandler->authenticateUser($ldapServer, $this->username, $this->password);
-                                if ($this->logLevel >= 2) {
-                                    $msg = 'Authenticate user: ' . $this->username;
-                                    $this->logger->debug($msg);
-                                }
+                            $ldapHandler = new LdapHandler();
+                            $ldapUser = $ldapHandler->authenticateUser($ldapServer, $this->username, $this->password);
+                            if ($this->logLevel >= 2) {
+                                $msg = 'Authenticate user: ' . $this->username;
+                                $this->logger->debug($msg);
                             }
 
                             if (isset($ldapUser) && is_object($ldapUser)) {

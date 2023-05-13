@@ -12,9 +12,3 @@ enableBE = 0
 
 # cat=login/enable; type=boolean; label=Enable authentication against LDAP only. If checked, users not found in the directory may not log on.
 onlyLDAP = 0
-
-# cat=sso/enable; type=boolean; label=Enable Single-Sign-On (SSO).
-enableSSO = 0
-
-# cat=sso/enable; type=string; label=Use this server header for SSO user name.
-ssoHeader = PHP_AUTH_USER

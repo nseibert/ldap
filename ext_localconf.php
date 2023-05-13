@@ -11,16 +11,10 @@ defined('TYPO3') or die();
     if (isset($config['enableFE']) && $config['enableFE']) {
         $subTypesArr[] = 'getUserFE';
         $subTypesArr[] = 'authUserFE';
-        if ($config['enableSSO']) {
-            $TYPO3_CONF_VARS['SVCONF']['auth']['setup']['FE_fetchUserIfNoSession'] = 1;
-        }
     }
     if (isset($config['enableBE']) && $config['enableBE']) {
         $subTypesArr[] = 'getUserBE';
         $subTypesArr[] = 'authUserBE';
-        if ($config['enableSSO']) {
-            $TYPO3_CONF_VARS['SVCONF']['auth']['setup']['BE_fetchUserIfNoSession'] = 1;
-        }
     }
     if (is_array($subTypesArr)) {
         $subTypesArr = array_unique($subTypesArr);
