@@ -356,11 +356,11 @@ class ModuleController extends ActionController
             if (in_array($uid, $settings->getUseServers())) {
                 if ($settings->getAuthenticateFe()) {
                     $ldapServer->setUserType('fe');
-                    $runs[] = $importer->doUpdate($ldapServer);
+                    $runs[] = $importer::doUpdate($ldapServer);
                 }
                 if ($settings->getAuthenticateBe()) {
                     $ldapServer->setUserType('be');
-                    $runs[] = $importer->doUpdate($ldapSerer);
+                    $runs[] = $importer::doUpdate($ldapSerer);
                 }
             }
         }
@@ -431,11 +431,11 @@ class ModuleController extends ActionController
             if (in_array($uid, $settings->getUseServers())) {
                 if ($settings->getAuthenticateFe()) {
                     $ldapServer->setUserType('fe');
-                    $runs[] = $importer->doImportOrUpdate($ldapServer);
+                    $runs[] = $importer::doImportOrUpdate($ldapServer);
                 }
                 if ($settings->getAuthenticateBe()) {
                     $ldapServer->setUserType('be');
-                    $runs[] = $importer->doImportOrUpdate($ldapServer);
+                    $runs[] = $importer::doImportOrUpdate($ldapServer);
                 }
             }
         }
@@ -491,10 +491,10 @@ class ModuleController extends ActionController
 
         $runs = [];
         if ($settings->getAuthenticateFe()) {
-            $runs[] = $importer->doDelete($settings->getHideNotDelete(), $settings->getDeleteNonLdapUsers());
+            $runs[] = $importer::doDelete('fe', $settings->getHideNotDelete(), $settings->getDeleteNonLdapUsers());
         }
         if ($settings->getAuthenticateBe()) {
-            $runs[] = $importer->doDelete($settings->getHideNotDelete(), $settings->getDeleteNonLdapUsers());
+            $runs[] = $importer::doDelete('fe', $settings->getHideNotDelete(), $settings->getDeleteNonLdapUsers());
         }
 
         $arguments = [

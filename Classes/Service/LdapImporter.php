@@ -106,19 +106,21 @@ class LdapImporter
             $users = $userRepository->findLdapImported();
         }
 
+        $ldapHandler = new LdapHandler();
+
         $tmpServer = null;
         $removeUsers = [];
         foreach ($users as $user) {
             if ($user->getServerUid()) {
 				// note the . behind the uid as it comes from the DB
                 $serverRepository = GeneralUtility::makeInstance(LdapServerRepository::class);
-				$server = $serverRepository->findByUid($user->getServerUid() . ".");
+				$server = $serverRepository->findByUid($user->getServerUid());
                 if ($server != $tmpServer) {
                     $tmpServer = $server;
                 }
 				$ldapUser = null;
 				if ($tmpServer) {
-					$ldapUser = $tmpServer->getUser($user->getDN());
+					$ldapUser = $ldapHandler->getUser($tmpServer, $user->getDN());
 				}
                 if (!is_object($ldapUser)) {
                     $user->setLastRun($runIdentifier);

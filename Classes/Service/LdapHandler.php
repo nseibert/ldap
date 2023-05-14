@@ -204,7 +204,7 @@ class LdapHandler
         $parameters = [
             'server' => $this,
             'dn' => $dn,
-            'table' => $this->table,
+            'table' => $table,
             'type' => 'single',
             'result' => $info,
         ];
