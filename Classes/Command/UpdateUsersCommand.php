@@ -142,7 +142,7 @@ class UpdateUsersCommand extends Command
                     $ldapServer->setUserType('fe');
                     $runs[] = $importer::doUpdate($ldapServer);
                     $persistenceManager->persistAll();
-                    $this->persistenceManager->persistAll();
+                    $persistenceManager->persistAll();
                     $feUsers = $this->feUserRepository->countByLastRun($runs);
                     $io->writeln('Frontend users: ' . $feUsers);
                 }
