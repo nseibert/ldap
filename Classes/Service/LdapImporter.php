@@ -200,7 +200,7 @@ class LdapImporter
             if (is_object($typo3User)) {
                 $userMapper->updateUser($user, $typo3User, $runIdentifier);
             } else {
-                $userMapper->addUser($runIdentifier);
+                $userMapper->addUser($server, $user, $runIdentifier);
             }
         }
     }
