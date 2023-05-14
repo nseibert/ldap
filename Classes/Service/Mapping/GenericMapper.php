@@ -53,7 +53,7 @@ class GenericMapper
      *
      * @return array
      */
-    protected function getAttributeMapping($mapping, $key, $data)
+    public function getAttributeMapping($mapping, $key, $data)
     {
         $ldapData = array();
         

@@ -29,13 +29,8 @@ namespace NormanSeibert\Ldap\Domain\Model\LdapServer;
 
 // use Psr\EventDispatcher\EventDispatcherInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use NormanSeibert\Ldap\Domain\Model\LdapUser\LdapBeUser;
-use NormanSeibert\Ldap\Domain\Model\LdapUser\LdapFeUser;
-use NormanSeibert\Ldap\Domain\Model\LdapUser\LdapUser;
 use NormanSeibert\Ldap\Domain\Model\LdapServer\ServerConfiguration;
 use NormanSeibert\Ldap\Domain\Model\Configuration\LdapConfiguration;
-use NormanSeibert\Ldap\Utility\Helpers;
-use SplObjectStorage;
 use Psr\Log\LoggerInterface;
 use TYPO3\CMS\Extbase\DomainObject\AbstractEntity;
 
@@ -229,53 +224,6 @@ class LdapServer extends AbstractEntity
     public function addFeGroup($group)
     {
         $this->allFeGroups[] = $group;
-    }
-
-    /**
-     * @return array
-     */
-    public function getAllFeGroups()
-    {
-        return $this->allFeGroups;
-    }
-
-    public function addBeGroup($group)
-    {
-        $this->allBeGroups[] = $group;
-    }
-
-    /**
-     * @return array
-     */
-    public function getAllBeGroups()
-    {
-        return $this->allBeGroups;
-    }
-
-    /**
-     * @param string $type
-     */
-    public function addGroup($group, $type)
-    {
-        if ('NormanSeibert\\Ldap\\Domain\\Model\\Typo3User\\BackendUserGroup' == $type) {
-            $this->addBeGroup($group);
-        } else {
-            $this->addFeGroup($group);
-        }
-    }
-
-    /**
-     * @return array
-     */
-    public function getAllGroups()
-    {
-        if ('be_users' == $this->table) {
-            $groups = $this->allBeGroups;
-        } else {
-            $groups = $this->allFeGroups;
-        }
-
-        return $groups;
     }
 
     /**

@@ -26,6 +26,9 @@ namespace NormanSeibert\Ldap\Domain\Repository\Typo3User;
  */
 
 use TYPO3\CMS\Extbase\Persistence\Repository;
+use NormanSeibert\Ldap\Utility\Helpers;
+use NormanSeibert\Ldap\Domain\Model\Typo3User\FrontendUserGroup;
+use TYPO3\CMS\Extbase\Persistence\QueryResultInterface;
 
 /**
  * Repository for TYPO3 frontend usergroups.
@@ -35,7 +38,7 @@ class FrontendUserGroupRepository extends Repository
     /**
      * @return array
      */
-    public function findAll()
+    public function findAll(): FrontendUserGroup | QueryResult | bool
     {
         $query = $this->createQuery();
         $query->getQuerySettings()->setRespectStoragePage(false);
@@ -43,18 +46,12 @@ class FrontendUserGroupRepository extends Repository
         $groups = $query->execute();
     }
 
-    /**
-     * @param string $grouptitle
-     * @param int    $pid
-     *
-     * @return \TYPO3\CMS\Extbase\Domain\Repository\FrontendUserGroupRepository | \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
-     */
-    public function findByGroupTitle($grouptitle, $pid = null)
+    public function findByGroupTitle(string $grouptitle, int $pid = null): FrontendUserGroup | QueryResultInterface | bool
     {
         $group = false;
         $query = $this->createQuery();
         $query->getQuerySettings()->setRespectStoragePage(false);
-        \NormanSeibert\Ldap\Utility\Helpers::setRespectEnableFieldsToFalse($query);
+        Helpers::setRespectEnableFieldsToFalse($query);
         if ($pid) {
             $query->matching(
                 $query->logicalAnd(
@@ -76,35 +73,34 @@ class FrontendUserGroupRepository extends Repository
         return $group;
     }
 
-
-    public function findByUids($uidList)
+    public function findByUids(array $uidList): FrontendUserGroup | QueryResultInterface | bool
     {
         $query = $this->createQuery();
         $query->getQuerySettings()->setRespectStoragePage(false);
-        \NormanSeibert\Ldap\Utility\Helpers::setRespectEnableFieldsToFalse($query);
+        Helpers::setRespectEnableFieldsToFalse($query);
         $query->matching(
             $query->in('uid', $uidList)
         );
         $groups = $query->execute();
     }
 
-    public function findByPid($pid)
+    public function findByPid(int $pid): FrontendUserGroup | QueryResultInterface | bool
     {
         $query = $this->createQuery();
         $query->getQuerySettings()->setRespectStoragePage(false);
-        \NormanSeibert\Ldap\Utility\Helpers::setRespectEnableFieldsToFalse($query);
+        Helpers::setRespectEnableFieldsToFalse($query);
         $query->matching(
             $query->equals('pid', $pid)
         );
         $groups = $query->execute();
     }
 
-    public function findByDn($dn, $pid = null)
+    public function findByDn(string $dn, int $pid = null): FrontendUserGroup | QueryResultInterface | bool
     {
         $user = false;
         $query = $this->createQuery();
         $query->getQuerySettings()->setRespectStoragePage(false);
-        \NormanSeibert\Ldap\Utility\Helpers::setRespectEnableFieldsToFalse($query);
+        Helpers::setRespectEnableFieldsToFalse($query);
         $query->matching(
             $query->logicalAnd(
                 $query->equals('pid', $pid),
@@ -120,11 +116,11 @@ class FrontendUserGroupRepository extends Repository
         return $user;
     }
 
-    public function findByLastRun($lastRun)
+    public function findByLastRun(string | array $lastRun): FrontendUserGroup | QueryResultInterface | bool
     {
         $query = $this->createQuery();
         $query->getQuerySettings()->setRespectStoragePage(false);
-        \NormanSeibert\Ldap\Utility\Helpers::setRespectEnableFieldsToFalse($query);
+        Helpers::setRespectEnableFieldsToFalse($query);
         $query->matching(
             $query->in('tx_ldap_lastrun', $lastRun)
         );
@@ -132,11 +128,10 @@ class FrontendUserGroupRepository extends Repository
         return $query->execute();
     }
 
-    public function findLdapImported()
+    public function findLdapImported(): FrontendUserGroup | QueryResult | bool
     {
         $query = $this->createQuery();
         $query->getQuerySettings()->setRespectStoragePage(false);
-        // \NormanSeibert\Ldap\Utility\Helpers::setRespectEnableFieldsToFalse($query);
         $query->matching(
             $query->logicalNot(
                 $query->equals('dn', '')
@@ -146,6 +141,17 @@ class FrontendUserGroupRepository extends Repository
             [
                 'serverUid' => \TYPO3\CMS\Extbase\Persistence\QueryInterface::ORDER_ASCENDING,
             ]
+        );
+
+        return $query->execute();
+    }
+
+    public function findLdapImportedByServer(int $serverUid): FrontendUserGroup | QueryResultInterface | bool
+    {
+        $query = $this->createQuery();
+        $query->getQuerySettings()->setRespectStoragePage(false);
+        $query->matching(
+            $query->equals('serverUid', $serverUid)
         );
 
         return $query->execute();

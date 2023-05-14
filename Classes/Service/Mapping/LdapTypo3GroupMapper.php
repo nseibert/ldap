@@ -27,7 +27,6 @@ namespace NormanSeibert\Ldap\Service\Mapping
  * @copyright 2020 Norman Seibert
  */
 
-use TYPO3\CMS\Extbase\Persistence\ObjectStorage;
 use NormanSeibert\Ldap\Domain\Model\LdapServer\LdapServer;
 use NormanSeibert\Ldap\Domain\Model\LdapServer\ServerConfigurationGroups;
 use NormanSeibert\Ldap\Domain\Repository\Typo3User\FrontendUserGroupRepository;
@@ -38,9 +37,9 @@ use NormanSeibert\Ldap\Domain\Model\LdapUser\LdapFeGroup;
 use NormanSeibert\Ldap\Domain\Model\LdapUser\LdapBeGroup;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use Psr\Log\LoggerInterface;
-use NormanSeibert\Ldap\Utility\Helpers;
 use NormanSeibert\Ldap\Service\Mapping\GenericMapper;
 use NormanSeibert\Ldap\Service\LdapHandler;
+use TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager;
 
 /**
  * Maps groups read from LDAP to TYPO3 groups
@@ -324,8 +323,10 @@ class LdapTypo3GroupMapper
                     $this->logger->debug($msg);
                 }
                 $assignedGroups[] = $newGroup;
-                $ldapServer->addGroup($newGroup, $groupObject);
+                $groupRepository->add($newGroup);
             }
+            $persistenceManager = GeneralUtility::makeInstance(persistenceManager::class);
+            $persistenceManager->persistAll();
         }
 
         return $assignedGroups;
@@ -342,30 +343,30 @@ class LdapTypo3GroupMapper
 
         if ($userType == 'be') {
             $groupRules = $ldapServer->getConfiguration()->getBeUserRules()->getGroupRules();
-            GeneralUtility::makeInstance(BackendUserGroupRepository::class);
+            $groupRepository = GeneralUtility::makeInstance(BackendUserGroupRepository::class);
         } else {
             $groupRules = $ldapServer->getConfiguration()->getFeUserRules()->getGroupRules();
-            GeneralUtility::makeInstance(FrontendUserGroupRepository::class);
+            $groupRepository = GeneralUtility::makeInstance(FrontendUserGroupRepository::class);
         }
         $mapping = $groupRules->getMapping();
 
         if (is_array($mapping)) {
             if ($groupRules->getReverseMapping()) {
-                $ret = $this->reverseAssignGroups($ldapServer, $groupRules, $userAttributes);
+                $ret = $this->reverseAssignGroups($ldapServer, $userType, $groupRules, $userAttributes);
             } else {
                 switch (strtolower($mapping['field'])) {
                     case 'text':
-                        $ret = $this->assignGroupsText($userAttributes);
+                        $ret = $this->assignGroupsText($ldapServer, $userType, $groupRules, $userAttributes);
 
                         break;
 
                     case 'parent':
-                        $ret = $this->assignGroupsParent($userDN);
+                        $ret = $this->assignGroupsParent($ldapServer, $userType, $groupRules, $userDN);
 
                         break;
 
                     case 'dn':
-                        $ret = $this->assignGroupsDN($userAttributes);
+                        $ret = $this->assignGroupsDN($ldapServer, $userType, $groupRules, $userAttributes);
 
                         break;
 
@@ -428,7 +429,7 @@ class LdapTypo3GroupMapper
                 }
             }
             if ((!$ret) && (3 == $this->logLevel)) {
-                $msg = 'Filtered out: '.$groupname;
+                $msg = 'Filtered out: ' . $groupname;
                 $this->logger->debug($msg, $logArray);
             }
         }
@@ -438,18 +439,26 @@ class LdapTypo3GroupMapper
 
     private function resolveGroup(
         LdapServer $ldapServer,
+        string $userType,
         ServerConfigurationGroups $groupRules,
         string $attribute,
         string $selector,
         string $usergroup,
         string $dn = null,
-        object $obj = null): array
+        object $obj = null
+    ): array
     {
         $groupFound = false;
         $resolvedGroup = false;
         $newGroup = false;
 
-        $allGroups = $ldapServer->getAllGroups();
+        if ($userType == 'be') {
+            $groupRepository = GeneralUtility::makeInstance(BackendUserGroupRepository::class);
+        } else {
+            $groupRepository = GeneralUtility::makeInstance(FrontendUserGroupRepository::class);
+        }
+
+        $allGroups = $groupRepository->findLdapImportedByServer($ldapServer->getUid());
 
         foreach ($allGroups as $group) {
             $attrValue = $group->_getProperty($attribute);
@@ -480,7 +489,12 @@ class LdapTypo3GroupMapper
 
     /** Assigns TYPO3 usergroups to the current TYPO3 user by additionally querying the LDAP server for groups.
      */
-    private function reverseAssignGroups(LdapServer $ldapServer, ServerConfigurationGroups $groupRules, array $userAttributes): array
+    private function reverseAssignGroups(
+        LdapServer $ldapServer,
+        string $userType,
+        ServerConfigurationGroups $groupRules,
+        array $userAttributes
+    ): array
     {
         $msg = 'Use reverse mapping for usergroups';
         if (3 == $this->logLevel) {
@@ -525,7 +539,7 @@ class LdapTypo3GroupMapper
                         }
 
                         if ($usergroup) {
-                            $tmp = $this->resolveGroup($ldapServer, $groupRules, 'title', $usergroup, $usergroup, $group['dn']);
+                            $tmp = $this->resolveGroup($ldapServer, $userType, $groupRules, 'title', $usergroup, $usergroup, $group['dn']);
                             if ($tmp['newGroup']) {
                                 $ret['newGroups'][] = $tmp['newGroup'];
                             }
@@ -560,23 +574,22 @@ class LdapTypo3GroupMapper
 
         return $ret;
     }
-
-    /** Determines usergroups based on a text attribute.
-     *
-     * @param array $userAttributes
-     *
-     * @return array
-     */
-    private function assignGroupsText($userAttributes)
+    
+    private function assignGroupsText(
+        LdapServer $ldapServer,
+        string $userType,
+        ServerConfigurationGroups $groupRules,
+        array $userAttributes
+    ): array
     {
         $msg = 'Use text based mapping for usergroups';
         if (3 == $this->logLevel) {
             $this->logger->debug($msg);
         }
         $ret = [];
-        $mapping = $this->usergroupRules->getMapping();
+        $mapping = $groupRules->getMapping();
 
-        $result = $this->getAttributeMapping($mapping, 'title', $userAttributes);
+        $result = $this->mapper->getAttributeMapping($mapping, 'title', $userAttributes);
 
         if (is_array($result)) {
             unset($result['count']);
@@ -603,7 +616,7 @@ class LdapTypo3GroupMapper
         if (is_array($usergroups)) {
             unset($usergroups['count']);
             foreach ($usergroups as $group) {
-                $tmp = $this->resolveGroup('title', $group, $group);
+                $tmp = $this->resolveGroup($ldapServer, $userType, $groupRules, 'title', $group, $group);
                 if ($tmp['newGroup']) {
                     $ret['newGroups'][] = $tmp['newGroup'];
                 }
@@ -612,7 +625,7 @@ class LdapTypo3GroupMapper
                 }
             }
         } elseif ($usergroups) {
-            $tmp = $this->resolveGroup('title', $usergroups, $usergroups);
+            $tmp = $this->resolveGroup($ldapServer, $userType, $groupRules, 'title', $usergroups, $usergroups);
             if ($tmp['newGroup']) {
                 $ret['newGroups'][] = $tmp['newGroup'];
             }
@@ -625,29 +638,30 @@ class LdapTypo3GroupMapper
     }
 
     /** Determines usergroups based on the user records parent record.
-     *
-     * @param string $userDN
-     *
-     * @return array
      */
-    private function assignGroupsParent($userDN)
+    private function assignGroupsParent(
+        LdapServer $ldapServer,
+        string $userType,
+        ServerConfigurationGroups $groupRules,
+        string $userDN
+    ): array
     {
         $msg = 'Use parent node for usergroup';
         if (3 == $this->logLevel) {
             $this->logger->debug($msg);
         }
         $ret = [];
-        $mapping = $this->usergroupRules->getMapping();
+        $mapping = $groupRules->getMapping();
 
         $path = explode(',', $userDN);
         unset($path[0]);
         $parentDN = implode(',', $path);
-        $ldapGroup = $this->ldapServer->getGroup($parentDN);
+        $ldapGroup = $this->ldapHandler->getGroup($ldapServer, $parentDN);
 
-        $usergroup = $this->mapAttribute($mapping, 'title', $ldapGroup);
+        $usergroup = $this->mapper->mapAttribute($mapping, 'title', $ldapGroup);
 
         if ($usergroup) {
-            $tmp = $this->resolveGroup('title', $usergroup, $usergroup, $ldapGroup['dn']);
+            $tmp = $this->resolveGroup($ldapServer, $userType, $groupRules, 'title', $usergroup, $usergroup, $ldapGroup['dn']);
             if ($tmp['newGroup']) {
                 $ret['newGroups'][] = $tmp['newGroup'];
             }
@@ -660,29 +674,30 @@ class LdapTypo3GroupMapper
     }
 
     /** Determines usergroups based on DNs in an attribute of the user's record.
-     *
-     * @param array $userAttributes
-     *
-     * @return array
      */
-    private function assignGroupsDN($userAttributes)
+    private function assignGroupsDN(
+        LdapServer $ldapServer,
+        string $userType,
+        ServerConfigurationGroups $groupRules,
+        array $userAttributes
+    ): array
     {
         $msg = 'Find usergroup DNs in user attribute for mapping';
         if (3 == $this->logLevel) {
             $this->logger->debug($msg);
         }
         $ret = [];
-        $mapping = $this->usergroupRules->getMapping();
+        $mapping = $groupRules->getMapping();
 
-        $groupDNs = $this->getAttributeMapping($mapping, 'field', $userAttributes);
+        $groupDNs = $this->mapper->getAttributeMapping($mapping, 'field', $userAttributes);
 
         if (is_array($groupDNs)) {
             unset($groupDNs['count']);
             foreach ($groupDNs as $groupDN) {
-                $ldapGroup = $this->ldapServer->getGroup($groupDN);
+                $ldapGroup = $this->ldapHandler->getGroup($ldapServer, $groupDN);
                 if (is_array($ldapGroup)) {
-                    $usergroup = $this->getAttributeMapping($mapping, 'title', $ldapGroup);
-                    $tmp = $this->resolveGroup('dn', $groupDN, $usergroup, $groupDN);
+                    $usergroup = $this->mapper->getAttributeMapping($mapping, 'title', $ldapGroup);
+                    $tmp = $this->resolveGroup($ldapServer, $userType, $groupRules, 'dn', $groupDN, $usergroup, $groupDN);
                     if ($tmp['newGroup']) {
                         $ret['newGroups'][] = $tmp['newGroup'];
                     }
@@ -692,9 +707,9 @@ class LdapTypo3GroupMapper
                 }
             }
         } elseif ($groupDNs) {
-            $ldapGroup = $this->ldapServer->getGroup($groupDNs);
-            $usergroup = $this->getAttributeMapping($mapping, 'title', $ldapGroup);
-            $tmp = $this->resolveGroup('dn', $groupDNs, $usergroup, $groupDNs);
+            $ldapGroup = $this->ldapHandler->getGroup($ldapServer, $groupDNs);
+            $usergroup = $this->mapper->getAttributeMapping($mapping, 'title', $ldapGroup);
+            $tmp = $this->resolveGroup($ldapServer, $userType, $groupRules, 'dn', $groupDNs, $usergroup, $groupDNs);
             if ($tmp['newGroup']) {
                 $ret['newGroups'][] = $tmp['newGroup'];
             }

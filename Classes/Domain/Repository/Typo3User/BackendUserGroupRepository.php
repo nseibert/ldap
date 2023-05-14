@@ -28,6 +28,8 @@ namespace NormanSeibert\Ldap\Domain\Repository\Typo3User;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Persistence\Generic\Typo3QuerySettings;
 use TYPO3\CMS\Extbase\Persistence\Repository;
+use NormanSeibert\Ldap\Domain\Model\Typo3User\BackendUserGroup;
+use TYPO3\CMS\Extbase\Persistence\QueryResultInterface;
 
 /**
  * Repository for TYPO3 backend usergroups.
@@ -44,21 +46,15 @@ class BackendUserGroupRepository extends Repository
     /**
      * @return array
      */
-    public function findAll()
+    public function findAll(): BackendUserGroup | QueryResultInterface | bool
     {
         $query = $this->createQuery();
         $query->getQuerySettings()->setRespectStoragePage(false);
         \NormanSeibert\Ldap\Utility\Helpers::setRespectEnableFieldsToFalse($query);
         $groups = $query->execute();
     }
-
-    /**
-     * @param string $grouptitle
-     * @param int    $pid
-     *
-     * @return \TYPO3\CMS\Extbase\Domain\Repository\BackendUserGroupRepository | \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
-     */
-    public function findByGroupTitle($grouptitle, $pid = null)
+    
+    public function findByGroupTitle(string $grouptitle, int $pid = null): BackendUserGroup | QueryResultInterface | bool
     {
         $group = false;
         $query = $this->createQuery();
@@ -75,13 +71,8 @@ class BackendUserGroupRepository extends Repository
 
         return $group;
     }
-
-    /**
-     * @param array $uidList
-     *
-     * @return array
-     */
-    public function findByUids($uidList)
+    
+    public function findByUids(array $uidList): BackendUserGroup | QueryResultInterface | bool
     {
         $query = $this->createQuery();
         $query->getQuerySettings()->setRespectStoragePage(false);
@@ -92,7 +83,7 @@ class BackendUserGroupRepository extends Repository
         $groups = $query->execute();
     }
 
-    public function findByDn($dn)
+    public function findByDn(string $dn): BackendUserGroup | QueryResultInterface | bool
     {
         $user = false;
         $query = $this->createQuery();
@@ -109,13 +100,7 @@ class BackendUserGroupRepository extends Repository
 
         return $user;
     }
-
-    /**
-     * @param array $lastRun
-     *
-     * @return array
-     */
-    public function findByLastRun($lastRun)
+    public function findByLastRun(string | array $lastRun): BackendUserGroup | QueryResultInterface | bool
     {
         $query = $this->createQuery();
         $query->getQuerySettings()->setRespectStoragePage(false);
@@ -127,11 +112,10 @@ class BackendUserGroupRepository extends Repository
         return $query->execute();
     }
 
-    public function findLdapImported()
+    public function findLdapImported(): BackendUserGroup | QueryResultInterface | bool
     {
         $query = $this->createQuery();
         $query->getQuerySettings()->setRespectStoragePage(false);
-        // \NormanSeibert\Ldap\Utility\Helpers::setRespectEnableFieldsToFalse($query);
         $query->matching(
             $query->logicalNot(
                 $query->equals('dn', '')
@@ -146,26 +130,14 @@ class BackendUserGroupRepository extends Repository
         return $query->execute();
     }
 
-    /*
-    public function loadAllGroups()
+    public function findLdapImportedByServer(int $serverUid): BackendUserGroup | QueryResultInterface | bool
     {
-        if ('be_users' == $this->table) {
-            $this->allBeGroups = $this->beUsergroupRepository->findAll();
-        } else {
-            $pid = null;
-            $groupRules = $this->getConfiguration()->getUserRules('fe_users')->getGroupRules();
-            if ($groupRules) {
-                $pid = $groupRules->getPid();
-            }
-            if (empty($pid)) {
-                $pid = $this->getConfiguration()->getUserRules('fe_users')->getPid();
-            }
-            if ($pid) {
-                $this->allFeGroups = $this->feUsergroupRepository->findByPid($pid);
-            } else {
-                $this->allFeGroups = $this->feUsergroupRepository->findAll();
-            }
-        }
+        $query = $this->createQuery();
+        $query->getQuerySettings()->setRespectStoragePage(false);
+        $query->matching(
+            $query->equals('serverUid', $serverUid)
+        );
+
+        return $query->execute();
     }
-    */
 }

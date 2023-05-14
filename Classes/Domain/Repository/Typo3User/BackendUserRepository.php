@@ -28,6 +28,8 @@ namespace NormanSeibert\Ldap\Domain\Repository\Typo3User;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Persistence\Generic\Typo3QuerySettings;
 use TYPO3\CMS\Extbase\Persistence\Repository;
+use NormanSeibert\Ldap\Domain\Model\Typo3User\BackendUser;
+use TYPO3\CMS\Extbase\Persistence\QueryResultInterface;
 
 /**
  * Repository for TYPO3 backend users.
@@ -40,14 +42,8 @@ class BackendUserRepository extends Repository
         $querySettings->setRespectStoragePage(false);
         $this->setDefaultQuerySettings($querySettings);
     }
-    
-    /**
-     * @param string $username
-     * @param int    $pid
-     *
-     * @return \TYPO3\CMS\Extbase\Domain\Repository\BackendUserRepository | \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
-     */
-    public function findByUsername($username, $pid = null)
+
+    public function findByUsername(string $username, $pid = null): BackendUser | QueryResultInterface | bool
     {
         $user = false;
         $query = $this->createQuery();
@@ -65,13 +61,7 @@ class BackendUserRepository extends Repository
         return $user;
     }
 
-    /**
-     * @param string $dn
-     * @param int    $pid
-     *
-     * @return \TYPO3\CMS\Extbase\Domain\Repository\BackendUserRepository | \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
-     */
-    public function findByDn($dn, $pid = null)
+    public function findByDn(string $dn, int $pid = null): BackendUser | QueryResultInterface | bool
     {
         $user = false;
         $query = $this->createQuery();
@@ -89,12 +79,7 @@ class BackendUserRepository extends Repository
         return $user;
     }
 
-    /**
-     * @param mixed $lastRun
-     *
-     * @return \TYPO3\CMS\Extbase\Domain\Repository\BackendUserRepository | \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
-     */
-    public function findByLastRun($lastRun)
+    public function findByLastRun(string | array $lastRun): BackendUser | QueryResultInterface | bool
     {
         $query = $this->createQuery();
         $query->getQuerySettings()->setRespectStoragePage(false);
@@ -119,23 +104,14 @@ class BackendUserRepository extends Repository
         return $query->execute();
     }
 
-    /**
-     * @param mixed $lastRun
-     *
-     * @return int
-     */
-    public function countByLastRun($lastRun)
+    public function countByLastRun(string | array $lastRun): int
     {
         return $this->findByLastRun($lastRun)->count();
     }
-
-    /**
-     * @return \TYPO3\CMS\Extbase\Domain\Repository\BackendUserRepository | \TYPO3\CMS\Extbase\Persistence\QueryResultInterface
-     */
-    public function findLdapImported()
+    
+    public function findLdapImported(): BackendUser | QueryResultInterface | bool
     {
         $query = $this->createQuery();
-        // \NormanSeibert\Ldap\Utility\Helpers::setRespectEnableFieldsToFalse($query);
         $query->matching(
             $query->logicalNot(
                 $query->equals('dn', '')
@@ -145,6 +121,17 @@ class BackendUserRepository extends Repository
             [
                 'serverUid' => \TYPO3\CMS\Extbase\Persistence\QueryInterface::ORDER_ASCENDING,
             ]
+        );
+
+        return $query->execute();
+    }
+
+    public function findLdapImportedByServer(int $serverUid): BackendUser | QueryResultInterface | bool
+    {
+        $query = $this->createQuery();
+        $query->getQuerySettings()->setRespectStoragePage(false);
+        $query->matching(
+            $query->equals('serverUid', $serverUid)
         );
 
         return $query->execute();

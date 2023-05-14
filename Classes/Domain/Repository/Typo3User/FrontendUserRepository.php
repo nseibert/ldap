@@ -146,4 +146,15 @@ class FrontendUserRepository extends Repository
 
         return $query->execute();
     }
+
+    public function findLdapImportedByServer(int $serverUid): FrontendUser | QueryResultInterface
+    {
+        $query = $this->createQuery();
+        $query->getQuerySettings()->setRespectStoragePage(false);
+        $query->matching(
+            $query->equals('serverUid', $serverUid)
+        );
+
+        return $query->execute();
+    }
 }
