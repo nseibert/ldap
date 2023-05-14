@@ -180,7 +180,7 @@ class LdapImporter
         foreach ($ldapUsers as $user) {
             $typo3User = $userMapper->loadUser($user);
             if (is_object($typo3User)) {
-                $user->updateUser($runIdentifier);
+                $userMapper->updateUser($user, $typo3User, $runIdentifier);
             }
         }
     }
