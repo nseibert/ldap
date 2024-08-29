@@ -117,7 +117,6 @@ class LdapTypo3UserMapper
             $typo3User = $userRepository->findByUsername($username, $pid);
             
             if (is_object($typo3User)) {
-                print_r($typo3User->toArray());
                 $msg = 'User record already existing: ' . $typo3User->getUid();
                 if (3 == $this->logLevel) {
                     $this->logger->debug($msg);
