@@ -430,17 +430,20 @@ class LdapHandler
     private function ldapConnect(LdapServer $server)
     {
         $connect = false;
-        $uid = $server->getUid();
-        $host = $server->getConfiguration()->getHost();
-        $port = $server->getConfiguration()->getPort();
-        if (0 == strlen($port)) {
+        $uid = (int)$server->getUid();
+        $host = $server->getConfiguration()->getHost() ?? '';
+        $port = (int)$server->getConfiguration()->getPort();
+        if (0 === strlen($port)) {
             $port = 389;
         }
-        $version = $server->getConfiguration()->getVersion();
-        $forceTLS = $server->getConfiguration()->getForceTLS();
+        $version = (int)$server->getConfiguration()->getVersion();
+        $forceTLS = (int)$server->getConfiguration()->getForceTLS();
+
+        $ldapProtocol = $port === 636 || $forceTLS ? 'ldaps' : 'ldap';
+        $ldapUri = $ldapProtocol . '://' . $host . ':' . $port;
 
         try {
-            $connect = ldap_connect($host, $port);
+            $connect = ldap_connect($ldapUri);
         } catch (Exception $e) {
             $msg = 'ldap_connect(' . $uid . ', ' . $host . ':' . $port . '): Could not connect to LDAP server.';
             $this->logger->error($msg);
