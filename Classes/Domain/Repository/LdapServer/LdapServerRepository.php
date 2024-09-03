@@ -414,7 +414,7 @@ class LdapServerRepository extends Repository
                     if (isset($server['be_users.']['usergroups.']['importGroups'])) {
                         $groupRuleBE->setImportGroups($server['be_users.']['usergroups.']['importGroups']);
                     }
-                    if (isset($server['be_users.']['usergroups.']['mapping'])) {
+                    if (isset($server['be_users.']['usergroups.']['mapping.'])) {
                         $groupRuleBE->setMapping($server['be_users.']['usergroups.']['mapping.']);
                     }
                     if (isset($server['be_users.']['usergroups.']['reverseMapping'])) {
