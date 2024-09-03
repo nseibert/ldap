@@ -284,7 +284,7 @@ class ModuleController extends ActionController
                     $runs[] = $importer::doImport($ldapServer);
                 }
                 if ($settings->getAuthenticateBe()) {
-                    $ldapServer->setUserType('fe');
+                    $ldapServer->setUserType('be');
                     $runs[] = $importer::doImport($ldapServer);
                 }
             }
@@ -494,7 +494,7 @@ class ModuleController extends ActionController
             $runs[] = $importer::doDelete('fe', $settings->getHideNotDelete(), $settings->getDeleteNonLdapUsers());
         }
         if ($settings->getAuthenticateBe()) {
-            $runs[] = $importer::doDelete('fe', $settings->getHideNotDelete(), $settings->getDeleteNonLdapUsers());
+            $runs[] = $importer::doDelete('be', $settings->getHideNotDelete(), $settings->getDeleteNonLdapUsers());
         }
 
         $arguments = [

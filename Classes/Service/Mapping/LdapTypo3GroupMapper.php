@@ -272,7 +272,7 @@ class LdapTypo3GroupMapper
         string $lastRun = null): array
     {
         if ($userType == 'be') {
-            $groupRules = $ldapServer->getConfiguration()->getFeUserRules()->getGroupRules();
+            $groupRules = $ldapServer->getConfiguration()->getBeUserRules()->getGroupRules();
             $groupRepository = GeneralUtility::makeInstance(BackendUserGroupRepository::class);
             $groupObject = 'NormanSeibert\Ldap\Domain\Model\Typo3User\BackendUserGroup';
         } else {

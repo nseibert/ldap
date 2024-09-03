@@ -42,7 +42,7 @@ class LdapBeUser extends LdapEntity
 
     public function __construct()
     {
-        $this->groupObject = new LdapFeGroup();
+        $this->groupObject = new LdapBeGroup();
     }
 
     /**
