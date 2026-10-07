@@ -264,7 +264,7 @@ class ModuleController extends ActionController
     /**
      * imports users.
      */
-    public function doImportUsersAction(FormSettings $formSettings = null)
+    public function doImportUsersAction(FormSettings $formSettings = null): \Psr\Http\Message\ResponseInterface
     {
         $settings = $this->initializeFormSettings($formSettings);
         $this->view->assign('formSettings', $settings);
@@ -294,7 +294,7 @@ class ModuleController extends ActionController
             'runs' => $runs,
         ];
 
-        $this->redirect('importUsers', null, null, $arguments);
+        return $this->redirect('importUsers', null, null, $arguments);
     }
 
     /**
@@ -339,7 +339,7 @@ class ModuleController extends ActionController
     /**
      * updates users.
      */
-    public function doUpdateUsersAction(FormSettings $formSettings = null)
+    public function doUpdateUsersAction(FormSettings $formSettings = null): \Psr\Http\Message\ResponseInterface
     {
         $settings = $this->initializeFormSettings($formSettings);
         $this->view->assign('formSettings', $settings);
@@ -369,7 +369,7 @@ class ModuleController extends ActionController
             'runs' => $runs,
         ];
 
-        $this->redirect('updateUsers', null, null, $arguments);
+        return $this->redirect('updateUsers', null, null, $arguments);
     }
 
     /**
@@ -414,7 +414,7 @@ class ModuleController extends ActionController
     /**
      * imports or updates users.
      */
-    public function doImportAndUpdateUsersAction(FormSettings $formSettings = null)
+    public function doImportAndUpdateUsersAction(FormSettings $formSettings = null): \Psr\Http\Message\ResponseInterface
     {
         $settings = $this->initializeFormSettings($formSettings);
         $this->view->assign('formSettings', $settings);
@@ -444,7 +444,7 @@ class ModuleController extends ActionController
             'runs' => $runs,
         ];
 
-        $this->redirect('importAndUpdateUsers', null, null, $arguments);
+        return $this->redirect('importAndUpdateUsers', null, null, $arguments);
     }
 
     /**
@@ -482,7 +482,7 @@ class ModuleController extends ActionController
     /**
      * deletes/deactivates users.
      */
-    public function doDeleteUsersAction(FormSettings $formSettings = null)
+    public function doDeleteUsersAction(FormSettings $formSettings = null): \Psr\Http\Message\ResponseInterface
     {
         $settings = $this->initializeFormSettings($formSettings);
         $this->view->assign('formSettings', $settings);
@@ -501,7 +501,7 @@ class ModuleController extends ActionController
             'runs' => $runs,
         ];
 
-        $this->redirect('deleteUsers', null, null, $arguments);
+        return $this->redirect('deleteUsers', null, null, $arguments);
     }
 
     /**
@@ -543,7 +543,7 @@ class ModuleController extends ActionController
     /**
      * checks whether a user can be authenticated successfully.
      */
-    public function doCheckLoginAction(FormSettings $formSettings = null)
+    public function doCheckLoginAction(FormSettings $formSettings = null): \Psr\Http\Message\ResponseInterface
     {
         $settings = $this->initializeFormSettings($formSettings);
         $this->view->assign('formSettings', $settings);
@@ -584,7 +584,7 @@ class ModuleController extends ActionController
             'user' => $user,
         ];
 
-        $this->redirect('checkLogin', null, null, $arguments);
+        return $this->redirect('checkLogin', null, null, $arguments);
     }
 
     /**
